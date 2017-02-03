@@ -69,6 +69,14 @@ int listgetelem(linklist L,int n){
     printf("第%d位置的值为：%d\n",n,p->data);
 	return 1;
 }
+//分析：
+//P = L->next; //p指向L的第一个结点,p一开始就为空null的话，链表为空链表
+//J = 1；//j作为计数器
+//While（p&&j<i）p为真，则说明有下一个结点，可以继续找
+//遍历完j<i后，此时j=i,若P为null，说明把整个链表遍历完了，此时i位置元素是不存在的；j>i肯定是不符合条件的，这两种条件下抛出异常
+//否则找到元素给过去
+
+
 
 //	在单链表第N个位置插入元素e
 int listinsert(linklist L,int n,int e){
@@ -88,6 +96,14 @@ int listinsert(linklist L,int n,int e){
     listgetelem(L,n);
 	return 1;
 }
+//分析：
+//While循环用于寻找第i个结点
+//S=(LinkList)malloc(sizeof(Node));//新建结点s，强制转化为LinkList形式，确保
+//S->data = e;//将元素e给到结点s
+//S->next = p->next;
+//P->next = s;这两句为经典操作，顺序不能颠倒
+
+
 
 //	头插法 
 int listinserthead(linklist L,int e){
