@@ -33,7 +33,7 @@ int listcreat(linklist L,int n){
         scanf("%d",p);
         p->next = L->next;
         L->next = p;
-        //	printf("该结点数据：%d", p->data);
+        printf("该结点数据：%d", p->data);
     }
 	return 1;
 }
@@ -149,6 +149,24 @@ int listdelete(linklist L,int n){
 	return 1;
 }
 
+//快速找到未知长度单链表的中间结点
+int Getmid(linklist L){
+    linklist search,mid;
+	mid = search = L->next;
+	while (search->next != NULL){
+  //	search移动速度是mid的两倍
+		if(search->next->next != NULL){
+			search = search->next->next;
+			mid = mid->next;
+		}
+		else{
+		search = search->next;
+		}
+	}
+	printf("中间值为%d",mid->data);
+	return mid->data;
+}
+
 int main(){
     linklist M;
     listinit(&M);
@@ -159,4 +177,5 @@ int main(){
 	listdelete(M,2);
 	listinserthead(M,7);
 	listinserttailor(M,6);
+	Getmid(M);
 }

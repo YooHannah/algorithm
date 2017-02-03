@@ -29,9 +29,9 @@ void InitList(StaticLinkList L)//传递列表
 	 ++i;
  }
  L[MAXSIZE-1].cur = 1;
-// for(i = 0; i < MAXSIZE; i++ ){
-//   printf("%d %d %d\n",i,L[i].data,L[i].cur);
-// }
+ for(i = 0; i < MAXSIZE; i++ ){
+   printf("%d %d %d\n",i,L[i].data,L[i].cur);
+ }
 }
 
 //求链表中数据元素个数；
@@ -94,14 +94,7 @@ void del(StaticLinkList L,int n){
 	}
 	length(L);
 }
-StaticLinkList randlist(int n){
-	StaticLinkList L;
-	for(i = 1;i<n-1;i++){
-		L[i].data = rand() % 101;
-		L[i].cur = i+1;
-	}
-	
-}
+
 void main()
 {
  StaticLinkList list; 
@@ -109,5 +102,4 @@ void main()
  length(list);
  insert(list,77,2);
  del(list,1);
- randlist(20);
 }
