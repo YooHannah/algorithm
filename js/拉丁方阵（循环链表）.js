@@ -1,3 +1,6 @@
+//拉丁方阵是一种n*n的方阵，方阵中恰有n种不同的元素，每种元素恰有n个，
+//并且每种元素在一行一列中恰好出现一次
+//主要思路：将n个结点的链表，每次错一位push到一个数组中，pusH操作n次
   function Latinsquare(num){
             var list=[];
             for(var i = 0;i<num;i++){

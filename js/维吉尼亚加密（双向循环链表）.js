@@ -1,4 +1,6 @@
-var twowaylinkedlist =[];
+//当输入明文，自动生成随机密匙匹配明文中的每个字母并移位加密
+//保存随机密匙，用于将明文还原
+var twowaylinkedlist =[]; //字母表
 var i
 for(i =0;i<26;i++){
   var pre = 0;

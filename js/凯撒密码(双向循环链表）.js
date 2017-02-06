@@ -1,3 +1,7 @@
+
+//实现用户输入一个数使得26个字母排列发生变化，
+//输入3时，DEFGHIJKLMNOPQRSTUVWXYZABC
+//输入-3时，XYZABCDEFGHIJKLMNOPQRSTUVW
 var twowaylinkedlist =[];
 var i
 for(i =0;i<26;i++){
