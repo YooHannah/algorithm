@@ -1,6 +1,7 @@
 // 41个人围成一圈，依次报数，每次报到“3”数字的人自杀死亡，然后由下一个重新报数，直到所有人都自杀身亡
 //用循环链表模拟约瑟夫问题，把41个人自杀的编号输出
-//使用单循环链表
+//重点：如何将要删除的结点的next赋值给它的前一个结点
+//使用单循环链表：计数到要删除的结点的前一个结点
 var list =[];
 var final=[];
 for(var i = 0;i<41;i++){
@@ -24,7 +25,7 @@ final.push(list[list[temp].next].data);
 list[temp].next = list[list[temp].next].next;
 }
 console.log(final)
-// 使用双向循环链表
+// 使用双向循环链表：使用属性记录前结点位置
 var list =[];
 var final=[];
 for(var i = 0;i<41;i++){
