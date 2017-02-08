@@ -10,9 +10,9 @@ function getnext(T,next){
       i++;
       j++;
       if(T[i]!=T[j]){
-        next[i]=j;
+        next[i]=j;//字符不连续相同
       }else{
-        next[i]=next[j]
+        next[i]=next[j];//字符连续相同时,将前缀等值过去
       }
     }else{
       j = next[j];
