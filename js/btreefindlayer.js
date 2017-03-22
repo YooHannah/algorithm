@@ -14,12 +14,12 @@ for(var j=0;j<btree.length-2;j++){
     if(btree[j+1].data !==' '){
       btree[j].children.push(j+1);
     }else{
-      btree[j].children.push(1111);
+      btree[j].children.push(1111);//左子树为空就用1111表示
     }
     if(btree[j+2].data !==' '){
       btree[j].children.push(j+2);
     }else{
-      btree[j].children.push(1111);
+      btree[j].children.push(1111);//右子树为空就用1111表示
     }
   }
 }
