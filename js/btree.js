@@ -57,7 +57,6 @@
  // 给每个结点找到父节点元素值
 function findparent(val){
     if(val != null){
-
       if(val.left != null){
         val.left.parent = val.data;
       }
