@@ -1,5 +1,5 @@
-// 图的优先遍历(想象树的前序遍历)
-    var node = ['A','B','C','D','E','F','G','H','I'];
+//广度优先遍历(想象树的层序遍历)
+var node = ['A','B','C','D','E','F','G','H','I'];
     var nodes = [];
     for(var k = 0;k<node.length;k++){
       nodes.push({
@@ -19,31 +19,31 @@
     matrix.push([0,1,1,1,0,0,0,0,0]);
     var i = 0;
     var str = '';
-    var pre = [];
-    function Maptraversal(){
-      console.log(i)
-      if(nodes[i].tag == 0){
-         str += nodes[i].name;
-      }
+    nodes[i].tag = 1;
+    var queue = [];
+    queue.push({
+      'index':0,
+      'name':'A'
+    })
+    function BreadthMaptraversal(){
      if(str.length == nodes.length){
       return
      }
-      var temp = 0;
       for(var k = 0;k<matrix[i].length;k++){
          if(matrix[i][k] ==1 && nodes[k].tag == 0){
-          nodes[i].tag = 1;
-          pre.push(i);
-          i=k;
-          Maptraversal();
-         }else{
-          temp +=1;
+            nodes[k].tag = 1;
+            queue.push({
+              'index':k,
+              'name':nodes[k].name
+            });
          }
       }
-      if (temp == matrix[i].length) {
-        nodes[i].tag = 1;
-        i = pre.pop();
-        Maptraversal();
+      str += queue[0].name;
+      queue.splice(0,1);
+      if(queue.length>0){
+         i = queue[0].index;
+         BreadthMaptraversal()
       }
     }
-    Maptraversal();
+    BreadthMaptraversal();
     console.log(str);
