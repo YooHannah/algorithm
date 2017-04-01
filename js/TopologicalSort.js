@@ -47,4 +47,4 @@
           return sort;
          }
     }
-    console.log(TopologicalSort());//["C13", "C14", "C15", "C5", "C1", "C4", "C8", "C3", "C10", "C11", "C12", "C7", "C9", "C6", "C2"]
+    console.log(TopologicalSort());
