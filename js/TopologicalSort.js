@@ -1,3 +1,4 @@
+  //拓扑排序
   var vertextnodes=[];
     vertextnodes.push({'data':'C1','in':0,'children':[2,3,4]});
     vertextnodes.push({'data':'C2','in':2,'children':[]});
