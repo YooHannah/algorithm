@@ -9,11 +9,11 @@ function BubbleSort(val){
   }
   var list = val.slice();
   for(var i = 0;i<list.length;i++){
-    for(var j= 0;j<list.length;j++){
-      if(list[j] >= list[j+1]){
-        var temp = list[j];
-        list[j] = list[j+1];
-        list[j+1] = temp;
+    for(var j= list.length-1;j>i;j--){
+      if(list[j-1] >= list[j]){
+        var temp = list[j-1];
+        list[j-1] = list[j];
+        list[j] = temp;
       }
     }
   }
