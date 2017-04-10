@@ -8,12 +8,15 @@ function BubbleSort(val){
     return [];
   }
   var list = val.slice();
-  for(var i = 0;i<list.length;i++){
+  var flag = 1;//添加flag,当某个个元素在比较过程中两两之间没有发生交换，则说明之前的顺序已经被排好，不需要再比较，提前结束
+  for(var i = 0;i<list.length-1 && flag;i++){
     for(var j= list.length-1;j>i;j--){
+       flag = 0;
       if(list[j-1] >= list[j]){
         var temp = list[j-1];
         list[j-1] = list[j];
         list[j] = temp;
+        flag = 1;
       }
     }
   }
