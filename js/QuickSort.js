@@ -87,7 +87,7 @@
                 high--;
               }
               //将比自己小的元素放在自己左边
-              list = swap(list,low,high);
+              list = swap(list,low,high); //此时list[low]值发生变化，但point值不变，是交换前的list[low]，位置是high
               //优化方案2：优化不必要的交换，直接赋值
               // list[low] = list[high]
 

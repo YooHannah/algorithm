@@ -25,7 +25,7 @@ for(var i=list.length;i< fiob[k]-1;i++){
 var low = 0;
 var high = list.length-1;
 while(low<=high){
-  var mid = low+fiob[k-1]-1; 
+  var mid = low+fiob[k-1]-1;
   //将数组分为fiob[k-1]-1和fiob[k-2]-1两部分
   //原本fiob[k] = fiob[k-1] 和fiob[k-2]
   //fiob[k-1]-1+fiob[k-2]-1 = fiob[k]-2
