@@ -92,6 +92,35 @@ function test(){
 test() //0 5 0
 new test()//0 undefined 0
 
+/*二分查找*/
+var arr = [1,2,3,4,5,6,7,8,9];
+function sort(arr,val){
+   if(val == undefined){
+     return 'nothing to search'
+   }
+  if(val>arr[arr.length-1]||val<arr[0]){
+    return 'beyond range';
+  }
+  var start = 0;
+  var end = arr.length-1;
+  while(start < end){
+    var middle = Math.round((start+end)/2);
+    console.log(middle);
+      if(arr[middle]>val){
+        end= middle;
+      }
+      if(arr[middle]<val){
+        start = middle;
+      }
+      if(arr[middle] == val){
+        break
+      }
+  }
+  return middle;
+}
+console.log(sort(arr,10));
+
+
 /*事件监听*/
 class EventEmitter {
   /* TODO */
