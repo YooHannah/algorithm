@@ -1,0 +1,150 @@
+.parentcss {
+  position: relative;
+  margin-bottom: 2.5rem;
+}
+.paddingleft {
+  // padding-right: 70px;
+  position: absolute;
+  z-index: 99999;
+  width: 100%;
+  top: 100%;
+}
+.backgroundcolor {
+  background-color: $tip-serach-list-bg;
+  padding: 0 0 0 4px;
+  margin: 4px 4px 4px 0;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 2px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+.signup ul li {
+  margin: 5px;
+  list-style: none;
+}
+.signup ul li:hover {
+  background-color: $tip-serach-li-bg;
+}
+.signup ul {
+  max-height: 200px;
+  width: 100%;
+}
+.textAlign {
+  text-align: center;
+}
+.cancelStyle1 {
+  display: block;
+  width: 5%;
+  text-align: right;
+  padding-right: 5px;
+  margin-left: 95%;
+  position: absolute;
+}
+.cancelStyle2 {
+  text-align: center;
+  width: 20px;
+  background-color: #dde4ed;
+  border-radius: 10px;
+  float: right;
+}
+.hideDom {
+  display: none;
+}
+.typeborder {
+  border: 1px solid #dde4ed;
+  border-radius: 5px;
+  margin-right: 10px;
+  padding-left: 3px;
+}
+.inputB {
+  border: 1px solid #dde4ed;
+  padding: 3px;
+  border-radius: 3px;
+  min-width: 50px;
+  margin-right: 5px;
+}
+.inputT {
+  border: none !important;
+  height: 30px;
+  box-shadow: none !important;
+}
+
+.layout {
+  margin-bottom: 3px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  position: relative;
+  flex-grow: 1;
+}
+
+.layout-no {
+  margin-bottom: 3px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  position: relative;
+}
+
+.forminline {
+  display: flex;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+}
+.forminput {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  margin-right: 3px;
+  font-size: 14px;
+  line-height: 18px;
+  color: #303133;
+  background-color: #fff;
+  background-image: none;
+  background-clip: padding-box;
+  border: 1px solid #dde4ed;
+  border-radius: 0 3px 3px 0;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  font: inherit;
+  &:focus {
+    outline: 0 !important;
+  }
+}
+
+.selectwrapper {
+  margin-right: 3px;
+  position: relative;
+  background-color: #fff;
+  .forminput {
+    margin-right: 0;
+    text-indent: 0.01px;
+    padding-right: 30px;
+    -webkit-appearance: none;
+  }
+}
+.btnconfirm {
+  background-color: #24aae9;
+  color: #fff;
+  border-radius: 5px;
+  display: inline-block;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  border: none;
+  padding: 0.7rem 1rem;
+  font-size: 13px;
+}
