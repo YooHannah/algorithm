@@ -5,11 +5,20 @@
  * @Last Modified time: 2018-06-04 15:58:45
  */
 import React from 'react';
-import { findDOMNode } from 'react-dom';
-// import appEvents from 'app/core/app_events';
 
 export interface DateTimeProps {
   config: any;
+  /**
+   * 参数配置说明：
+   * data:最终选择数据，为空时，默认初始化为此时此刻
+   * confirmFunc:确认按钮回调函数
+   * format:日期格式，目前仅支持:'YYYY-MM-DD HH:MM:SS','YYYY-MM-DD HH:MM','HH:MM','HH:MM:SS'
+   * 功能按钮说明：
+   * 日期面板：单个尖括号可前后移动一个月，双尖括号可前后移动一年，点击标题年份跳转年份选择面板，点击标题月份跳转月份选择面板，点击具体日期纯选择不跳转
+   * 月份面板：双尖括号可前后移动一年，点击标题年份跳转年份选择面板，点击具体月份跳转日期选择面板
+   * 年份面板：双尖括号可前后移动十年，点击标题年份范围跳转年份范围选择面板，点击具体年份跳转月份份选择面板
+   * 年份范围面板：双尖括号可前后移动100年，点击具体年份范围跳转年份选择面板
+   */
 }
 export default class DateTime extends React.Component<DateTimeProps, any> {
   weekTab: any;
@@ -54,7 +63,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     this.getResult = this.getResult.bind(this);
     this.closePanel = this.closePanel.bind(this);
   }
-  //获取链接符/读取展示格式
+  //初始化state
   initConfig() {
     let obj = null;
     let data = this.props.config.data;
@@ -94,6 +103,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
     return obj;
   }
+  //组装列表
   renderList(type, cols, groups, callback, pickedVal) {
     let list = [];
     let classPre = '';
@@ -178,42 +188,6 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
     return this.renderList('day', 7, days, this.dayClick, this.state.currentDay);
   }
-  dayClick(day, e) {
-    e.nativeEvent.stopImmediatePropagation();
-    if (day.current === 'current') {
-      this.setState({
-        currentDay: day.id,
-      });
-    }
-    if (day.current === 'last') {
-      if (this.state.currentMonth === 1) {
-        this.setState({
-          currentDay: day.id,
-          currentMonth: 12,
-          currentYear: this.state.currentYear - 1,
-        });
-      } else {
-        this.setState({
-          currentDay: day.id,
-          currentMonth: this.state.currentMonth - 1,
-        });
-      }
-    }
-    if (day.current === 'next') {
-      if (this.state.currentMonth === 12) {
-        this.setState({
-          currentDay: day.id,
-          currentMonth: 1,
-          currentYear: this.state.currentYear + 1,
-        });
-      } else {
-        this.setState({
-          currentDay: day.id,
-          currentMonth: this.state.currentMonth + 1,
-        });
-      }
-    }
-  }
   //获取月份面板
   getMonthList() {
     let groups = [];
@@ -224,42 +198,6 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       });
     }
     return this.renderList('month', 3, groups, this.monthClick, this.state.currentMonth);
-  }
-  monthClick(month, e) {
-    e.nativeEvent.stopImmediatePropagation();
-    this.setState({
-      currentMonth: month.id,
-      status: 'date',
-    });
-  }
-  //前后移动月份
-  monthMove(val, e) {
-    e.nativeEvent.stopImmediatePropagation();
-    if (val) {
-      //移到下个月
-      if (this.state.currentMonth === 12) {
-        this.setState({
-          currentMonth: 1,
-          currentYear: this.state.currentYear + 1,
-        });
-      } else {
-        this.setState({
-          currentMonth: this.state.currentMonth + 1,
-        });
-      }
-    } else {
-      //移到上个月
-      if (this.state.currentMonth === 1) {
-        this.setState({
-          currentMonth: this.state.currentMonth - 1,
-          currentYear: this.state.currentYear - 1,
-        });
-      } else {
-        this.setState({
-          currentMonth: this.state.currentMonth - 1,
-        });
-      }
-    }
   }
   //获取年份面板
   getYearList() {
@@ -284,47 +222,6 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     });
     return this.renderList('year', 3, groups, this.yearClick, this.state.currentYear);
   }
-  //点击年份
-  yearClick(year, e) {
-    e.nativeEvent.stopImmediatePropagation();
-    if (year.current === 'current') {
-      this.setState({
-        currentYear: year.id,
-        status: 'month',
-      });
-    }
-    if (year.current === 'last') {
-      this.setState({
-        currentYear: year.id,
-        status: 'year',
-      });
-    }
-    if (year.current === 'next') {
-      this.setState({
-        currentYear: year.id,
-        status: 'year',
-      });
-    }
-  }
-
-  //计算年份范围
-  getYearPeriod() {
-    let prefix, startYear, endYear;
-    if (this.state.status === 'yearPeriod') {
-      prefix = parseInt(String(this.state.currentYear / 100));
-      startYear = Number(prefix + '00');
-      endYear = Number(prefix + '99');
-    } else {
-      prefix = parseInt(String(this.state.currentYear / 10));
-      startYear = Number(prefix + '0');
-      endYear = Number(prefix + '9');
-    }
-    return {
-      yearPeriod: startYear + '-' + endYear,
-      startYear: startYear,
-      endYear: endYear,
-    };
-  }
   //获取年份范围选择面板
   getYearPeriodList() {
     let { startYear, endYear } = this.getYearPeriod();
@@ -347,13 +244,6 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       current: 'last', //上一个100年
     });
     return this.renderList('yearPeriod', 3, groups, this.yearPeriodClick, startYear);
-  }
-  yearPeriodClick(decade, e) {
-    e.nativeEvent.stopImmediatePropagation();
-    this.setState({
-      currentYear: decade.id,
-      status: 'year',
-    });
   }
   //获取时间选择面板
   getTimeList() {
@@ -401,6 +291,81 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       </div>
     );
   }
+  //点击某一天
+  dayClick(day, e) {
+    e.nativeEvent.stopImmediatePropagation();
+    if (day.current === 'current') {
+      this.setState({
+        currentDay: day.id,
+      });
+    }
+    if (day.current === 'last') {
+      if (this.state.currentMonth === 1) {
+        this.setState({
+          currentDay: day.id,
+          currentMonth: 12,
+          currentYear: this.state.currentYear - 1,
+        });
+      } else {
+        this.setState({
+          currentDay: day.id,
+          currentMonth: this.state.currentMonth - 1,
+        });
+      }
+    }
+    if (day.current === 'next') {
+      if (this.state.currentMonth === 12) {
+        this.setState({
+          currentDay: day.id,
+          currentMonth: 1,
+          currentYear: this.state.currentYear + 1,
+        });
+      } else {
+        this.setState({
+          currentDay: day.id,
+          currentMonth: this.state.currentMonth + 1,
+        });
+      }
+    }
+  }
+  //月份点击
+  monthClick(month, e) {
+    e.nativeEvent.stopImmediatePropagation();
+    this.setState({
+      currentMonth: month.id,
+      status: 'date',
+    });
+  }
+  //点击年份
+  yearClick(year, e) {
+    e.nativeEvent.stopImmediatePropagation();
+    if (year.current === 'current') {
+      this.setState({
+        currentYear: year.id,
+        status: 'month',
+      });
+    }
+    if (year.current === 'last') {
+      this.setState({
+        currentYear: year.id,
+        status: 'year',
+      });
+    }
+    if (year.current === 'next') {
+      this.setState({
+        currentYear: year.id,
+        status: 'year',
+      });
+    }
+  }
+  //年份范围选择
+  yearPeriodClick(decade, e) {
+    e.nativeEvent.stopImmediatePropagation();
+    this.setState({
+      currentYear: decade.id,
+      status: 'year',
+    });
+  }
   //时分秒点击选择
   timeClick(type, val, e) {
     e.nativeEvent.stopImmediatePropagation();
@@ -418,6 +383,53 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       this.setState({
         currentSecond: val,
       });
+    }
+  }
+  //计算年份范围
+  getYearPeriod() {
+    let prefix, startYear, endYear;
+    if (this.state.status === 'yearPeriod') {
+      prefix = parseInt(String(this.state.currentYear / 100));
+      startYear = Number(prefix + '00');
+      endYear = Number(prefix + '99');
+    } else {
+      prefix = parseInt(String(this.state.currentYear / 10));
+      startYear = Number(prefix + '0');
+      endYear = Number(prefix + '9');
+    }
+    return {
+      yearPeriod: startYear + '-' + endYear,
+      startYear: startYear,
+      endYear: endYear,
+    };
+  }
+  //前后移动月份
+  monthMove(val, e) {
+    e.nativeEvent.stopImmediatePropagation();
+    if (val) {
+      //移到下个月
+      if (this.state.currentMonth === 12) {
+        this.setState({
+          currentMonth: 1,
+          currentYear: this.state.currentYear + 1,
+        });
+      } else {
+        this.setState({
+          currentMonth: this.state.currentMonth + 1,
+        });
+      }
+    } else {
+      //移到上个月
+      if (this.state.currentMonth === 1) {
+        this.setState({
+          currentMonth: this.state.currentMonth - 1,
+          currentYear: this.state.currentYear - 1,
+        });
+      } else {
+        this.setState({
+          currentMonth: this.state.currentMonth - 1,
+        });
+      }
     }
   }
   //前后移动年份
@@ -483,7 +495,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       });
     }
   }
-  //切换选择面板
+  //点击标题 切换选择面板
   changePanel(val, e) {
     e.nativeEvent.stopImmediatePropagation();
     this.setState({
@@ -504,6 +516,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       return this.getYearPeriodList();
     }
   }
+  //根据日期时间格式组装最终结果
   getResult() {
     let str = this.state.currentYear + '-' + this.state.currentMonth + '-' + this.state.currentDay;
     if (this.format === 'YYYY-MM-DD HH:MM:SS') {
@@ -517,19 +530,19 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
     return str;
   }
-  //确定选择完毕
+  //确定按钮，引发回调
   confirmPanel(e) {
     e.nativeEvent.stopImmediatePropagation();
     let picked = this.getResult();
     this.setState({
       showPanel: false,
-      picked: picked,
     });
     this.props.config.data = picked;
-    if (this.props.config.onChange) {
-      this.props.config.onChange(picked);
+    if (this.props.config.confirmFunc) {
+      this.props.config.confirmFunc(picked);
     }
   }
+  //点击选择面板之外的地方，关闭面板
   closePanel(e) {
     this.props.config.data = this.getResult();
     this.setState({

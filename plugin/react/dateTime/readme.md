@@ -3,3 +3,10 @@
 
 优化问题
 同一页面多个组件使用时，点击其中一个隐藏另外一个已展开面板，除了使用现有方法（将展开面板使用setAttribute更改class关闭）,是否有其他方案
+
+各种选择界面
+![time.png](time.png)
+![day.png](day.png)
+![month.png](month.png)
+![year.png](year.png)
+![yearPeriod.png](yearPeriod.png)
