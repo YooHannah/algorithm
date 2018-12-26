@@ -422,7 +422,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
       //移到上个月
       if (this.state.currentMonth === 1) {
         this.setState({
-          currentMonth: this.state.currentMonth - 1,
+          currentMonth: 12,
           currentYear: this.state.currentYear - 1,
         });
       } else {
