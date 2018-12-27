@@ -5,6 +5,7 @@
  * @Last Modified time: 2018-06-04 15:58:45
  */
 import React from 'react';
+import { findDOMNode } from 'react-dom';
 
 export interface DateTimeProps {
   config: any;
@@ -103,7 +104,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
     return obj;
   }
-  //组装列表
+  //组装面板
   renderList(type, cols, groups, callback, pickedVal) {
     let list = [];
     let classPre = '';
@@ -254,7 +255,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
         <div
           key={i}
           onClick={this.timeClick.bind(this, 'hours', str)}
-          className={this.state.currentHour === str ? 'point active' : 'point'}
+          className={this.state.currentHour === String(str) ? 'point active' : 'point'}
         >
           {str}
         </div>
@@ -268,7 +269,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
         <div
           key={i}
           onClick={this.timeClick.bind(this, 'minutes', str)}
-          className={this.state.currentMinute === str ? 'point active' : 'point'}
+          className={this.state.currentMinute === String(str) ? 'point active' : 'point'}
         >
           {str}
         </div>
@@ -277,7 +278,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
         <div
           key={i}
           onClick={this.timeClick.bind(this, 'seconds', str)}
-          className={this.state.currentSecond === str ? 'point active' : 'point'}
+          className={this.state.currentSecond === String(str) ? 'point active' : 'point'}
         >
           {str}
         </div>
@@ -292,8 +293,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     );
   }
   //点击某一天
-  dayClick(day, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  dayClick(day) {
     if (day.current === 'current') {
       this.setState({
         currentDay: day.id,
@@ -329,16 +329,14 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
   }
   //月份点击
-  monthClick(month, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  monthClick(month) {
     this.setState({
       currentMonth: month.id,
       status: 'date',
     });
   }
   //点击年份
-  yearClick(year, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  yearClick(year) {
     if (year.current === 'current') {
       this.setState({
         currentYear: year.id,
@@ -359,16 +357,14 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
   }
   //年份范围选择
-  yearPeriodClick(decade, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  yearPeriodClick(decade) {
     this.setState({
       currentYear: decade.id,
       status: 'year',
     });
   }
   //时分秒点击选择
-  timeClick(type, val, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  timeClick(type, val) {
     if (type === 'hours') {
       this.setState({
         currentHour: val,
@@ -404,8 +400,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     };
   }
   //前后移动月份
-  monthMove(val, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  monthMove(val) {
     if (val) {
       //移到下个月
       if (this.state.currentMonth === 12) {
@@ -433,8 +428,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
   }
   //前后移动年份
-  yearMove(val, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  yearMove(val) {
     if (this.state.status === 'date' || this.state.status === 'month') {
       if (val) {
         this.setState({
@@ -471,11 +465,6 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
   }
   //打开/关闭面板
   togglePanel(e) {
-    e.nativeEvent.stopImmediatePropagation();
-    let doms = document.getElementsByClassName('panelOption');
-    for (let i = 0; i < doms.length; i++) {
-      doms[i].setAttribute('class', 'hideDom');
-    }
     this.props.config.data = this.getResult();
     this.setState({
       showPanel: !this.state.showPanel,
@@ -483,8 +472,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     });
   }
   //时间选择面板与年月日面板切换
-  changeContent(e) {
-    e.nativeEvent.stopImmediatePropagation();
+  changeContent() {
     if (this.state.status === 'time') {
       this.setState({
         status: 'date',
@@ -496,8 +484,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     }
   }
   //点击标题 切换选择面板
-  changePanel(val, e) {
-    e.nativeEvent.stopImmediatePropagation();
+  changePanel(val) {
     this.setState({
       status: val,
     });
@@ -531,8 +518,7 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
     return str;
   }
   //确定按钮，引发回调
-  confirmPanel(e) {
-    e.nativeEvent.stopImmediatePropagation();
+  confirmPanel() {
     let picked = this.getResult();
     this.setState({
       showPanel: false,
@@ -544,10 +530,12 @@ export default class DateTime extends React.Component<DateTimeProps, any> {
   }
   //点击选择面板之外的地方，关闭面板
   closePanel(e) {
-    this.props.config.data = this.getResult();
-    this.setState({
-      showPanel: false,
-    });
+    if (!findDOMNode(this.refs.dateTime).contains(e.target)) {
+      this.props.config.data = this.getResult();
+      this.setState({
+        showPanel: false,
+      });
+    }
   }
   componentDidMount() {
     document.addEventListener('click', this.closePanel, false);
