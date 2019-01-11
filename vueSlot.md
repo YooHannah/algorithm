@@ -2,6 +2,7 @@
 # 背景
 项目列表组件需要实现点击自动增加一行,可展示自定义内容的可扩展内容
 列表table组件被应用在page组件，page组件被应用在具体业务页面，slot的具体内容在业务页面传递进去
+![tableextend1](tableextend1.png)
 问题难点
 1.多层组件slot传递
 2.同一个slot在table组件中循环使用在多处时，不会被渲染
@@ -102,7 +103,7 @@ loadDetail(item, index) {
 这样如果一开始在爷爷组件放入多个具名slot,因为不能在子组件slot标签添加name属性（会循环出同名slot），
 那所有的slot都会出现在每一个table组件中
 因此有了方法二
-
+![tableextend2](tableextend2.png)
 ### 方法二
 利用page层传递slot到table组件思想，在table中使用slot时，将其包裹在一个新组件中，
 利用新组件复用，实现slot组件复用，(相当于将slot传递到新组件------->待查原理)
