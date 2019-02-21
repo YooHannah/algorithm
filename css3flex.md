@@ -33,6 +33,7 @@
 —— flex-end :按实际间距和顺序向主轴方向排列，最后一个贴边
 —— space-between ：第一个和最后一个挨着边框，其它间距相等
 —— space-around：第一个和最后一个离边框距离为子模块间距的一半
+处理主轴为侧轴的布局时,设置了具体高度才会生效
 !(flex6.png)[flex6.png]
 
 <b>align-items</b> 子模块整体相对侧轴的位置,row和row-reverse侧轴为column,column和column-reverse侧轴为row
@@ -71,6 +72,81 @@ auto 默认值，子模块本来大小
 
 <b>flex</b>  ：none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ] 以上三项复合属性
 
+一些特殊flex 值的表现情况
+flex:auto | 1 1 auto;  空间充裕时，模块等比例分配多余空间进行扩展；空间不足时，模块等比例缩小
+flex:none | 0 0 auto;  不论空间是否充裕，模块大小根据自身设置的尺寸不变，间距变化
+flex:initial | 0 1 auto | 0 auto; 空间即使充裕也保持原始大小，但空间不足时，模块等比例缩小
+flex:正值； 模块可根据空间大小收缩，同时多个模块设置时，以该值作为比例进行收缩，放大比等于缩小比
+
+flex 实现 圣杯布局
+```
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+    <header>header</header>
+    <section>
+      <nav>nav</nav>
+      <article>article</article>
+      <aside>aside</aside>
+    </section>
+    <footer>footer</footer>
+</body>
+<style>
+ body{
+   display: flex;
+   flex-flow: column wrap;
+   justify-content:flex-start;
+ }
+ header,section,nav,aside,footer{
+   display: block;
+ }
+ header{
+   order: 1;
+   width: 100%;
+   min-height: 100px;
+   padding: 10px 20px;
+   background-color: antiquewhite;
+ }
+ section{
+   flex: 1; 
+   order: 2;
+   min-width: 100%;
+   margin: 20px 0;
+   display: flex;
+ }
+ footer{
+   order: 3;
+   min-height: 60px;
+   min-width: 100%;
+   padding: 1%;
+   background-color: burlywood;
+ }
+ nav{
+   order:1;
+   width: 220px;
+   padding: 1%;
+   background-color: aquamarine;
+ }
+ article{
+   flex: 1;/* 可伸缩 */
+   order:2;
+   padding: 1%;
+   margin:0 2%;
+   background-color: blue;
+   word-break: break-all;
+ }
+ aside{
+   order:3;
+   width:220px;
+   padding: 1%;
+   background-color: aqua;
+ }
+ 
+</style>
+</html>
+```
 
 
 
