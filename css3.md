@@ -52,7 +52,7 @@ border-radius: 300px 300px 0px 0px;//半圆
 ```
 # box-shadow
 边框阴影，由多个值配置
-insert ？ 水平方向偏移（正右负左）垂直偏移（正下负上）模糊半径 伸缩半径(相当于阴影宽度)
+insert ？ 水平方向偏移（正右负左）垂直偏移（正下负上）模糊半径 伸缩半径(相当于阴影宽度) 颜色(位置随意)
 设置insert时，设置内阴影，不设时，设置外阴影
 内阴影用在img标签上无效
 实例应用
@@ -64,11 +64,30 @@ box-shadow:0 0 0 10px red;//10px为伸缩半径,此效果相当于设置了一�
 层级关系：外阴影--->背景色--->背景图--->内阴影--->边框
 3.多层阴影
 每组用逗号隔开，靠前的设置面积（伸缩半径）太大的话会遮盖之后的设置
+
 ```
 //彩虹色
 box-shadow: red 0px 0px 10px 10px, inset orange 0px 0px 10px 15px, inset yellow 0px 0px 10px 30px, inset green 0px 0px 10px 45px, inset blue 0px 0px 10px 60px, inset purple 0px 0px 10px 75px;
 ```
 
+# text-shadow
+水平方向偏移(正右负左) 垂直偏移(正下负上) 模糊半径 颜色(位置随意)
+## text-overflow
+超出容器是否显示省略号
+使用条件
+width：500px;容器有具体宽度
+overflow: hidden;超出隐藏
+white-space: nowrap;//禁止换行
+
+## word-wrap
+长单词url换行
+normal 默认，半角空格/连字符地方换行,长文本UrL会伸到容器外
+break-word 在边界换行，不截断英文单词
+## word-break
+自动换行处理方法
+normal 默认，整字，英文单词整个换行
+break-all 可截断单词换行
+keep-all 不允许断开换行，chrome，safari不支持
 
 
 # background-attachment
