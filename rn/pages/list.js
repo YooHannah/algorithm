@@ -5,7 +5,13 @@ import  Container from './component/Container'
 export default class container  extends React.Component {
     constructor(props) {
         super(props);   
-        this.state = {data:[],loaded:false}
+        this.state = {
+            loaded:false,//是否已加载完毕
+            data:[],//列表数据
+            cart:[],//购物车
+            collection:[],//收藏
+            totalPrice:0
+        }
         this.fetchData.bind(this)
         this.addFunc.bind(this)
         this.collectFunc.bind(this)
@@ -44,12 +50,19 @@ export default class container  extends React.Component {
         });
       }
       //添加购物车
-      addShoppingCartFunc(){
-
+      addShoppingCartFunc(item){
+        this.state.collection.push(item)
+        this.setState({
+            collection:this.state.collection
+        })
       }
       //添加收藏
-      collectFunc(){
-
+      collectFunc(item){
+        this.state.cart.push(item)
+        this.setState({
+            cart:this.state.cart,
+            totalPrice:this.state.totalPrice + item.price
+        })
       }
     render() {
         if (!this.state.loaded) {
@@ -63,8 +76,8 @@ export default class container  extends React.Component {
                     }
                 }}
                 <View style={styles.bottom}>
-                    <Text>总价：</Text>
-                    <Text>购物车：</Text>
+                    <Text>总价：{this.state.totalPrice}</Text>
+                    <Text>购物车：{this.state.cart.length}</Text>
                 </View>
             </View>
         );
@@ -80,7 +93,7 @@ var styles = StyleSheet.create({
     },
     bottom:{
         position:'absolute',
-        bottom:0
-
+        bottom:0,
+        flexDirection:'row',
     }
   });
