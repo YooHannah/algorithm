@@ -1,0 +1,99 @@
+.customtable .admin-list-paging {
+  float: right;
+  margin-top: 10px;
+}
+.hideDom {
+  display: none;
+}
+.marginTop {
+  margin-top: 5px;
+  margin-left: 0.7rem;
+}
+.smallbtn {
+  padding: 0.5rem;
+  margin-left: 5px;
+}
+.allchecked {
+  display: inline-block;
+}
+.customtable table {
+  thead {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    background: #f7f8fade;
+    border: 1px solid #e9edf2;
+  }
+  tbody {
+    width: 100%;
+    table-layout: fixed;
+    display: block;
+    max-height: 580px;
+    overflow-y: scroll;
+    tr {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+      border-bottom: 1px solid #e9edf2;
+    }
+  }
+}
+th {
+  width: auto;
+  padding: $table-cell-padding;
+  text-align: left;
+  line-height: 30px;
+  height: 30px;
+  white-space: nowrap;
+}
+
+.thBtn {
+  float: right;
+  display: inline-block;
+  margin-top: 3px;
+  .fa {
+    display: block;
+    height: 8px;
+  }
+  .hideDom {
+    visibility: hidden;
+  }
+}
+
+td {
+  padding: $table-cell-padding;
+  line-height: 30px;
+  height: 30px;
+  word-wrap: break-word;
+}
+.handle a {
+  color: #24aae9;
+  margin-right: 10px;
+}
+.nextpage {
+  margin-left: 10px;
+}
+.selectwidth {
+  width: 10% !important;
+}
+.perpageselect {
+  display: inline-block;
+  width: 75px;
+  border-radius: 5px;
+  height: 24px;
+  padding: 2px;
+  font-size: 12px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.jumpstyle {
+  display: inline-block;
+  margin-right: 10px;
+}
+.jumpinput {
+  display: inline-block;
+  border: 1px solid #dde4ed;
+  border-radius: 4px;
+  padding: 0.2rem;
+  margin: 0px 10px;
+}

@@ -5,6 +5,8 @@
  * @Last Modified time: 2018-06-04 15:58:45
  */
 import React from 'react';
+import appEvents from 'app/core/app_events';
+
 export interface TipSearchProps {
   config: any;
   /*
@@ -53,6 +55,7 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
     this.changeKeyValue = this.changeKeyValue.bind(this);
     this.searchFunc = this.searchFunc.bind(this);
     this.deleFunc = this.deleFunc.bind(this);
+    appEvents.on('changeInputFromOut', this.changeInputFromOut.bind(this));//父级页面不通过查询按钮引起查询
   }
 
   //第一个下拉框change
@@ -141,12 +144,21 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
       let buttons = this.state.buttons.slice();
       buttons.push(tip);
       this.buttons = this.renderbuttons(buttons);
+      this.props.config.type.buttons = buttons;
       this.setState({
         buttons: buttons,
         inputValue: '',
         showList: false,
       });
     }
+  }
+  changeInputFromOut(item) {
+    this.setState({
+      inputValue: item.Name,
+      showList: false,
+    });
+    this.selected = item;
+    this.searchFunc();
   }
   //渲染已选按钮
   renderbuttons(buttons) {
@@ -170,6 +182,7 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
   buttonsClick(index) {
     let buttons = this.state.buttons.slice();
     buttons.splice(index, 1);
+    this.props.config.type.buttons = buttons;
     this.buttons = this.renderbuttons(buttons);
     this.setState({
       buttons: buttons,
@@ -178,8 +191,8 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
   // search 按钮触发事件 调用父组件回调函数
   searchFunc() {
     var option = {
-      searchSelect: this.selected,
-      firstSelect: this.state.selectedVal,
+      searchSelect: this.selected,//实际选项
+      firstSelect: this.state.selectedVal,//分类选择的选项
     };
     if (this.props.config.type) {
       option = this.state.buttons.slice();
@@ -188,7 +201,7 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
   }
   render() {
     return (
-      <div className="signup">
+      <div className="tipsearch signup">
         <div className="parentcss">
           <div className="forminline">
             <div className={this.props.config.selectConfig ? 'selectwrapper min-width-4' : 'hideDom'}>
@@ -219,7 +232,7 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
                 this.props.config.type && this.props.config.type.name === 'btn' ? 'layout typeborder' : 'hideDom'
               }
             >
-              {this.buttons}
+              <div className="allInputBtn">{this.buttons}</div>
               <div className="layout">
                 <input
                   type="text"
@@ -240,8 +253,7 @@ export default class TipSearch extends React.Component<TipSearchProps, any> {
                 </div>
               </div>
             </div>
-
-            <div className="layout-no">
+            <div className={this.props.config.confirmbtnHide ? 'hideDom' : 'layout-no'}>
               <button className="btnconfirm" onClick={this.searchFunc}>
                 {this.props.config.buttonName ? this.props.config.buttonName : '搜索'}
               </button>
