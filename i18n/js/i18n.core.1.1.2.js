@@ -14,11 +14,11 @@
     },
     get : function (locate,key) {
       if(arguments.length === 1){
+      	key = arguments[0]
         locate = this.__lang__
-        key = arguments[0]
       }else{
-        locate = arguments[0]
         key = arguments[1]
+        locate = arguments[0]
       }
       return (__LOCATES__[locate] && __LOCATES__[locate][key]) || ''
     },

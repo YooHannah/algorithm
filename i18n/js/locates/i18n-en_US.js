@@ -1,4 +1,3 @@
-console.log(I18N)
 I18N.register("en_US",{
   baseConfig : "Base Config",
   userInfo : "Users Information",
