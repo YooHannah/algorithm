@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    html,body{
+      width:100%;
+      height:100%;
+      padding:0;
+      margin:0;
+      background-color: #eee;
+    }
+    nav ul{
+      list-style: none;
+      padding: 0;
+      margin:0;
+    }
+    nav ul li{
+      float: left;
+      padding: 3px 15px;
+      margin-right:10px;
+      border:1px solid #bbb;
+      cursor: pointer;
+      background-color: #fff;
+    }
+    nav select{
+      width: 100px;
+      height:25px;
+      line-height: 25px;
+      float:right;
+    }
+  </style>
+</head>
+<body>
+  <nav id='app' data-i18n-locate='en-US'>
+    <ul>
+      <li data-i18n-config="baseConfig"></li>
+      <li data-i18n-config="userInfo"></li>
+      <li data-i18n-config="orgManage"></li>
+      <li data-i18n-config="roleManage"></li>
+      <li data-i18n-config="systemManage"></li>
+    </ul>
+    <select id="locates" value='en_US'>
+      <option value="en_US">English</option>
+      <option value="zh_CN">中文</option>
+    </select>
+  </nav>
+  <script src="http://libs.baidu.com/jquery/2.1.1/jquery.min.js"></script>
+  <script src="js/i18n.core.1.1.2.js"></script>
+  <!-- <script src="js/locates/i18n-en_US.js"></script>
+  <script src="js/locates/i18n-zh_CN.js"></script> -->
+  <script>
+    $(function(){
+      I18N.setEl('#app').render()
+      $('#locates').on('change',function(){
+        I18N.setLocate($(this).val()).render();
+      })
+    })
+  </script>
+</body>
+</html>
