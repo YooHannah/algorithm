@@ -13,7 +13,7 @@
      display: flex;
      justify-content: center;
      align-items: center;
-     background-color:antiquewhite
+     /* background-color:antiquewhite */
    }
    form{
      background-color: #fff;
@@ -80,7 +80,9 @@
   $("form").validate({
     defaultEvent:'change',
     name:'nickName',
-    rule:'required:true|min:xxx|max:50'
+    label:'昵称',
+    rule:'required:true|min:2|max:8',
+    style:'padding-left: 85px;'
   })
   // {
   //   defaultEvent:'change',
