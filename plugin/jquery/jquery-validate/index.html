@@ -13,7 +13,7 @@
      display: flex;
      justify-content: center;
      align-items: center;
-     /* background-color:antiquewhite */
+      background-color:antiquewhite 
    }
    form{
      background-color: #fff;
@@ -35,11 +35,15 @@
     padding: 3px;
     font-size: 15px;
    }
+   .form-input:focus{
+    border: 2px solid #a5c7fe;
+    outline: none;
+   }
    .form-submit{
     text-align: center;
     margin-top: 10px;
    }
-   .form-submit button{
+   .form-submit input{
     height: 32px;
     width: 70px;
     padding: 0px 10px;
@@ -52,7 +56,7 @@
 </head>
 <body>
   <div>
-    <form>
+    <form id="Form" action="" method="post">
       <div class="form-item">
         <label class="form-label">昵称:</label>
         <input type="text" class="form-input" name='nickName' value="">
@@ -69,39 +73,54 @@
         <label class="form-label">电子信箱:</label>
         <input type="text" class="form-input" name="email" value="">
       </div>
+      <div class="form-submit">
+       <input type="button" value="提交" onclick="checkForm();">
+      </div>
     </form>
-    <div class="form-submit">
-      <button>提交</button>
-    </div>
+    <!-- <input type="text" class="form-input" name='test' value="" id='singleTest'> -->
   </div>
 <script src="jquery-3.4.1.min.js"></script>
 <script src="jquery_validate_1.0.js"></script>
 <script>
-  $("form").validate({
-    defaultEvent:'change',
+ let formValidate =  $("form").validate({
+    defaultEvent:'blur',
     name:'nickName',
     label:'昵称',
     rule:'required:true|min:2|max:8',
     style:'padding-left: 85px;'
+  },{
+    defaultEvent:'change',
+    name:'IDcard',
+    label:'身份证',
+    rule:'IDcard',
+    style:'padding-left: 85px;'
+  },{
+    defaultEvent:'change',
+    name:'mobilePhone',
+    label:'手机号码',
+    rule:'mobilePhone',
+    style:'padding-left: 85px;'
+  },{
+    defaultEvent:'change',
+    name:'email',
+    label:'电子信箱',
+    rule:'required|email',
+    style:'padding-left: 85px;'
   })
-  // {
-  //   defaultEvent:'change',
-  //   name:'IDcard',
-  //   rule:'IDcard'
-  // },{
-  //   defaultEvent:'change',
-  //   name:'mobilePhone',
-  //   rule:'mobilePhone'
-  // },{
-  //   defaultEvent:'change',
-  //   name:'email',
-  //   rule:'email'
+  function checkForm(){
+    if(formValidate()){
+      return
+    }
+    var  data=$("form").serializeArray()
+    console.log(data);
+  }
+  // let  inputValidate =  $("#singleTest").validate({
+  //   defaultEvent:'blur',
+  //   name:'test',
+  //   label:'昵称xxx',
+  //   rule:'required:true|min:2|max:8',
+  //   style:'padding-left: 85px;'
   // })
-  
-  $("button").bold()
-  $("button").click(()=>{
-    console.log(122)
-  })
 </script>
 </body>
 </html>
