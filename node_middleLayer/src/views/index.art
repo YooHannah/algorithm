@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel='stylesheet' type = "text/css" href='./css/all.css'>
+  <script type="text/javascript" src="./js/jquery.js"></script>
+</head>
+<body>
+  {{each arr}}
+  <div>
+    <h5>{{$value.title}}</h5>
+    <p>{{$value.content}}</p>
+  </div>
+  {{/each}}
+  <button id="getmes"></button>
+  <script type="text/javascript">
+    $("#getmes").on('click',function () {
+      $ajax({
+        url:'http://localhost:3300/post1',
+        type:'post',
+        data:{a:123},
+        success:function(data){
+          console.log(data)
+        }
+      })
+    })
+  </script>
+</body>
+</html>
