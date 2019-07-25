@@ -41,7 +41,7 @@
     var length = arguments.length
     var i=1
     var deep=false //标识是否深度复制
-    var option,name,copy,src，copyIsArray;
+    var option,name,copy,src,copyIsArray;
     if(typeof target === 'boolean'){ //第一个参数为boolean,true进行深度复制，false浅复制
       deep = target;
       target = arguments[1]
@@ -59,6 +59,7 @@
           for(name in option){
             copy = option[name]
             src = target[name]
+            /**精华 */
             if(deep && (jQuery.isPlainObject(copy)||(copyIsArray=jQuery.isArray(copy)))){ //深度复制时，判断要复制的值是对象还是数组
               if(copyIsArray){//如果是数组
                 copyIsArray=false;//||短路原理复原，防止下一个属性值不是数组
@@ -66,6 +67,7 @@
               }else{//如果是对象
                 clone = src && jQuery.isPlainObject(src)?src:{}//同数组，初始化为对象
               }
+            /**精华 */
               targe[name] = jQuery.extend(deep,clone,copy)//递归处理值为对象的属性
             }else if(copy !=undefined){//浅复制/深度复制递归最底层
               target[name] = copy
