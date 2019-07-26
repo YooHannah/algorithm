@@ -49,6 +49,7 @@
           }
           
         },
+        //指定上下文对象执行函数
         fireWith:function(context,arguments){
           var args=[context,arguments]
           if(!options.once || !testting){ //testting用于监听配置了once时进行第一次执行，阻止以后执行
