@@ -1,0 +1,125 @@
+/**
+ * 浏览器访问本地文件产生跨域问题，可以通过cmd执行带有降低浏览器安全性的命令行语句启动浏览器
+ * web-component实现（.html）
+ */
+<template>
+  <style>
+  .color{
+    color: red;
+  }
+  </style>
+  <p>my favorite is:red</p>
+</template>
+<script>
+  (function(){
+    var element = Object.create(HTMLElement.prototype)
+    //document：组件被应用的页面的document
+    //document.currentScript：当前文件
+    //document.currentScript.ownerDocument 当前文件的document对象
+    var template = document.currentScript.ownerDocument.querySelector('template').content
+
+    element.createdCallback = function(){ //组件创建完后的生命周期函数
+      var shadowRoot = this.createShadowRoot()//创建shadow root节点 即针对本组件创建一个作用域，组件内的js,css,html仅用于本组件
+      var clone = document.importNode(template,true) //生成节点对象
+      shadowRoot.appendChild(clone)//添加模板克隆对象到shadow root中
+    }
+    document.registerElement('netase-color',{ //注册新增元素
+      prototype:element //任何HTML标签元素都是HTNLElement的子类
+    })
+  }())
+</script>
+
+/**
+*x-tag是对web-component实现的封装，方便多组建的创建
+*/
+/***** x-tag应用于创建组件 （.html）*****/
+<script type="text/javascript" src="xtag-core.js"></script>
+<template>
+  <p></p>
+</template>
+<script>
+  xtag.register('netease-clock',{
+    lifecycle:{
+      created:function(){
+        this.start()
+      }
+    },
+    methods:{
+      start:function(){
+        this.update()
+        this.interval = setInterval(this.update.bind(this),1000)
+      },
+      stop:function(){
+        this.xtag.interval = clearInterval(this.xtag.interval)
+      },
+      update:function(){
+        //通过this.xtag.children获取组件内元素
+        this.xtag.children[0].innerText = new Date().toLocaleTimeString()
+      }
+    }
+  })
+</script>
+/***** xtag实现 js文件*****/
+<script>
+  var xtag = (function(global,factory,plug){
+    return global[plug] = factory.call()
+  })(this,function(){
+    var __DEFS__ = {
+      lifecycle:{},
+      methods:{}
+    }
+    var __C__ = {
+      register:function(tagName,options){
+        this.__tn__ = tagName
+        this.__ops__ = options = options||__DEFS__
+        options.lifecycle = options.lifecycle || __DEFS__.lifecycle
+        options.methods = options.methods||__DEFS__.methods
+
+        this.init()
+      },
+      init:function(){
+        var that = this //组件对象，可以通过this.dataset获取标签上的自定义属性
+        var thatDoc = document
+        var thisDoc = document.currentScript.ownerDocument
+        var template = thisDoc.querySelector('template').content
+        var element = Object.create(HTMLElement.prototype)
+
+        element.createdCallback = function(){
+          var shadowRoot = this.createShadowRoot()
+          var clone = document.importNode(template,true)
+          shadowRoot.appendChild(clone)
+          var options = that.__ops__
+          this.xtag = shadowRoot
+          for(var methods in options.methods){ //将定义的menths里面的方法绑定到当前组建上，可以互相调用
+            this[methods] = options.methods[methods]
+          }
+          if(options && options.lifecycle&& options.lifecycle.created){
+            options.lifecycle.created.call(this)
+          }
+        }
+        
+        element.attributeChangedCallback = function(){}
+
+        document.registerElement(this.__tn__,{
+          prototype:element
+        })
+      }
+    }
+    return __C__
+  },'xtag')
+</script>
+
+/*** 页面使用组件 ***/
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset="UTF-8">
+  <title>x-tag</title>
+  <link rel="import" href="./netease-color.html">
+  <link rel="import" href="./netease-clock.html">
+</head>
+<body>
+  <netease-color></netease-color>
+  <netease-clock></netease-clock>
+</body>
+</html>
