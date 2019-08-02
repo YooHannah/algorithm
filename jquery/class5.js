@@ -170,7 +170,30 @@
       if(event[jQuery.expando]){
         return event
       }
+    },
+    trigger:function(event,data,elem){
+      var i,cur,tmp,bubbleType,ontype,handle,
+          i=0,
+          eventPath = [elem||document],
+          type = event.type || event,
+          cur = tmp = elem = elem||document
+          //证明是ontype绑定是事件
+          ontype = /^\w+$/.test(type) && 'on' +type;
 
+      //模拟事件对象 如果jQuery.expando说明event已经是模拟的事件对象
+      event = event[jQuery.expando]?
+      event:new jQuery.event(type,typeof event === 'object' && event);
+
+      //定义event.target属性
+      if(!event.target){
+        event.target = elem
+      }
+      //如果没有传入参数，就把event存储在数组中，有传递合并数组
+      //如之前所看到：data可选，传递到事件处理程序的额外参数。注意：事件处理程序第一个参数默认event
+      data = data == null?[event]:jQuery.markArray(data,[event])
+      //事件类型是否需要进行特殊化处理
+      special = jQuery.event.special[type]||{}
+      //如果事件类型已经有trigger方法，就调用它
     }
   }
   //extend
@@ -191,6 +214,12 @@
         //this 即element对象
         jQuery.event.add(this,types,fn)
       })
+    },
+    //语法：data可选，传递到事件处理程序的额外参数。注意事件处理程序第一个参数默认是event
+    trigger:function(type,data){
+      return this.each(function(){
+        jQuery.event.trigger(type,data,this)
+      })
     }
   })
   jQuery.extend({
@@ -206,3 +235,4 @@
   })
   root.$ = root.jQuery = jQuery
 })(this);
+
