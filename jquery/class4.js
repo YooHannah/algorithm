@@ -12,7 +12,24 @@
  * deferred.progress()  当Deferred(延迟)对象生成进度通知时，调用(已)添加的处理程序
  * jQuery.when() 提供一种方法来执行一个或多个对象的回调函数，Deferred(延迟)对象通常表示异步事件
  * .promise() 返回一个Promise对象用来观察当某种类型的所有行动绑定到集合，排队与否还是已经完成
+ *            
  * 
+ * 例：
+ * var wait = function(){
+ *  var der = $.Deferred()
+ *  var img = new Image()
+ *  img.onload = function(){
+ *    der.resolve('图片加载成功')
+ *  }
+ *  img.src='logo.png'
+ *  return der
+ *  return der.promise()//状态封存，promise权限设定 无法改变延迟对象的状态
+ * }
+ * $.when(wait())
+ * .done(function(msg){
+ *  console.log(msg)
+ * })
+ * .fail(function(){})
  */
 
 (function(root){
@@ -71,7 +88,7 @@
         ['notify','progress',jQuery.callbacks('memory'),]
       ],
       state = 'pending',
-      promise = {
+      promise = { //进行状态封存，返回的对象不在具备resolve(),reject()方法来更改状态，或者说是权限设定 无法改变延迟对象的状态
         state:function(){return state},
         then:function(){},
         promise:function(obj){return obj!=null?jQuery.extend(obj,promise):promise} //调用$.when时obj为null

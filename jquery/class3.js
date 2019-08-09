@@ -25,7 +25,7 @@
       var fire = function (data) {
         memory = options.memory && data;//如果配置了memory就把data给到memory,没有配置memory被赋值undefined
         index = starts||0; //配置了memory时，第一次fire,starts为undefined
-        start = 0
+        starts = 0 //清零保证每次调用fire方法从下标0开始执行
         testting = true;
         length = list.length
         for(;index<length;index++){
@@ -40,7 +40,10 @@
           start = list.length
           args.forEach(function(fn){
             if(toString.call(fn)==="[object function]"){ //校验传参类型
-              list.push(fn)
+              //检索unique
+              if(!options.unique || !self.has(fn)){
+                list.push(fn)
+              }
             }
           })
           if(memory){//配置了memory时，只有fire过一次memory才有值
@@ -59,6 +62,9 @@
         fire:function () {
           self.fireWith(this,arguments)
         },
+        has:function(fn){
+          return fn?list.indexOf(fn)>-1:!!(list && list.length)
+        }
       }
       return self
     }

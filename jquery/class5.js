@@ -107,6 +107,17 @@
   var data_priv = new Data()
   //jQuery 事件模块
   jQuery.event = {
+    special:{
+      load:{
+        noBubble:true
+      },
+      focus:{
+        trigger:function(){}
+      },
+      blur:{
+        trigger:function(){}
+      }
+    },
     //1.利用data_priv 数据缓存，分离事件与数据 2：元素与缓存中建立guid的映射关系用于查找
     add:function (elem,type,handler) {
       var eventHandle,events,handlers;
@@ -171,10 +182,11 @@
         return event
       }
     },
+    //事件与元素分离的思想有助于trigger方法的实现，手动触发事件
     trigger:function(event,data,elem){
       var i,cur,tmp,bubbleType,ontype,handle,
           i=0,
-          eventPath = [elem||document],
+          eventPath = [elem||document],//规划冒泡路线
           type = event.type || event,
           cur = tmp = elem = elem||document
           //证明是ontype绑定是事件
@@ -190,10 +202,64 @@
       }
       //如果没有传入参数，就把event存储在数组中，有传递合并数组
       //如之前所看到：data可选，传递到事件处理程序的额外参数。注意：事件处理程序第一个参数默认event
-      data = data == null?[event]:jQuery.markArray(data,[event])
-      //事件类型是否需要进行特殊化处理
+      data = data == null?[event]:jQuery.markArray(data,[event])//合并数组
+      //事件类型是否需要进行特殊化处理(blur,focus,click)
       special = jQuery.event.special[type]||{}
-      //如果事件类型已经有trigger方法，就调用它
+      //如果事件类型已经有trigger方法，就调用它,调用特殊事件内置的方法
+      if(special.trigger && special.trigger.apply(elem,data)===false){
+        return
+      }
+      //自己已经在冒泡路线中 不重复添加
+      cur = cur.parentNode
+      //查找当前元素的父元素 添加到eventPath(规划冒泡路线)数组中,一直找到document
+      for(;cur;cur = cur.parentNode){
+        eventPath.push(cur);
+        temp = cur
+      }
+      if(temp === (elem.ownerDocument || document)){//当tmp为document时，cur为空，就退出循环
+        eventPath.push(tmp.defaultView || tmp.parentWindow || window)//模拟冒泡到window对象
+      }
+      //沿着上面规划好的冒泡路线，把经过的元素节点的指定类型事件的回调逐一触发执行
+      while((cur = eventPath[i++])){
+        //先判断在缓存系统中是否有此元素绑定的此事件类型的回调方法，如果有，就取出来
+        handle=(data_priv.get(cur,'events')||{})[event.type] && data_priv.get(cur,'handle')
+        if(handle){
+          handle.apply(cur,data)//传参包括[event对象，自定义参数]
+        }
+      }
+    }
+  }
+  jQuery.Event = function (src,props) {
+    //创建一个jQuery.Event实例对象
+    if(!(this instanceof jQuery.Event)){
+      return new jQuery.Event(src,props)
+    }
+    //事件类型
+    this.type = src;
+    //如果传入事件没有事件戳，则创建事件戳
+    this.timeStamp = src && src.timeStamp || jQuery.now()
+    //jquery.Event 实例对象标记
+    this[jQuery.expando] = true
+  }
+  jQuery.Event.prototype={
+    isDefaultPrevented:returnFalse,
+    isPropagationStopped:returnFalse,
+    isImmediatePropagationStopped:returnFalse,
+    //取消事件默认动作
+    preventDefault:function(){
+      var e = this.originalEvent
+      this.isDefaultPrevented = returnTrue;
+      if(e&&e.preventDefault){
+        e.preventDefault()
+      }
+    },
+    //阻止事件冒泡到父元素，阻止任何父事件处理程序被执行
+    stopPropagation:function () {
+      var e = this.originalEvent;
+      this.isPropagationStopped = returnTrue;
+      if(e && e.stopPropagation){
+        e.stopPropagation()
+      }
     }
   }
   //extend
@@ -225,6 +291,7 @@
   jQuery.extend({
     expando:'jQuery'+(core_version+Math.random()).replace(/\D/g,''),
     guid:1,//计数器
+    now:Data.now,//返回当前时间距离时间零点的毫秒数
     //类型检测
     isPlainObject:function(){
       return toString.call(obj) === '[object Object]'
