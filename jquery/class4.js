@@ -90,7 +90,30 @@
       state = 'pending',
       promise = { //进行状态封存，返回的对象不在具备resolve(),reject()方法来更改状态，或者说是权限设定 无法改变延迟对象的状态
         state:function(){return state},
-        then:function(){},
+        then:function(/*fnDone fnFail,fnProgress*/){
+          var funs = [].slice.call(arguments)
+          /**
+           * 1:创建新的延迟对象
+           * 2.新的延迟对象会接收传入的参数 fnDone,fnFail,fnProgress
+           * 3.add 给老的延迟对象
+           * 4.链式调用then
+           */
+          return jQuery.Deferred(function(newDefered){
+            tuples.forEach(function(tuple,i){
+              var action = tuple[0]
+              var fn = jQuery.isFunction(funcs[i]) && funs[i]
+              deferred[tuple[1]](function(){
+                var returnDeferred = fn && fn.apply(this,arguments)
+                if(returnDeferred && jQuery.isFunction(returnDeferred.promise)){
+                  returnDeferred.promise()
+                  .done(newDefered.resolve)
+                  .fail(newDefered.reject)
+                  .progress(newDefered.notify)
+                }
+              })
+            })
+          }).promise()
+        },
         promise:function(obj){return obj!=null?jQuery.extend(obj,promise):promise} //调用$.when时obj为null
       },
       //延迟对象 属性方法
@@ -119,6 +142,10 @@
       })
       //将promise属性合并到deferred
       promise.promise(deferred)
+
+      if(func){ //promise.then
+        func.call(deferred,defered)
+      }
 
       return deferred
     },
