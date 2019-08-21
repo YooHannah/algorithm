@@ -40,10 +40,18 @@
      * set 返回实例对象
      * get 返回对应的值
      */
-    access:function(elems,func,key,value){
+    //参数的判断 用户想要的结果 注意：返回值的传递
+    //用最少的代码做更多的事情 缺点：违背程序设计单一原则
+    access:function(elems,func,key,value){ //多个API 涉及set get
       var len = elems.length
       var testing = key === null//true
-      var cache,chain
+      var cache,chain,name
+      if(jQuery.isPlainObject(key)){ //批量set
+        chain = true
+        for(name in key){
+          jQuery.access(elems,func,name,key[name])
+        }
+      }
       if(value !== undefined){
         chain = true
         if(testing){
@@ -69,6 +77,12 @@
       if(nodeType ===1 || nodeType === 9 || nodeType === 11){
         return elem.textContent
       }
+    },
+    style:function(elem,key,value){
+      if(!elem || elem.nodeType ===3 || elem.nodeType === 8 || elem.style){
+        return 
+      }
+      elem.style[key] = value
     }
   })
   jQuery.fn.extend({
@@ -90,8 +104,29 @@
           }
           return map
         }
-        return value !== undefined?jQuery.style():window.getComputedStyle(this).getPropertyValue(key)
+        return value !== undefined?jQuery.style(this,key,value):window.getComputedStyle(this).getPropertyValue(key)
       },key,value)
+    },
+    addClass:function(value){
+      var len = this.length
+      var classes,elem,cur,j,clazz,i=0
+      var proceed = typeof value === 'string' && value
+      if(proceed){
+        classes = value.match(/\S+/g) || [] //大S匹配非空格字符
+        for(;i<len;i++){
+          elem=this[i]
+          cur = elem.nodeType === 1 && (elem.className ? (' '+elem.className +' '):' ')
+          if(cur){
+            j=0
+            while(clazz = (classes[j++])){
+              if(cur.indexOf(' '+clazz+' ')<0){
+                cur+=clazz +' '
+              }
+            }
+            elem.className = cur.trim()
+          }
+        }
+      }
     }
   })
   root.$ = root.jQuery = jQuery
