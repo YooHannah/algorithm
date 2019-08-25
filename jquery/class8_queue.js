@@ -44,6 +44,11 @@
       }
     }
   }
+  //类数组结构检测
+  function isArraylike(obj){
+    var len = obj.length
+    return toString.call(obj) === '[object Array]' || typeof obj!=='function' &&(len === 0 || typeof len === 'number' && len> 0 && (len-1)in obj)
+  }
   function Data(){
     //jQuery.expando是jquery的静态属性，对于jquery的每次加载运行期间时唯一的随机数
     this.expando = jQuery.expando+Math.random() //UUID 用作key挂载dom对象上 
@@ -87,6 +92,15 @@
           cache[key] = value
         }
       }
+    },
+    access:function(owner,key,value){
+      /**
+        处理elem在cache中映射的缓存数据对象 >{id:{**queue}}
+        未指定key的值 返回整个缓存对象
+        指定了key 未设置value 返回存储在cache中对应的key的数据
+      */
+      this.set(owner,key,value)
+      return value !== undefined?value:key
     }
   }
   //缓存用户的数据
@@ -95,8 +109,9 @@
   var data_priv = new Data()
 
   jQuery.fn.extend({
-    //缓存数据
-    
+    //缓存数据到dom结点
+    //$('.box').data('name','max')
+    //console.log($('.box').data('name'))
     data:function(key,value){
       var _this=this
       return jQuery.access(this,function(){
@@ -112,6 +127,47 @@
           data_user.set(this,key,value)
         })
       },null,value)
+    }
+  })
+
+  jQuery.extend({
+    queue:function(elem,type,data){
+      var queue,type
+      if(elem){
+        type = (type || 'fx') +'queue'
+        var queue = data_priv.get(elem,type)
+        if(data){
+          if(!queue || jQuery.isArray(data)){
+            data_priv.access(elem,type,jQuery.markArray(data))
+          }else{
+            queue.push(data)
+          }
+        }
+        return queue || []
+      }
+    },
+    dequeue:function(elem,type){
+      type = type || 'fx'
+      var queue = jQuery.queue(elem,type),
+          startLength = queue.length,
+          fn = queue.shift,
+          next = function(){ //接着执行下一个队列中的函数*********！
+            jQuery.dequeue(elem,type)
+          }，
+          hooks = jQuery._queueHooks(elem,type) //1.用于队列函数全部处理完后的清理工作2.用作钩子函数，存储动画数据的信息
+      if(fn === 'inprogress'){
+        fn = queue.shift()
+        startLength--
+      }
+      if(fn){
+        if(type === 'fx'){
+          queue.unshift('inprogress')
+        }
+        fn.call(elem,next)
+      }
+      if(!startLength && hooks){
+        hooks.empty.fire()
+      }
     }
   })
 
@@ -151,6 +207,17 @@
     },
     isArray:function(obj){
       return toString.call(obj) === '[object Array]'
+    }，
+    markArray:function(arr,results){
+      var ret = results || []
+      if(isArraylike(arr)){
+        if(arr != null){
+          jQuery.merge(ret,typeof arr === 'string'?[arr]:arr)
+        }
+      }else{
+        [].push.call(ret,arr)
+      }
+      return ret
     }
   })
   root.$ = root.jQuery = jQuery
