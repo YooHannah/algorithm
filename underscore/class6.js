@@ -3,6 +3,7 @@
 */
 (function(root){
 	var _= function(obj){}
+	
 	//返回一个【min,max】范围内的任意整数
 	_.random = function(min,max){
 		if(max == null){
@@ -14,11 +15,7 @@
 	_.clone = function(obj){
 		return _.isArray(obj)?obj.slice():_.extend({},obj)
 	}
-	//返回乱序之后的数组副本
-	_.shuffle = function(array){
-		return _.sample(array,Infinity) //Infinity,借助sample函数逻辑返回整个数组
-	}
-	//抽样函数
+	//******抽样函数
 	_.sample = function(array,n){
 		if(n==null){
 			return array[_random(array.length-1)]
@@ -34,6 +31,11 @@
 			sample[rand] = temp
 		}
 		return sample.slice(0,n)
+	}
+
+	//******返回乱序之后的数组副本
+	_.shuffle = function(array){
+		return _.sample(array,Infinity) //Infinity,借助sample函数逻辑返回整个数组
 	}
 	root._ = _
 })(this)
