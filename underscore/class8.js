@@ -105,5 +105,49 @@
     return memoize
   }
 
+  //******** 延迟执行函数
+  _.delay = function(func,wait){
+    var args = [].slice.call(arguments,2) //整理参数，提高API健壮性，用户可以输入任意个数参数
+    return setTimeout(function(){
+      func.apply(null,args)
+    },wait)
+  }
+
+  //******* 字符串逃逸 不安全的字符 变成字符串的实体
+  var escapeMap = {
+    '&':'&amp',
+    '<':'&lt',
+    '>':'&gt',
+    '"':'&quot',
+    "'":'&#x27',
+    '`':'&#x60'
+  }
+  var creatEscaper = function(map){
+    var source = "(?:"+Object.keys(map).join('|')+')'
+    var testExp = new RegExp(source,"g")
+    var replace = function(match){
+      return map[match]
+    }
+    return function(string){
+      return testExp.test(string)?string.replace(testExp,replace):string
+    }
+  }
+  _.escape = creatEscaper(escapeMap)
+
+
+ //***** 1.依次调用 倒叙 2.上一次执行函数返回值 传递给下一个要执行的函数
+  _.compose = function(){
+    var args = arguments
+    var end = args.length -1
+    return function() {
+      var i = end
+      var result = args[i].apply(null,arguments)
+      while(i--){
+        result = args[i].call(null,result)
+      }
+      return result
+    }
+  }
+
 	root._ = _
 })(this)
