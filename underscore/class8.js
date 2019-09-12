@@ -149,5 +149,28 @@
     }
   }
 
+  /***react 中函数组合 */
+
+  function compose(){
+    var _len = arguments.length
+    var funcs = []
+    for(var i=0;i<_len;i++){
+      funcs[i] = arguments[i]
+    }
+    if(funcs.length === 0){
+      return function(arg){
+        return arg
+      }
+    }
+    if(funcs.length === 1){
+      return funcs[0]
+    }
+    return funcs.reduce(function(a,b) {
+      return function(){
+        return a(b.apply(undefined,arguments))
+      }
+    })
+  }
+
 	root._ = _
 })(this)
