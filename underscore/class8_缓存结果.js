@@ -1,5 +1,5 @@
 /**
-*underscore flatten算法实现原理
+*underscore 对于数组的一些处理
 */
 (function(root){
 	var _= function(obj){}

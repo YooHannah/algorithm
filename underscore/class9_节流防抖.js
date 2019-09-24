@@ -18,7 +18,7 @@
   var _= function(obj){}
   _.now = Date.now
 
-/***截流函数 */
+/***节流函数 */
   _.throttle = function(func,wait,option){
     var lastTime = 0
     var timeOut = null
