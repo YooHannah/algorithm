@@ -57,15 +57,15 @@
    *   name:'max',
    *   age:'30',
    *   userId:'xx'
-   * },function(value,key,object){ ======>{age:30}
+   * },function(value,key,object){
    *    return _isNumber(value)
-   * })
+   * })                             ======>{age:30}
    * 
-   * var ret1 = _.pick({ ======>{name:'max'}
+   * var ret1 = _.pick({ 
    *   name:'max',
    *   age:'30',
    *   userId:'xx'
-   * },'name')
+   * },'name')                      ======>{name:'max'}
    */
   _.pick = function(object,oiteratee,context){
     var result = {}
