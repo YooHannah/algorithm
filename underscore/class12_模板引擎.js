@@ -59,7 +59,7 @@
     source = "var _t,_p='';" + source +"return _p;\n";
     console.log(source)
     //data 传参的问题 预编译
-    var render = new Function('obj',source);
+    var render = new Function('obj',source); //**********************生成编译函数 */
     console.log(render)
     var template = function(data){
       return render.call(null,data)
