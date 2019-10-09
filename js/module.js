@@ -13,7 +13,7 @@
  * 
  * Commonjs
  * commomJS规范加载模块是【同步】的，也就是说，加载完成才执行后面的操作
- * Node.js主要用于服务器编程呢个，模块都是存在本地硬盘中加载比较快，所以Node.js采用CommonJS
+ * Node.js主要用于服务器编程，模块都是存在本地硬盘中加载比较快，所以Node.js采用CommonJS
  * 三个部分：
  * module变量在每个模块内部，就代表当前模块
  * exports属性是对外的接口，用于导出当前模块的方法或变量
@@ -140,3 +140,287 @@ define(function(require,exports,module) {
  *            重点：解析依赖--->获取依赖模块绝对路径地址---->动态加载---->提取依赖---->解析依赖
  *                  递归方式加载所有模块，直至模块全部加载完毕（模块的deps属性集合中没有依赖的绝对路径，即长度为0）
  */
+/** 图片：依赖加载策略 模块数据初始化 资源定位-动态加载 依赖管理解决方案*/
+
+(function(global) {
+  var startUp = global.startUp = {
+    version:'1.0.1'
+  }
+  
+  
+  var data = {}
+  var cache = {}
+  //模块生命周期
+
+  var status = {
+    FETCHED: 1,
+    SAVED:2,
+    LOADING:3,
+    LOADED:4,
+    EXECTING:5,
+    EXECTED:6
+  }
+  var isArray = function (obj) {
+    return toString.call(obj) === "[object Array]"
+  }
+  //是否使用了别名
+  function parseAlias(id){
+    var alias = data.alias //是否配置别名
+    return alias && isString(alias[id]) ? alias[id] :id //没有配置别名，返回原来值，有配置别名，返回别名对应值
+  }
+  //不能以'/'':'开头，必须是一个'/'后面跟随任意字符至少一个
+  var PATH_RE = /^([^\/:]+)(\/.+)$/ //([^\/:]+) 路径的短名称配置
+
+  //检测是否 书写路径短名称
+  function parsePaths(id) {
+    var paths = data.paths; //是否配置短路径
+    if(paths && (m=id.match(PATH_RE)) && isString(paths[m[1]])){
+      id = paths[m[1]]+m[2]
+    }
+    return id
+  }
+
+  //检测是否添加后缀
+  function normalize(path){
+    var last = path.length-1
+    var lastC = path.charAt(last)
+    return (lastC === '/' || path.substring(last-2) === '.js') ? path :path+'.js'
+  }
+  //添加根目录
+  function addBase(id,uri){
+    var result;
+    //相对路径
+    if(id.charAt(0) === '.'){
+      result = realpath( (uri ? uri.match(/[^?]*\//)[0] : data.cwd ) + id)
+    }else{
+      result = data.cwd+id
+    }
+    return result
+  }
+
+  var DOT_RE = /\/.\//g //   /a/b/./c/./d ==>/a/b/c/d     /./ ==>/
+  var DOUBLE_DOT_RE = /\/[^/]+\/\.\.\//; // a/b/c/../../d ===>a/b/../d ==> a/d    /xxxxx/../==> /
+  //规范路径
+  function realpath(path){
+    path = path.replace(DOT_RE,'/')
+    while(path.match(DOUBLE_DOT_RE)){
+      path= path.replace(DOUBLE_DOT_RE,'/')
+    }
+    return path
+  }
+  //生成绝对路径
+  startUp.resolve = function (child,parent) {
+    if(!child) return ''
+    child = parseAlias(child) //检测是否有别名
+    child = parsePaths(child) //检测是否有路径别名，依赖模块中引包的模块路径地址 require('app/c)
+    child = normalize(child) //检测是否添加后缀
+    return addBase(child,parent) //添加根目录
+  }
+
+  startUp.request = function(url,callback){
+    var node = document.createElement('script')
+    node.src = url
+    document.body.appendChild(node)
+    node.onload = function(){
+      node.onload = null
+      document.body.removeChild(node) //加载依赖结束后移除加载时的script标签
+      callback()
+    }
+  }
+  //构造函数 模块初始化数据
+  function Module(uri,deps){
+    this.uri = uri;
+    this.deps = deps || [] //依赖项
+    this.exports = null
+    this.status = 0
+    this._waitings = {}
+    this._remain = 0
+  }
+
+  //分析主干(左子树 | 右子树)上的依赖项
+  Module.prototype.load = function(){
+    var m = this
+    m.status = status.LOADING//LOADING == 3 正在加载模块依赖项
+    var uris = m.resolve()//获取主干上的依赖项
+    var len = m.remain = uris.length
+
+    //加载主干上的依赖项(模块)
+    var seed
+    for(var i=0;i<len;i++){
+      seed = Module.get(uris[i]) //创建缓存信息
+      if(seed.status <status.LOADED){ //LOADED == 4 准备加载执行当前模块
+        seed._waitings[m.uri] = seed._waitings[m.uri] || 1 //多少模块依赖于我，_waitings是依赖我的模块的路径集合
+      }else{
+        seed._remain--
+      }
+    }
+    //如果依赖列表模块全部加载完毕
+    if(m._remain == 0){ //递归过程到此结束
+      //获取模块的接口对象
+      m.onload()
+    }
+
+    //准备执行根目录下的依赖列表中的模块
+    var requestCache = {}
+    for(var i=0;i<len;i++){
+      seed = Module.get(uris[i])
+      if(seed.status < status.FETCHED){
+        seed.fetch(requestCache)
+      }
+    }
+    for(uri in requestCache){
+      requestCache[uri]()
+    }
+  }
+
+  Module.prototype.fetch = function(requestCache){
+    var m =this
+    m.status = status.FETCHED
+    var uri = m.uri
+    requestCache[uri] = sendRequest; //Document.createElement('script)
+    
+    function sendRequest(){
+      startUp.request(uri,onRequest) //动态加载script
+    }
+
+    function onRequest(){ //事件函数 script标签加载模块结束后，onload 函数中会被调用
+      if(anonymousMeta){ //模块的数据更新
+        m.save(uri,anonymousMeta)
+      }
+      m.load() //递归 模块加载策略
+    }
+  }
+
+  Module.prototype.onload = function(){
+    var mod = this
+    mod.status = LOADED //4
+    if(mod.callback){//获取模块接口对象
+      mod.callback()
+    }
+    var waitings = mod._waitings //依赖加载完，递归回调 被依赖模块(父)的callback
+    var key,m;
+    for(key in waitings){
+      var m = cache[key]
+      m._remain -= waitings[key]
+      if(m._remain == 0){ //判断父模块依赖是否全部加载完
+        m.onload()
+      }
+    }
+  }
+ 
+  //资源定位 解析依赖项生成绝对路径
+  Module.prototype.resolve = function(){
+    var mod = this
+    var ids = mod.deps
+    var uris = []
+    for(var i =0;i<ids.length;i++){
+      uris[i] = startUp.resolve(ids[i],mod.uri) //依赖项（主干 | 子树）
+    }
+    return uris;
+  }
+
+   //更改初始化数据
+   Module.prototype.save = function(uri,meta){
+    var mod = Module.get(uri)
+    mod.uri = uri
+    mod.deps = meta.deps || []
+    mod.factory = meta.factory
+    mod.status = status.SAVED
+  }
+  
+  //获取接口对象
+  Module.prototype.exec = function(){
+    var module = this
+    //防止重复执行
+    if(module.status >= status.EXECTING){
+      return module.exports
+    }
+    module.status = status.EXECTING;
+    var uri = module.uri
+    function require(id){
+      return Module.get(require.resolve(id)).exec() //获取接口对象
+    }
+
+    require.resolve = function(id){
+      return startUp.resolve(id,uri)
+    }
+
+    var factory = module.factory
+    var exports = isFunction(factory) ? factory(require,module.exports= {},module) :factory;
+    if(exports === undefined) {
+      exports = module.exports
+    }
+    module.exports = exports
+    module.status = status.EXECTED //6
+    return exports
+  }
+
+  //定义一个模块
+  Module.define = function(factory){
+    var deps
+    if(isFunction(factory)){
+      //正则解析依赖项
+      deps = parseDependencies(factory.toString())
+    }
+    //存储当前模块信息
+    var meta = {
+      id:'',
+      uri:'',
+      deps:deps,
+      factory:factory
+    }
+    anonymousMeta = meta
+  }
+
+  //检测缓存对象上是否有当前模块信息
+  Module.get = function(uri,deps){
+    //cache['xxxxx.js'] = {uri:'xxxxx.js',deps:[]} //module 实例对象
+    return cache[uri] || (cache[uri] = new Module(uri,deps))
+  }
+
+  Module.use = function(deps,callback,uri){
+    var m = Module.get(uri,isArray(deps)?dep:[deps])
+    console.log(module)
+    //所有模块都加载完毕
+    m.callback= function(){
+      var exports = [] //所有依赖项模块的接口对象
+      var uris = m.resolve()
+      for(var i = 0;i<uris.length;i++){
+        exports[i] = cache[uris[i]].exec() //获取模块对外定义的接口对象
+      }
+      if(callback){
+        callback.apply(global,exports)
+      }
+    }
+    m.load()
+  }
+
+  var _cid = 0
+
+  function cid(){
+    return _cid++
+  }
+  data.preload = []
+  //取消当前项目文档的URL
+  data.cwd = document.URL.match(/[^?]*\//)[0]
+  Module.preload = function(callback){
+    var length = data.preload.length
+    if(!length) callback()
+    //length !== 0 先加载预先设定模块
+  }
+  startUp.use = function(list,callback){
+    //检阅有没有预先加载的模块
+    Module.preload(function(){
+      Module.use(list,callback,data.cwd+"_use_"+cid()) //虚拟的根目录
+    })
+  }
+  var REQUIRE_RE = /\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g
+  function parseDependencies(code){
+    var ret = []
+    code.replace(REQUIRE_RE,function(m,m1,m2){
+      if(m2) ret.push(m2)
+    })
+    return ret
+  }
+  global.define = module.define
+})(this)
