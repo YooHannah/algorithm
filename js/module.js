@@ -19,6 +19,35 @@
  * exports属性是对外的接口，用于导出当前模块的方法或变量
  * require()用来加载外部模块，读取并执行js文件，返回该模块的exports对象
  * 
+ * 加载时执行：
+ * a.js
+ * exports.done = ture
+ * var b = require('b.js')
+ * console.log('a.js-done')
+ * 
+ * b.js
+ * exports.done = false
+ * var a = require('a.js')
+ * console.log(a.done)
+ * console.log('b.js-done')
+ * 
+ * App.js   执行App.js
+ * var a = require('a.js') // 因为引用b.js，执行b.js代码故打印出true b.js-done，引用完毕后接着执行打印出 a.js-done
+ * var b = require('b.js')// 已经被a引用过，不再执行 直接在缓存中找出 exports {done：false} 返回
+ * console.log(a.done)
+ * console.log(b.done) 
+ * 
+ * 如果a.js改成如下
+ * var b = require('b.js')
+ * exports.done = ture
+ * console.log('a.js-done')
+ * 执行App.js
+ * 打印结果为undefined b.js-done a.js-done true false 
+ * 因为a依赖b时，执行b，b再依赖a时，exports.done = ture语句还未执行，故a 的 exports 为{} exports.done自然为undefined
+ * 
+ * 
+ * 只有commonjs因为同步加载，加载时执行可实现循环依赖，其他模式均不可以处理循环依赖的用法
+ * 
  * AMD(requirejs)
  * AMD也就是【异步】模块定义，它采用异步方式加载模块，通过define方法去定义模块，require方法去加载模块
  * 定义：
@@ -120,6 +149,15 @@ define(function(require,exports,module) {
  *  而是成为一个指向被加载模块的引用。等脚本执行时，根据只读引用到被加载的那个模块中去取值
  */
 
+
+/**
+ * ES6于CommonJS模块差异
+ * CommonJS模块输出的是一个值的拷贝，ES6模块输出的是值得引用
+ * CommonJS模块运行时加载，ES6模块编译时输出接口
+ * 
+ */
+
+
 /**
  * 加载器结构
  * 模块部分 ---每个模块创建都先初始化数据，存储在缓存对象中
@@ -139,6 +177,13 @@ define(function(require,exports,module) {
  *            deps存储当前模块的依赖列表，依赖列表通过动态加载script文件正则解析获取
  *            重点：解析依赖--->获取依赖模块绝对路径地址---->动态加载---->提取依赖---->解析依赖
  *                  递归方式加载所有模块，直至模块全部加载完毕（模块的deps属性集合中没有依赖的绝对路径，即长度为0）
+ * 
+ * 如何实现一个文件一个作用域？
+ * 保证模块拥有独立作用域，采用对象命名空间的思想，即每个模块返回一个接口对象，这个独立作用域就是一个对象
+ * 如何拿到依赖模块的接口对象？
+ * 参数即define传入的函数，执行函数，返回函数返回的结果即对象
+ * 如何让寻找依赖？
+ * 拼接地址，缓存，然后递归
  */
 /** 图片：依赖加载策略 模块数据初始化 资源定位-动态加载 依赖管理解决方案*/
 
@@ -148,8 +193,9 @@ define(function(require,exports,module) {
   }
   
   
-  var data = {}
+  var data = {} //配置信息
   var cache = {}
+  var anonymousMeta = {}
   //模块生命周期
 
   var status = {
@@ -163,6 +209,31 @@ define(function(require,exports,module) {
   var isArray = function (obj) {
     return toString.call(obj) === "[object Array]"
   }
+  var isFunction = function (obj) {
+    return toString.call(obj) === "[object Function]"
+  }
+  var isString = function (obj) {
+    return toString.call(obj) === "[object String]"
+  }
+  function scripts(){
+    return document.getElementsByTagName('script')
+  }
+  function getInteractiveScript(){ //支持data-main属性添加默认路径: <script data-main = 'common/js' src='module.js'></script>
+    var arrS = scripts()
+    var dataMain,src
+    var exp = /^.*\.js$/
+    arrS = [].slice.call(arrS)
+    arrS.forEach(function(script){
+      dataMain = script.getAttribute('data-main')
+      if(dataMain && !data.baseUrl && !(exp.test(dataMain))){
+        if(dataMain.substring(dataMain.length-1) !== '/'){
+          dataMain = (dataMain+'/')
+        }
+        data.baseUrl = dataMain
+      }
+    })
+  }
+  getInteractiveScript()
   //是否使用了别名
   function parseAlias(id){
     var alias = data.alias //是否配置别名
@@ -188,13 +259,14 @@ define(function(require,exports,module) {
   }
   //添加根目录
   function addBase(id,uri){
-    var result;
-    //相对路径
-    if(id.charAt(0) === '.'){
-      result = realpath( (uri ? uri.match(/[^?]*\//)[0] : data.cwd ) + id)
-    }else{
-      result = data.cwd+id
-    }
+    // var result;
+    // //相对路径
+    // if(id.charAt(0) === '.'){
+    //   result = realpath( (uri ? uri.match(/[^?]*\//)[0] : data.cwd ) + id)
+    // }else{
+    //   result = data.cwd+id
+    // }
+    var result = data.baseUrl ?data.cwd + data.baseUrl +id : data.cwd + id //支持data-main属性添加默认路径
     return result
   }
 
@@ -208,7 +280,7 @@ define(function(require,exports,module) {
     }
     return path
   }
-  //生成绝对路径
+  //生成绝对路径 资源路径解析
   startUp.resolve = function (child,parent) {
     if(!child) return ''
     child = parseAlias(child) //检测是否有别名
@@ -227,6 +299,31 @@ define(function(require,exports,module) {
       callback()
     }
   }
+  //模块加载器启用
+  startUp.use = function(list,callback){
+    //检阅有没有预先加载的模块
+    Module.preload(function(){
+      Module.use(list,callback,data.cwd+"_use_"+cid()) //虚拟的根目录
+    })
+  }
+  //模块加载器配置
+  /**
+   * 
+   * startUp.config({
+   *   alias:{
+   *    a:'common/js/a'
+   *   },
+   *   preload:[c.js]
+   * })
+   */
+  startUp.config = function (options) {
+    var key,curr
+    for(key in options){
+      curr = Option[key]
+      data[key] = curr
+    }
+  }
+
   //构造函数 模块初始化数据
   function Module(uri,deps){
     this.uri = uri;
@@ -320,7 +417,7 @@ define(function(require,exports,module) {
   }
 
    //更改初始化数据
-   Module.prototype.save = function(uri,meta){
+  Module.prototype.save = function(uri,meta){
     var mod = Module.get(uri)
     mod.uri = uri
     mod.deps = meta.deps || []
@@ -337,7 +434,7 @@ define(function(require,exports,module) {
     }
     module.status = status.EXECTING;
     var uri = module.uri
-    function require(id){
+    function require(id){ //作为参数传递到define参数的函数中
       return Module.get(require.resolve(id)).exec() //获取接口对象
     }
 
@@ -345,7 +442,7 @@ define(function(require,exports,module) {
       return startUp.resolve(id,uri)
     }
 
-    var factory = module.factory
+    var factory = module.factory //define传入的函数
     var exports = isFunction(factory) ? factory(require,module.exports= {},module) :factory;
     if(exports === undefined) {
       exports = module.exports
@@ -400,20 +497,23 @@ define(function(require,exports,module) {
   function cid(){
     return _cid++
   }
-  data.preload = []
+  // data.preload = []
   //取消当前项目文档的URL
   data.cwd = document.URL.match(/[^?]*\//)[0]
   Module.preload = function(callback){
+    var preload = data.preload ||[]
     var length = data.preload.length
-    if(!length) callback()
-    //length !== 0 先加载预先设定模块
+    if(length){ //length !== 0 先加载预先设定模块
+      Module.use(preload,function () {
+        preload.splice(0,length)
+        callback()
+      },data.cwd+'_use_'+cid())
+    } else{
+      callback() 
+    }
+    
   }
-  startUp.use = function(list,callback){
-    //检阅有没有预先加载的模块
-    Module.preload(function(){
-      Module.use(list,callback,data.cwd+"_use_"+cid()) //虚拟的根目录
-    })
-  }
+  
   var REQUIRE_RE = /\brequire\s*\(\s*(["'])(.+?)\1\s*\)/g
   function parseDependencies(code){
     var ret = []
