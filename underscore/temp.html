@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+  <div class="bg"></div>
+</body>
+<style>
+ .last-item{
+   color:red;
+ }
+</style>
+<script src='class12_模板引擎.js'></script>
+<script type="text/template" id='tpl'>
+<ul class="list">
+  <%obj.forEach(function(e,i,a){%>
+    <% if(i===0){%>
+      <li class="last-item"><%=e.name%></li>
+    <% }else{%>
+      <li><%=e.name%></li>
+    <%}})%>
+</ul>
+</script>
+<script>
+ var data = [{name:'x1'},{name:'x2'},{name:'x3'}]
+ var templateString = document.getElementById('tpl').innerHTML
+ var compiled = _.template(templateString) //解析
+ console.log(compiled)
+ var renderString = compiled(data) //数据交互 render 渲染
+ document.querySelector("div").innerHTML = renderString
+</script>
+</html>
