@@ -35,13 +35,40 @@
  * promise用法：链式调用，成功和失败的回调，三个状态，pending状态改变时触发。状态一旦改变就不会再变。
  * 六、模板字符串
  * 七、赋值结构
+ * q13:什么是高阶组件，他有哪些优缺点
+ * q14:为什么react要新增hook新特性？
+ * 1.组件维护变得容易：
+ * 2.提高性能：
+ * 3.props层级变浅
+ * q15:hook规则，为什么要有这些规则？
+ * 1、最高级使用 Hook，不要在循环、条件或者嵌套函数中调用 Hook。；遵循这个规则，能够保证每次组件呈现的时候，都能够以相同的顺序调用 Hook。这也是能够保证 React 在多个 useState 和useEffect 调用之间也能够保留 Hook 的 state 的原因。
+ * 2、只在 React Function 中使用 Hooks；不要在常规的 JavaScript 函数中调用 Hook。通过遵循这个规则，你可以确保组件中的所有有状态逻辑从其源代码中清晰可见。
  * 
+ * q16:自定义hook必须以“use”开头，这个说法正确吗？为什么？
+ * 与 React 组件不同的是，自定义 Hook 不需要具有特殊的标识。我们可以自由的决定它的参数是什么，以及它应该返回什么（如果需要的话）。换句话说，它就像一个正常的函数。但是它的名字应该始终以 use 开头，这样可以一眼看出其符合 Hook 的规则
+ *
+ * q17:在两个组件中，使用相同的hook，会共享state吗？
+ * 不会。自定义 Hook 是一种重用状态逻辑的机制(例如设置为订阅并存储当前值)，所以每次使用自定义 Hook 时，其中的所有 state 和副作用都是完全隔离的
  * 
+ * q18:hook 会替代 render props 和高阶组件吗？
+ * 在一个函数中定义的state，竟然可以直接拿到另一个函数中使用，然而有了Hooks，这种看似不可能的语法确实行得通。Hooks的优势不仅体现在代码量上，从风格上来说，也显得语义更清晰、结构更优雅（相比之下，高阶组件和renderProps的语法都显得比较诡异）。更重要的是，上述两种模式所拥有的种种缺点，它一个都没有。
+ * 
+ * q19:请说明Redux的实现流程。
+ * q20:请说明Redux和vuex的异同点
+ * q21:请问Redux的三大原则是什么？
+ * q22:如何在 Redux 中定义 Action？
+ * q23:请解释 Reducer 的作用。
+ */
+ 
+
+ /* 
  * 1.作为变量得DOM结构只是Dom结构，没有生命周期，是死的，不能动态改动得，但作为组件生成得Dom结构有生命周期，可传入变量进行改动
  * 2.Diff策略将O(n^3)复杂度得问题，转换成O(n)复杂度得问题 通过设置key得策略对element diff 进行算法优化
  * 3.
  * ReactDom.unmountComponentAtNode() 在节点下删除清空组件
  * ReactSom.render() 在节点下挂载组件
+ * 
+ 
  */
 //定义loading组件 通过方法调用组件 
 //---------------思路可适用于：loading,input,confirm(确认框),tooltip(全局提示),meaasge相关弹窗提示类的功能
@@ -541,3 +568,144 @@ class App extends React.Component{
     )
   }
 }
+
+/**
+ * 8. 属性代理
+ * 用于预先将业务组件，进行数据的封装，便于我们方便获取数据 应用：redux mobix 数据管理框架
+ */
+import React,{Component} from 'React'
+import PropTypes from 'prop-types'
+
+const connect = key => Com =>{
+  class connectComponent extends Component { 
+    constructor(props){
+      super(props)
+      this.state = {
+        [key]:store[key]
+      }
+    }
+    render(){
+      return <Com {...this.state} />
+    }
+    componentDidMount(){
+      let that = this
+      window.test = new Proxy(test,{
+        get: function(target,key,receiver) {
+          return Reflect.get(target,key,receiver)
+        },
+        set:function(target,key,value,receiver){
+          that.setState({
+            [key]:value
+          })
+          return Reflect.set(target,key,value,receiver)
+        }
+      })
+    }
+  }
+  return connectComponent
+}
+
+let store = {
+  name:'hello',
+  age:10
+}
+
+@connect('age')
+class User extends Component{
+  render(){
+    return <div>{this.props.age}</div>
+  }
+}
+//相当于 User= connect('age')(User)
+class App extends Component{
+  render(){
+    return <User />
+  }
+}
+/**
+ * 9.反向代理 主要用于交互的封装
+ */
+const loading = Com =>{
+  class LoadingComponent extends Com { //继承Com组件，相当于给Com组件添加额外方法
+    // render(){ //render劫持 会覆盖掉 Com组件本而来要渲染的内容 
+    //   return (
+    //     <div>
+    //       Loading-Component
+    //       {super.render()} //引入Com组件要渲染的内容
+    //     </div>
+    //   )
+    // }
+    showLoading(){
+      console.log('loading....')
+    }
+    hideLoading(){
+      console.log('hide')
+    }
+  }
+  return LoadingComponent
+}
+@loading
+class User extends Component{
+  render(){
+    return <div>User</div>
+  }
+  componentDidMount(){
+    this.showLoading() //使用子类的方法
+    this.hideLoading()
+  }
+}
+class App extends Component{
+  render(){
+    return <User />
+  }
+}
+
+/**
+ * 属性代理：继承原始组件类Component；必须写render函数，并将数据传入参数组件Com ；用于数据管理，将数据进行全局封装，然后供子组件使用
+ * 反向继承：继承参数组件类Com      ；避免写render函数，防止覆盖Com原有Dom结构  ；用于业务封装，将相同该功能附到多个组件
+ */
+
+ /**
+  * 9.react HOOKS通过函数实现组件编写，实现class声明组件的过程 主要用于实现公共部分的功能
+  */
+ import React,{useState,useEffect} from 'react'
+
+ const App = (props)=>{
+   /**
+    * 通过useState函数声明组件内state数据
+    * 参数表示初始值
+    * 返回一个数组，数组第一项表示声明的state变量，第二项表示更新数据的函数
+    * 调用更新数据函数时需要注意 如果声明的数据是一个数组，需要对齐进行展开处理(传递一个具有新地址的数组)，否则无法检测到数组是否发生了变化
+    * 例 let [data,setData] = useState([1,2,3]) 
+    * (val)=>{data.push(val) ; setData([...data])}
+    */
+   let [time,setTime] = useState(0) 
+   
+   let [value,setValue] = useState('js')
+   /**
+    * 通过useEffect函数定义各个生命周期函数，
+    * 不传递第二个参数时，表示componentDidMount 和componentDidUpdate 都会调用第一个参数传进的函数
+    * 当传递第二个参数是一个空数组时，表示第一个参数传进的函数仅在componentDidMount的时候被调用
+    * 当传递第二个参数里面函数变量名时，表示当该变量发生变化时，调用第一个参数的方法，相当于在shouldComponentUpdate内根据参数决定是否更新
+    * 当第一个参数返回了一个函数时，这个函数会在componentWillUnMount时期被调用
+    */
+   useEffect(()=>{
+     console.log('hell')
+     return ()=>console.log('willUnmount')
+   })
+   return (
+     <div>
+
+       <p>{props.name}</p> /**通过props参数传进数据 */
+       hello world {time}
+       <button onClick={(e)=>setTime(time+1)}></button>
+       <input value={value} onChange={(e)=>setValue(e.target.value)}/>
+     </div>
+   )
+ }
+ export default App
+ /**
+  * 9. ts 与react 
+  */
+ //create-react-app my-app --scripts-version=react-script-ts && cd my-app 可以创建使用ts的react 项目
+ //.jsx与.js区别，.tsx与.ts区别？
