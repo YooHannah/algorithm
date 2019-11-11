@@ -166,3 +166,70 @@ const Foo = {
 10. 调用全局的 afterEach 钩子。
 11. 触发 DOM 更新。
 12. 用创建好的实例调用 beforeRouteEnter 守卫中传给 next 的回调函数。
+
+## 数据获取
+### 导航完成后获取数据
+```
+created () {
+  // 组件创建完后获取数据，
+  // 此时 data 已经被 observed 了
+  this.fetchData()
+},
+watch: {
+  // 如果路由有变化，会再次执行该方法
+  '$route': 'fetchData'
+},
+```
+### 在导航完成前获取数据
+
+```
+beforeRouteEnter (to, from, next) {
+  getPost(to.params.id, (err, post) => {
+    next(vm => vm.setData(err, post))
+  })
+},
+// 路由改变前，组件就已经渲染完了
+// 逻辑稍稍不同
+beforeRouteUpdate (to, from, next) {
+  this.post = null
+  getPost(to.params.id, (err, post) => {
+    this.setData(err, post)
+    next()
+  })
+},
+methods: {
+  setData (err, post) {
+    if (err) {
+      this.error = err.toString()
+    } else {
+      this.post = post
+    }
+  }
+}
+```
+## 滚动行为
+scrollBehavior 这个功能只在支持 history.pushState 的浏览器中可用。
+```
+const router = new VueRouter({
+  routes: [...],
+  scrollBehavior (to, from, savedPosition) {
+
+    // return 期望滚动到哪个的位置
+    if (to.hash) {
+      return {
+        selector: to.hash //模拟“滚动到锚点”的行为
+      }
+    }
+    if (savedPosition) {
+      return savedPosition //返回 savedPosition，在按下 后退/前进 按钮时，就会像浏览器的原生表现那样
+    } else {
+      return { x: 0, y: 0 } //让页面滚动到顶部
+    }
+    return new Promise((resolve, reject) => { //返回一个 Promise 来得出预期的位置描述
+      setTimeout(() => {
+        resolve({ x: 0, y: 0 })
+      }, 500)
+    })
+  }
+})
+```
