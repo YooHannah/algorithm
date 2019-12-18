@@ -44,6 +44,67 @@ version2:
 分类
 收藏管理（列表页，删除）
 
+数据劫持vue3.0改用proxy原因
+defineProperty只能监听某个属性，不能对全对象监听，使用proxy可以省去for in提升效率
+可以监听数组，不用再去单独的对数组做特异性操作
+
+proxy 用于数据校验
+
+var personValidator = {
+    name(val){
+        return typeof val === 'string'
+    }
+    age(val){
+        return typeof val === 'number' && val>18
+    }
+}
+class person{
+    constructor(name,age){
+        this.name = name;
+        this.age = age;
+        return createValidator(this,personValidator)
+    }
+}
+function createValidator(target,validator){
+    return new Proxy(target,{
+        _validator:validator,
+        set(target,key,value,proxy){
+            if(target.hasOwnproperty(key)){
+                var validator = this._validator[key]
+                if(validator(value)){
+                    return Reflect.set(target,key,value,proxy)
+                }else{
+                    throw Error('type error')
+                }
+            }
+        }
+    })
+}
+
+//英文单词统计出现频率
+function getResult(str){
+    let words = str.match(/\b[a-zA-Z\'\_\-]+\b/ig)
+    if(!words || words.length===1){
+        console.log('what you get is what you see ~')
+        return words
+    }
+    let obj = {}
+    words.map(item=>{
+        let lower = item.toLowerCase()
+        obj[lower] = obj[lower] ? ++obj[lower] : 1
+    })
+    words = []
+    Object.keys(obj).sort().sort(function(a,b){
+        return obj[b]-obj[a]
+    }).slice(0,20).map(key=>{
+        console.log(key+' '+obj[key])
+        words.push(key+':'+obj[key])
+    })
+    return words
+}
+
+
+
 
 
 
