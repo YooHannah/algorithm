@@ -323,3 +323,67 @@ window.addEventListener('devicemotion',(e)=>{
 })(window)
 
 
+
+
+//上拉加载
+{/* <header>头部</header>
+<section id= 'con'>
+ <div id = 'loading'>正在加载....</div>
+  <ul id='list'></ul>
+</section>
+<div id = 'loadEnd'>已加载全部数据</div>
+<footer>末端</footer> */}
+var list = document.getElementById('list')
+function getData() {
+  var html = ''
+  for(var i=0;i<20;i++){
+    html+='<li>第'+(i+1)+'个li</li>'
+  }
+  var len = list.children.length
+  if(len){
+    list.innerHTML = html
+  }else if(len>0 && len<100){
+    var newHtml = parseDom(html)
+    insertAfter(newHtml,list.children[len-1])
+  }else if(len === 100){
+    list.style.bottom = '80px'
+    loadEnd.style.botton = '40px'
+  } 
+}
+//字符串Dom化
+function parseDom(arg){
+  var objEle = document.createElement('div')
+  objEle.innerHTML = arg
+  return [...objEle.childNodes]
+}
+//在已有元素后插入元素
+function insertAfter(newEle,targetEle){
+  newEle.forEach(ele=>{
+    //after:js新API 在已有元素后插入新的元素
+    targetEle.after(ele)
+  })
+  return
+}
+window.onload = ()=>{
+  getData()
+  list.addEventListener('scroll',function(){
+    //ul高度
+    let listH = list.clientHeight;
+    //li总高度
+    let contentH = this.childNodes.length *41
+    //差值
+    let diffValue = contentH-listH
+    //下拉刷新
+    if(this.scrollTop === 0){
+      list.style.top = '80px'
+      loading.style.top = '40px'
+      setTimeout(()=>{
+        list.style.top = '40px'
+        loading.style.top = '0px'
+      },1000)
+    }
+    if(this.scrollTop+50>=diffValue){
+      getData()
+    }
+  })
+}
