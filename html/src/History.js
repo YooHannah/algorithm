@@ -38,7 +38,6 @@
     onAbort
   ) {
       var this$1 = this;
-
     var route = this.router.match(location, this.current);
     this.confirmTransition(
       route,

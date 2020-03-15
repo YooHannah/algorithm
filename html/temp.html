@@ -8,37 +8,76 @@
   <title>Document</title>
 </head>
 <body>
-  <div id = 'app'>
-    <!-- <p>{{a}}</p> -->
+  <div id = 'app' class='hello'>
+    <p :class='sync' class='hello'>{{a+'...'+arr[0]}}</p>
+    <!-- <input class="kk" key='kkk' ref='hellodiv' v-model='a' @input='search'/> -->
+    <!-- <div>hello</div> -->
+    <!-- <div v-for="item in arr">
+      hello{{item+1}}
+    </div>
+    <textarea>hey jude<p>123</p></textarea>
+    <div>hello</div>-->
     <p>
       <router-link to="/foo">Go to Foo</router-link>
-      <router-link to="/bar">Go to Bar</router-link>
+      <router-link to="/bar/user">Go to Bar</router-link>
     </p>
-    <router-view></router-view>
+    <router-view></router-view> 
   </div>
-  <script type="text/javascript" src="https://unpkg.com/vue"></script>
+  
+  <script type="text/javascript" src="vue.js"></script>
   <script type="text/javascript" src="vue-router.js"></script>
   <script>
     const Foo = { template: '<div>foo</div>',mounted(){
-      console.log(this.$route)
+      console.log(this.$route.query,typeof this.$route.query.name)
     }  }
-    const Bar = { template: '<div>bar</div>',mounted(){
-      console.log(this.$route)
-    } }
+    const Bar = { 
+      template: '<div>bar<div>{{id}}</div><a @click="aa">go to foo</a></div>',
+      data(){
+        return {
+          id:'',
+        
+        }
+      },
+      methods:{
+        aa(){
+          console.log(this.$router)
+          this.$router.push({name:'foo',params:{name:'jck'}})
+        }
+      },
+      mounted(){
+        console.log(this.$route,this.$router)
+        this.id = this.$route.params.id
+      } 
+    }
+
     const routes = [
-        { path: '/foo',name:'foo', component: Foo },
-        { path: '/bar',name:'bar', component: Bar }
+        { path: '/foo/:name',name:'foo', component: Foo },
+        { path: '/bar/:id?',name:'bar', component: Bar }
       ]
     const router = new VueRouter({
       routes
     })
     let app = new Vue({
       el:'#app',
-      data:{
-        a:'hello world'
+      // comments:true,
+      data(){
+        return {
+          a:'hello world',
+          b:false,
+          arr:[1,3,4],
+          sync:'hahah'
+        }
       },
-      method:{
-
+      mounted(){
+        setTimeout(()=>{
+          console.log(this)
+          this.a = 'hello hell'
+        },5000)
+      },
+      methods:{
+        search(val){
+          console.log('input:',val.target.composing,this.a)
+        }
       },
       router,
     })
