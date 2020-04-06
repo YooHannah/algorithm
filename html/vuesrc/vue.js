@@ -9307,7 +9307,6 @@
 
   function parseHTML (html, options) {
     var stack = [];
-    stack.func='parseHTML'
     var expectHTML = options.expectHTML;
     var isUnaryTag$$1 = options.isUnaryTag || no;
     var canBeLeftOpenTag$$1 = options.canBeLeftOpenTag || no;
