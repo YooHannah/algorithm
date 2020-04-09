@@ -18,7 +18,7 @@ var _Vue;
     Vue.mixin({
       beforeCreate: function beforeCreate () {
         if (isDef(this.$options.router)) {
-          console.log(this)
+          console.log('beforeCreate',this)
           this._routerRoot = this;
           this._router = this.$options.router;
           this._router.init(this);
