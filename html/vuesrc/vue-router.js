@@ -3,7 +3,7 @@
   * (c) 2020 Evan You
   * @license MIT
   */
-(function (global, factory) {
+(function (global, factory) { 
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.VueRouter = factory());
@@ -52,7 +52,6 @@
       }
     },
     render: function render (_, ref) {
-      console.log(ref)
       var props = ref.props;
       var children = ref.children;
       var parent = ref.parent;
@@ -69,7 +68,6 @@
       var cache = parent._routerViewCache || (parent._routerViewCache = {});
       // determine current view depth, also check to see if the tree
       // has been toggled inactive but kept-alive.
-      console.log(route)
       var depth = 0;
       var inactive = false;
       while (parent && parent._routerRoot !== parent) {
@@ -83,7 +81,6 @@
         parent = parent.$parent;
       }
       data.routerViewDepth = depth;
-      console.log(data.routerViewDepth)
       // render previous view if the tree is inactive and kept-alive
       if (inactive) {
         var cachedData = cache[name];
@@ -118,7 +115,6 @@
       data.registerRouteInstance = function (vm, val) {
         // val could be undefined for unregistration
         var current = matched.instances[name];
-        console.log(current,name,vm)
         if (
           (val && current !== vm) ||
           (!val && current === vm)
@@ -153,7 +149,6 @@
         });
         fillPropsinData(component, data, route, configProps);
       }
-      console.log(component)
       return h(component, data, children)
     }
   };
@@ -951,7 +946,6 @@
 
       // Fix #2505 resolving asterisk routes { name: 'not-found', params: { pathMatch: '/not-found' }}
       if (params.pathMatch) { params[0] = params.pathMatch; }
-
       return filler(params, { pretty: true })
     } catch (e) {
       {
@@ -973,6 +967,7 @@
     append,
     router
   ) {
+    
     var next = typeof raw === 'string' ? { path: raw } : raw;
     // named target
     if (next._normalized) {
@@ -1019,7 +1014,6 @@
     if (hash && hash.charAt(0) !== '#') {
       hash = "#" + hash;
     }
-
     return {
       _normalized: true,
       path: path,
@@ -1059,7 +1053,6 @@
     },
     render: function render (h) {
       var this$1 = this;
-      console.log(this)
       var router = this.$router;
       var current = this.$route;
       var ref = router.resolve(
@@ -1067,6 +1060,7 @@
         current,
         this.append
       );
+
       var location = ref.location;
       var route = ref.route;
       var href = ref.href;
@@ -1106,7 +1100,7 @@
           }
         }
       };
-
+     
       var on = { click: guardEvent };
       if (Array.isArray(this.event)) {
         this.event.forEach(function (e) {
@@ -1222,7 +1216,6 @@
   function install (Vue) {
     if (install.installed && _Vue === Vue) { return }
     install.installed = true;
-
     _Vue = Vue;
 
     var isDef = function (v) { return v !== undefined; };
@@ -1236,15 +1229,12 @@
 
     Vue.mixin({
       beforeCreate: function beforeCreate () {
-        console.log('beforeCreate',this)
         if (isDef(this.$options.router)) {
-          console.log('beforeCreate',this)
           this._routerRoot = this;
           this._router = this.$options.router;
           this._router.init(this);
           Vue.util.defineReactive(this, '_route', this._router.history.current);
         } else {
-          console.log(this)
           this._routerRoot = (this.$parent && this.$parent._routerRoot) || this;
         }
         registerInstance(this, this);
@@ -1495,7 +1485,6 @@
     ) {
       var location = normalizeLocation(raw, currentRoute, false, router);
       var name = location.name;
-
       if (name) {
         var record = nameMap[name];
         {
@@ -1507,7 +1496,7 @@
           .map(function (key) { return key.name; });
 
         if (typeof location.params !== 'object') {
-          location.params = {};
+          location.params = {}; 
         }
 
         if (currentRoute && typeof currentRoute.params === 'object') {
@@ -1517,7 +1506,7 @@
             }
           }
         }
-
+        
         location.path = fillParams(record.path, location.params, ("named route \"" + name + "\""));
         return _createRoute(record, location, redirectedFrom)
       } else if (location.path) {
@@ -1650,10 +1639,10 @@
     } else if (!params) {
       return true
     }
-
+    //匹配路由组装params
     for (var i = 1, len = m.length; i < len; ++i) {
       var key = regex.keys[i - 1];
-      var val = typeof m[i] === 'string' ? decodeURIComponent(m[i]) : m[i];
+      var val = typeof m[i] === 'string' ? decodeURIComponent(m[i]) : m[i];//始终为子字符串
       if (key) {
         // Fix #1994: using * with props: true generates a param named 0
         params[key.name || 'pathMatch'] = val;
@@ -2073,14 +2062,13 @@
     onComplete,
     onAbort
   ) {
-      var this$1 = this;
-
+    var this$1 = this;
     var route = this.router.match(location, this.current);
     this.confirmTransition(
       route,
       function () {
-        this$1.updateRoute(route);
-        onComplete && onComplete(route);
+        this$1.updateRoute(route);//更新router对象
+        onComplete && onComplete(route);//更改URL
         this$1.ensureURL();
 
         // fire ready cbs once
@@ -2106,7 +2094,7 @@
   };
 
   History.prototype.confirmTransition = function confirmTransition (route, onComplete, onAbort) {
-      var this$1 = this;
+    var this$1 = this;
 
     var current = this.current;
     var abort = function (err) {
@@ -2201,7 +2189,7 @@
           return abort()
         }
         this$1.pending = null;
-        onComplete(route);
+        onComplete(route);//更新router对象，更新url
         if (this$1.router.app) {
           this$1.router.app.$nextTick(function () {
             postEnterCbs.forEach(function (cb) {
@@ -2498,13 +2486,12 @@
 
     HashHistory.prototype.push = function push (location, onComplete, onAbort) {
       var this$1 = this;
-      
       var ref = this;
       var fromRoute = ref.current;
       this.transitionTo(
         location,
         function (route) {
-          pushHash(route.fullPath);
+          pushHash(route.fullPath);//更改url
           handleScroll(this$1.router, route, fromRoute, false);
           onComplete && onComplete(route);
         },
@@ -2699,7 +2686,6 @@
     this.resolveHooks = [];
     this.afterHooks = [];
     this.matcher = createMatcher(options.routes || [], this);
-    console.log(this.matcher)
     var mode = options.mode || 'hash';
     this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false;
     if (this.fallback) {
@@ -2726,7 +2712,6 @@
         }
     }
   };
-
   var prototypeAccessors = { currentRoute: { configurable: true } };
 
   VueRouter.prototype.match = function match (
@@ -2777,7 +2762,7 @@
       history.transitionTo(history.getCurrentLocation());
     } else if (history instanceof HashHistory) {
       var setupHashListener = function () {
-        history.setupListeners();
+        history.setupListeners();//设置监听
       };
       history.transitionTo(
         history.getCurrentLocation(),
@@ -2815,7 +2800,6 @@
 
   VueRouter.prototype.push = function push (location, onComplete, onAbort) {
       var this$1 = this;
-
     // $flow-disable-line
     if (!onComplete && !onAbort && typeof Promise !== 'undefined') {
       return new Promise(function (resolve, reject) {
@@ -2923,5 +2907,4 @@
   }
 
   return VueRouter;
-
 }));

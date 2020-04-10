@@ -29,28 +29,29 @@
  */
 (function(root){
   var jQuery = function(){
-    return new jQuery.prototype.init()
+    return new jQuery.prototype.init() //不能直接return new jQuery()，不然创建过程会造成死循环
   }
   jQuery.fn = jQuery.prototype = {
     init:function(){},
     css:function () {}
   }
   //extend
-  jQuery.fn.extend = jQuery.extend = function(){
+  // jQuery.prototype.extend = jQuery.extend = function(){
+  jQuery.fn.extend = jQuery.extend = function(){ //实现这样调用：$.fn.extend()【实例对象扩展】,$.extend()【本身扩展】
     var target = arguments[0] || {}
     var length = arguments.length
     var i=1
     var deep=false //标识是否深度复制
     var option,name,copy,src,copyIsArray;
-    if(typeof target === 'boolean'){ //第一个参数为boolean,true进行深度复制，false浅复制
+    if(typeof target === 'boolean'){ //标记深浅复制,第一个参数为boolean,true进行深度复制，false浅复制
       deep = target;
       target = arguments[1]
       i=2
     }
-    if(typeof target !== 'object'){ //如果目标对象，传进来不是对象，规范为对象
+    if(typeof target !== 'object'){ //如果目标对象，传进来不是对象，规范为对象,防止传进的值为非对象
       target = {}
     }
-    if(length === i){ //实例进行扩展,或者对jquery本身扩展的情况
+    if(length === i){ // 给jQuery实例扩展,实例进行扩展,或者对jquery本身扩展的情况
       target = this
       i--
     }
@@ -90,3 +91,4 @@
   })
   root.$ = root.jQuery = jQuery
 })(this);
+
