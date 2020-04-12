@@ -730,6 +730,7 @@
 
   Dep.prototype.depend = function depend () {
     if (Dep.target) {
+      console.log('',this)
       Dep.target.addDep(this);
     }
   };
@@ -928,6 +929,7 @@
     this.vmCount = 0;
     def(value, '__ob__', this);
     if (Array.isArray(value)) {
+      console.log('array')
       if (hasProto) {
         protoAugment(value, arrayMethods);
       } else {
@@ -935,6 +937,7 @@
       }
       this.observeArray(value);
     } else {
+      console.log('walk')
       this.walk(value);
     }
   };
@@ -4555,6 +4558,7 @@
   Watcher.prototype.run = function run () {
     if (this.active) {
       var value = this.get();
+      console.log('update1',value)
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
@@ -4563,6 +4567,7 @@
         isObject(value) ||
         this.deep
       ) {
+        console.log('update2',value)
         // set new value
         var oldValue = this.value;
         this.value = value;
