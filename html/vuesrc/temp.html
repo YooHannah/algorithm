@@ -113,7 +113,16 @@
           a:'hello world',
           b:false,
           arr:[1,3,4],
-          sync:'hahah'
+          sync:'hahah',
+          obj:{kk:1}
+        }
+      },
+      watch:{
+        arr:{
+          handler:function(){
+            console.log('发生变化啦')
+          },
+          deep:true
         }
       },
       mounted(){
