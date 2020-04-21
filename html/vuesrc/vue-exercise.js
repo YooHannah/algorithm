@@ -7,7 +7,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.Vue = factory());
-}(this, function () { 'use strict';
+}(this, function () { 'use strict'; 
 
   /*  */
 
@@ -94,6 +94,7 @@
    * Convert a value to a string that is actually rendered.
    */
   function toString (val) {
+    console.log(this)
     return val == null
       ? ''
       : Array.isArray(val) || (isPlainObject(val) && val.toString === _toString)
@@ -485,6 +486,7 @@
 
   /**
    * Check if a string starts with $ or _
+   * 检查是不是以$或者_开头的保留变量 0x24 是$ 0x5F 是_
    */
   function isReserved (str) {
     var c = (str + '').charCodeAt(0);
@@ -753,6 +755,7 @@
   var targetStack = [];
 
   function pushTarget (target) {
+    console.log('pushTarget',target)
     targetStack.push(target);
     Dep.target = target;
   }
@@ -1025,7 +1028,7 @@
       return
     }
 
-    // cater for pre-defined getter/setters
+    // cater(迎合) for pre-defined getter/setters
     var getter = property && property.get;
     var setter = property && property.set;
     if ((!getter || setter) && arguments.length === 2) {
@@ -1526,7 +1529,7 @@
     {
       checkComponents(child);
     }
-
+    console.log('mergeOption',child)
     if (typeof child === 'function') {
       child = child.options;
     }
@@ -3936,7 +3939,7 @@
     Vue.prototype._update = function (vnode, hydrating) {
       var vm = this;
       var prevEl = vm.$el;
-      var prevVnode = vm._vnode;
+      var prevVnode = vm._vnode;//null
       var restoreActiveInstance = setActiveInstance(vm);
       vm._vnode = vnode;
       // Vue.prototype.__patch__ is injected in entry points
@@ -4054,6 +4057,7 @@
 
         mark(startTag);
         var vnode = vm._render();
+        console.log(vnode,vm)
         mark(endTag);
         measure(("vue " + name + " render"), startTag, endTag);
 
@@ -4637,6 +4641,7 @@
     var opts = vm.$options;
     if (opts.props) { initProps(vm, opts.props); }
     if (opts.methods) { initMethods(vm, opts.methods); }
+    console.log('data:::',opts.data)
     if (opts.data) {
       initData(vm);
     } else {
@@ -4739,7 +4744,7 @@
   }
 
   function getData (data, vm) {
-    // #7573 disable dep collection when invoking data getters
+    // #7573 disable dep collection when invoking(调用) data getters
     pushTarget();
     try {
       return data.call(vm, vm)
@@ -5009,7 +5014,7 @@
       }
 
       if (vm.$options.el) {
-        vm.$mount(vm.$options.el);
+        vm.$mount(vm.$options.el);//给option挂上render，staticRenderFns属性
       }
     };
   }
@@ -5233,6 +5238,7 @@
             definition = { bind: definition, update: definition };
           }
           this.options[type + 's'][id] = definition;
+         
           return definition
         }
       };
@@ -5943,13 +5949,15 @@
           ? nodeOps.createElementNS(vnode.ns, tag)
           : nodeOps.createElement(tag, vnode);
         setScope(vnode);
-
         /* istanbul ignore if */
-        {
+       
+        { 
+          console.log('before',vnode.elm.classList)
           createChildren(vnode, children, insertedVnodeQueue);
           if (isDef(data)) {
             invokeCreateHooks(vnode, insertedVnodeQueue);
           }
+          console.log('after',vnode.elm)
           insert(parentElm, vnode.elm, refElm);
         }
 
@@ -6032,6 +6040,7 @@
         if (isDef(ref$$1)) {
           if (nodeOps.parentNode(ref$$1) === parent) {
             nodeOps.insertBefore(parent, elm, ref$$1);
+            console.log(parent)
           }
         } else {
           nodeOps.appendChild(parent, elm);
@@ -6107,7 +6116,7 @@
       var data = vnode.data;
       if (isDef(data)) {
         if (isDef(i = data.hook) && isDef(i = i.destroy)) { i(vnode); }
-        for (i = 0; i < cbs.destroy.length; ++i) { cbs.destroy[i](vnode); }
+        for (i = 0; i < cbs.destroy.length; ++i) {cbs.destroy[i](vnode); }
       }
       if (isDef(i = vnode.children)) {
         for (j = 0; j < vnode.children.length; ++j) {
@@ -6121,6 +6130,7 @@
         var ch = vnodes[startIdx];
         if (isDef(ch)) {
           if (isDef(ch.tag)) {
+            console.log(ch)
             removeAndInvokeRemoveHook(ch);
             invokeDestroyHook(ch);
           } else { // Text node
@@ -6185,6 +6195,7 @@
         } else if (isUndef(oldEndVnode)) {
           oldEndVnode = oldCh[--oldEndIdx];
         } else if (sameVnode(oldStartVnode, newStartVnode)) {
+          console.log('same')
           patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
           oldStartVnode = oldCh[++oldStartIdx];
           newStartVnode = newCh[++newStartIdx];
@@ -6300,13 +6311,16 @@
       var i;
       var data = vnode.data;
       if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+        console.log('hook:',vnode)
         i(oldVnode, vnode);
       }
 
       var oldCh = oldVnode.children;
       var ch = vnode.children;
       if (isDef(data) && isPatchable(vnode)) {
-        for (i = 0; i < cbs.update.length; ++i) { cbs.update[i](oldVnode, vnode); }
+        for (i = 0; i < cbs.update.length; ++i) {
+           cbs.update[i](oldVnode, vnode); 
+        }
         if (isDef(i = data.hook) && isDef(i = i.update)) { i(oldVnode, vnode); }
       }
       if (isUndef(vnode.text)) {
@@ -6327,14 +6341,17 @@
         nodeOps.setTextContent(elm, vnode.text);
       }
       if (isDef(data)) {
-        if (isDef(i = data.hook) && isDef(i = i.postpatch)) { i(oldVnode, vnode); }
+        if (isDef(i = data.hook) && isDef(i = i.postpatch)) {
+          console.log('newdata',data)
+          i(oldVnode, vnode); 
+        }
       }
     }
 
     function invokeInsertHook (vnode, queue, initial) {
       // delay insert hooks for component root nodes, invoke them after the
       // element is really inserted
-      if (isTrue(initial) && isDef(vnode.parent)) {
+      if (isTrue(initial) && isDef(vnode.parent)) { 
         vnode.parent.data.pendingInsert = queue;
       } else {
         for (var i = 0; i < queue.length; ++i) {
@@ -6456,6 +6473,7 @@
     }
 
     return function patch (oldVnode, vnode, hydrating, removeOnly) {
+      console.log('init',oldVnode, vnode, hydrating, removeOnly)
       if (isUndef(vnode)) {
         if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
         return
@@ -6498,13 +6516,14 @@
             }
             // either not server-rendered, or hydration failed.
             // create an empty node and replace it
-            oldVnode = emptyNodeAt(oldVnode);
+            console.log('xxxx',oldVnode)
+            oldVnode = emptyNodeAt(oldVnode); 
           }
-
+         
           // replacing existing element
           var oldElm = oldVnode.elm;
           var parentElm = nodeOps.parentNode(oldElm);
-
+         
           // create new node
           createElm(
             vnode,
@@ -6545,7 +6564,6 @@
               ancestor = ancestor.parent;
             }
           }
-
           // destroy old node
           if (isDef(parentElm)) {
             removeVnodes([oldVnode], 0, 0);
@@ -6566,6 +6584,7 @@
     create: updateDirectives,
     update: updateDirectives,
     destroy: function unbindDirectives (vnode) {
+      console.log('directives.destory')
       updateDirectives(vnode, emptyNode);
     }
   };
@@ -6577,6 +6596,7 @@
   }
 
   function _update (oldVnode, vnode) {
+    console.log(oldVnode, vnode)
     var isCreate = oldVnode === emptyNode;
     var isDestroy = vnode === emptyNode;
     var oldDirs = normalizeDirectives$1(oldVnode.data.directives, oldVnode.context);
@@ -9087,6 +9107,8 @@
     text,
     delimiters
   ) {
+    //delimiters,文本插入分隔符
+    // var defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
     var tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE;
     if (!tagRE.test(text)) {
       return
@@ -9103,7 +9125,7 @@
         tokens.push(JSON.stringify(tokenValue));
       }
       // tag token
-      var exp = parseFilters(match[1].trim());
+      var exp = parseFilters(match[1].trim());//处理过滤器
       tokens.push(("_s(" + exp + ")"));
       rawTokens.push({ '@binding': exp });
       lastIndex = index + match[0].length;
@@ -9297,11 +9319,10 @@
         var textEnd = html.indexOf('<');
         if (textEnd === 0) {
           // Comment:
-          if (comment.test(html)) {
+          if (comment.test(html)) { //comment = /^<!\--/;
             var commentEnd = html.indexOf('-->');
-
             if (commentEnd >= 0) {
-              if (options.shouldKeepComment) {
+              if (options.shouldKeepComment) { 
                 options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3);
               }
               advance(commentEnd + 3);
@@ -9417,7 +9438,7 @@
     }
 
     function parseStartTag () {
-      var start = html.match(startTagOpen);
+      var start = html.match(startTagOpen);//使用unicode letters为基础的正则startTagOpen匹配html tag
       if (start) {
         var match = {
           tagName: start[1],
@@ -9444,7 +9465,6 @@
     function handleStartTag (match) {
       var tagName = match.tagName;
       var unarySlash = match.unarySlash;
-
       if (expectHTML) {
         if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
           parseEndTag(lastTag);
@@ -9453,7 +9473,6 @@
           parseEndTag(tagName);
         }
       }
-
       var unary = isUnaryTag$$1(tagName) || !!unarySlash;
 
       var l = match.attrs.length;
@@ -9473,7 +9492,6 @@
           attrs[i].end = args.end;
         }
       }
-
       if (!unary) {
         stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end });
         lastTag = tagName;
@@ -9488,7 +9506,6 @@
       var pos, lowerCasedTagName;
       if (start == null) { start = index; }
       if (end == null) { end = index; }
-
       // Find the closest opened tag of the same type
       if (tagName) {
         lowerCasedTagName = tagName.toLowerCase();
@@ -9629,6 +9646,16 @@
       if (!inVPre && !element.processed) {
         element = processElement(element, options);
       }
+      //在编写 Vue 模板时的约束是必须有且仅有一个被渲染的根元素，但你可以定义多个根元素，
+      //只要能够保证最终只渲染其中一个元素即可，能够达到这个目的的方式只有一种，
+      //那就是在多个根元素之间使用 v-if 或 v-else-if 或 v-else 
+
+      //每当遇到一个非一元标签时就会将该标签的描述对象放进数组，
+      //并且每当遇到一个结束标签时都会将该标签的描述对象从 stack 数组中拿掉，
+      //那也就是说在只有一个根元素的情况下，正常解析完成一段 html 代码后 stack 数组应该为空，
+      //或者换个说法，即当 stack 数组被清空后则说明整个模板字符串已经解析完毕了，
+      //但此时 start 钩子函数仍然被调用了，这说明模板中存在多个根元素，
+      //这时 else if 语句块内的代码将被执行
       // tree management
       if (!stack.length && element !== root) {
         // allow root elements with v-if, v-else-if and v-else
@@ -9636,7 +9663,8 @@
           {
             checkRootConstraints(element);
           }
-          addIfCondition(root, {
+          //给root.ifconditions属性push if,elseif,else等条件模板下的虚拟dom对象
+          addIfCondition(root, { 
             exp: element.elseif,
             block: element
           });
@@ -9649,17 +9677,35 @@
           );
         }
       }
+      //root 对象中的 .if 属性、.elseif 属性以及 .else 属性都是哪里来的，
+      //它们是在通过 processIf 函数处理元素描述对象时，
+      //如果发现元素的属性中有 v-if 或 v-else-if 或 v-else ，
+      //则会在元素描述对象上添加相应的属性作为标识。
+
+      //上面代码如果第一个根元素上有 .if 的属性，
+      //而非第一个根元素 element 有 .elseif 属性或者 .else 属性，
+      //这说明根元素都是由 v-if、v-else-if、v-else 指令控制的，
+      //同时也保证了被渲染的根元素只有一个。
       if (currentParent && !element.forbidden) {
+        //当前解析的元素使用了 v-else-if 或 v-else 指令，则会调用 processIfConditions 函数，
+        //同时将当前元素描述对象 element 和父级元素的描述对象 currentParent 作为参数传递
         if (element.elseif || element.else) {
           processIfConditions(element, currentParent);
         } else {
           if (element.slotScope) {
+            //如果一个元素使用了 slot-scope 特性，
+            //那么该元素的描述对象会被添加到父级元素的scopedSlots 对象下，
+            //也就是说使用了 slot-scope 特性的元素与使用了v-else-if 或 v-else 指令的元素一样，
+            //他们都不会作为父级元素的子节点，对于使用了 slot-scope 特性的元素来讲它们将被添加到父级元素描述对象的 scopedSlots 对象下
             // scoped slot
             // keep it in the children list so that v-else(-if) conditions can
             // find it as the prev node.
             var name = element.slotTarget || '"default"'
             ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element;
           }
+          //在 else 语句块内，会把当前元素描述对象添加到父级元素描述对象 ( currentParent ) 
+          // 的children 数组中，同时将当前元素对象的 parent 属性指向父级元素对象，
+          //这样就建立了元素描述对象间的父子级关系。
           currentParent.children.push(element);
           element.parent = currentParent;
         }
@@ -9670,7 +9716,6 @@
       element.children = element.children.filter(function (c) { return !(c).slotScope; });
       // remove trailing whitespace node again
       trimEndingWhitespace(element);
-
       // check pre state
       if (element.pre) {
         inVPre = false;
@@ -9682,8 +9727,8 @@
       for (var i = 0; i < postTransforms.length; i++) {
         postTransforms[i](element, options);
       }
-    }
-
+    } 
+    //去除当前元素最后一个空白子节点
     function trimEndingWhitespace (el) {
       // remove trailing whitespace node
       if (!inPre) {
@@ -9728,13 +9773,11 @@
         // check namespace.
         // inherit parent ns if there is one
         var ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag);
-
         // handle IE svg bug
         /* istanbul ignore if */
         if (isIE && ns === 'svg') {
           attrs = guardIESVGBug(attrs);
         }
-
         var element = createASTElement(tag, attrs, currentParent);
         if (ns) {
           element.ns = ns;
@@ -9777,7 +9820,6 @@
         for (var i = 0; i < preTransforms.length; i++) {
           element = preTransforms[i](element, options) || element;
         }
-
         if (!inVPre) {
           processPre(element);
           if (element.pre) {
@@ -9802,7 +9844,6 @@
             checkRootConstraints(root);
           }
         }
-
         if (!unary) {
           currentParent = element;
           stack.push(element);
@@ -9849,7 +9890,7 @@
         }
         var children = currentParent.children;
         if (inPre || text.trim()) {
-          text = isTextTag(currentParent) ? text : decodeHTMLCached(text);
+          text = isTextTag(currentParent) ? text : decodeHTMLCached(text);//isTextTag判断是不是style或者script标签
         } else if (!children.length) {
           // remove the whitespace-only node right after an opening tag
           text = '';
@@ -9910,12 +9951,15 @@
         }
       }
     });
+    console.log(root)
     return root
   }
 
   function processPre (el) {
     if (getAndRemoveAttr(el, 'v-pre') != null) {
       el.pre = true;
+      //跳过这个元素和它的子元素的编译过程。
+      //可以用来显示原始 Mustache 标签。跳过大量没有指令的节点会加快编译。
     }
   }
 
@@ -9944,7 +9988,7 @@
     element,
     options
   ) {
-    processKey(element);
+    processKey(element);//挂载key属性
 
     // determine whether this is a plain element after
     // removing structural attributes
@@ -9954,14 +9998,14 @@
       !element.attrsList.length
     );
 
-    processRef(element);
-    processSlotContent(element);
-    processSlotOutlet(element);
-    processComponent(element);
+    processRef(element);//挂载ref属性
+    processSlotContent(element);//处理作为slot内容的template
+    processSlotOutlet(element);//处理slot标签
+    processComponent(element);//处理is和inline-template属性
     for (var i = 0; i < transforms.length; i++) {
       element = transforms[i](element, options) || element;
     }
-    processAttrs(element);
+    processAttrs(element);//处理v-model,v-bind,v-on,和一般的属性值，添加动态值标识，解析表达式等
     return element
   }
 
@@ -9969,7 +10013,7 @@
     var exp = getBindingAttr(el, 'key');
     if (exp) {
       {
-        if (el.tag === 'template') {
+        if (el.tag === 'template') { 
           warn$2(
             "<template> cannot be keyed. Place the key on real elements instead.",
             getRawBindingAttr(el, 'key')
@@ -10005,7 +10049,7 @@
     if ((exp = getAndRemoveAttr(el, 'v-for'))) {
       var res = parseFor(exp);
       if (res) {
-        extend(el, res);
+        extend(el, res);//把for表达式解析结果挂到el对象上res:{for:in后面的数组表达式，alias:in前的表达式}
       } else {
         warn$2(
           ("Invalid v-for expression: " + exp),
@@ -10016,15 +10060,17 @@
   }
 
 
-
+//var forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/;
+// var forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/;
+// var stripParensRE = /^\(|\)$/g;
   function parseFor (exp) {
-    var inMatch = exp.match(forAliasRE);
+    var inMatch = exp.match(forAliasRE);//解析v-for 表达式表达式
     if (!inMatch) { return }
     var res = {};
-    res.for = inMatch[2].trim();
+    res.for = inMatch[2].trim();//in 后面的表达式
     var alias = inMatch[1].trim().replace(stripParensRE, '');
     var iteratorMatch = alias.match(forIteratorRE);
-    if (iteratorMatch) {
+    if (iteratorMatch) { //解析in前面带括号的的情况
       res.alias = alias.replace(forIteratorRE, '').trim();
       res.iterator1 = iteratorMatch[1].trim();
       if (iteratorMatch[2]) {
@@ -10260,9 +10306,13 @@
 
   function processComponent (el) {
     var binding;
+    //用于动态组件且基于 DOM 内模板的限制来工作。https://cn.vuejs.org/v2/api/#is
     if ((binding = getBindingAttr(el, 'is'))) {
       el.component = binding;
     }
+    //当 inline-template 这个特殊的 attribute 出现在一个子组件上时，
+    //这个组件将会使用其里面的内容作为模板，而不是将其作为被分发的内容。
+    //https://cn.vuejs.org/v2/guide/components-edge-cases.html#%E5%86%85%E8%81%94%E6%A8%A1%E6%9D%BF
     if (getAndRemoveAttr(el, 'inline-template') != null) {
       el.inlineTemplate = true;
     }
@@ -10274,7 +10324,7 @@
     for (i = 0, l = list.length; i < l; i++) {
       name = rawName = list[i].name;
       value = list[i].value;
-      if (dirRE.test(name)) {
+      if (dirRE.test(name)) { // var dirRE = /^v-|^@|^:|^#/;
         // mark element as dynamic
         el.hasBindings = true;
         // modifiers
@@ -10283,10 +10333,11 @@
         if (modifiers) {
           name = name.replace(modifierRE, '');
         }
+        
         if (bindRE.test(name)) { // v-bind
           name = name.replace(bindRE, '');
           value = parseFilters(value);
-          isDynamic = dynamicArgRE.test(name);
+          isDynamic = dynamicArgRE.test(name);//  var dynamicArgRE = /^\[.*\]$/;
           if (isDynamic) {
             name = name.slice(1, -1);
           }
@@ -10346,6 +10397,7 @@
           if ((modifiers && modifiers.prop) || (
             !el.component && platformMustUseProp(el.tag, el.attrsMap.type, name)
           )) {
+            
             addProp(el, name, value, list[i], isDynamic);
           } else {
             addAttr(el, name, value, list[i], isDynamic);
@@ -10648,11 +10700,11 @@
       for (var i = 0, l = node.children.length; i < l; i++) {
         var child = node.children[i];
         markStatic$1(child);
-        if (!child.static) {
+        if (!child.static) {//子节点一但为动态结点，则父节点为动态结点
           node.static = false;
         }
       }
-      if (node.ifConditions) {
+      if (node.ifConditions) { //处理条件渲染节点是否为静态结点
         for (var i$1 = 1, l$1 = node.ifConditions.length; i$1 < l$1; i$1++) {
           var block = node.ifConditions[i$1].block;
           markStatic$1(block);
@@ -10669,9 +10721,7 @@
       if (node.static || node.once) {
         node.staticInFor = isInFor;
       }
-      // For a node to qualify as a static root, it should have children that
-      // are not just static text. Otherwise the cost of hoisting out will
-      // outweigh the benefits and it's better off to just always render it fresh.
+      //对只含有一个纯文本结点的node添加staticRoot = false
       if (node.static && node.children.length && !(
         node.children.length === 1 &&
         node.children[0].type === 3
@@ -10949,7 +10999,6 @@
     if (el.parent) {
       el.pre = el.pre || el.parent.pre;
     }
-
     if (el.staticRoot && !el.staticProcessed) {
       return genStatic(el, state)
     } else if (el.once && !el.onceProcessed) {
@@ -10963,16 +11012,14 @@
     } else if (el.tag === 'slot') {
       return genSlot(el, state)
     } else {
-      // component or element
       var code;
       if (el.component) {
         code = genComponent(el.component, el, state);
       } else {
-        var data;
+        var data;       
         if (!el.plain || (el.pre && state.maybeComponent(el))) {
           data = genData$2(el, state);
         }
-
         var children = el.inlineTemplate ? null : genChildren(el, state, true);
         code = "_c('" + (el.tag) + "'" + (data ? ("," + data) : '') + (children ? ("," + children) : '') + ")";
       }
@@ -11049,6 +11096,7 @@
 
     var condition = conditions.shift();
     if (condition.exp) {
+      console.log(condition.exp)
       return ("(" + (condition.exp) + ")?" + (genTernaryExp(condition.block)) + ":" + (genIfConditions(conditions, state, altGen, altEmpty)))
     } else {
       return ("" + (genTernaryExp(condition.block)))
@@ -11098,7 +11146,6 @@
 
   function genData$2 (el, state) {
     var data = '{';
-
     // directives first.
     // directives may mutate the el's other properties before they are generated.
     var dirs = genDirectives(el, state);
@@ -11137,6 +11184,7 @@
     }
     // event handlers
     if (el.events) {
+      
       data += (genHandlers(el.events, false)) + ",";
     }
     if (el.nativeEvents) {
@@ -11690,7 +11738,6 @@
       if (cache[key]) {
         return cache[key]
       }
-
       // compile
       var compiled = compile(template, options);
 
@@ -11725,11 +11772,11 @@
       // turn code into functions
       var res = {};
       var fnGenErrors = [];
+      
       res.render = createFunction(compiled.render, fnGenErrors);
       res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
         return createFunction(code, fnGenErrors)
       });
-
       // check function generation errors.
       // this should only happen if there is a bug in the compiler itself.
       // mostly for codegen development use
@@ -11839,6 +11886,7 @@
       optimize(ast, options);
     }
     var code = generate(ast, options);
+    console.log(code)
     return {
       ast: ast,
       render: code.render,
@@ -11921,7 +11969,6 @@
         if (config.performance && mark) {
           mark('compile');
         }
-
         var ref = compileToFunctions(template, {
           outputSourceRange: "development" !== 'production',
           shouldDecodeNewlines: shouldDecodeNewlines,
@@ -11933,8 +11980,8 @@
         var staticRenderFns = ref.staticRenderFns;
         options.render = render;
         options.staticRenderFns = staticRenderFns;
-
         /* istanbul ignore if */
+        console.log(render)
         if (config.performance && mark) {
           mark('compile end');
           measure(("vue " + (this._name) + " compile"), 'compile', 'compile end');
