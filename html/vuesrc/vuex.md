@@ -8,6 +8,12 @@ let moduleA = {
       counta: 0, //分别在模块b和全局下被使用，直接返回对象会通过引用被共享，防止模块间数据污染，使用函数，每次生成新对象，原理同vue的data
     }
   },
+  getters:{
+    getCount(...args){ //this.$store.getters['b/aa/getCount'] 作为b子模块时
+      console.log(args)
+      return  'this is a getter~~~~~'
+    }
+  },
   mutations: { // this.$store.commit('b/aa/increment') 仅触发模块b下面的aa子模块  
     increment (state) { //this.$store.commit('a/increment') 仅触发全局的模块a 对应的子模块 
       state.counta++
@@ -23,6 +29,12 @@ let moduleB = {
   state: { 
     countb: 0,//this.$store.state.b.countb
   },
+  getters:{
+    getCount(...args){ //this.$store.getters['b/getCount'] 因为设置了namespaced所以可以重名
+      console.log(args)
+      return  'this is a getter~~~~~'
+    }
+  },
   mutations: {
     increment (state) { //如果不加namespaced，执行this.$store.commit('increment')，会同时执行
       state.countb++
@@ -36,6 +48,12 @@ let moduleB = {
 const store = new Vuex.Store({
   state: { 
     count: 0, //this.$store.state.count
+  },
+  getters:{
+    getCount(...args){ //this.$store.getters.getCount
+      console.log(args)
+      return  'this is a getter'
+    }
   },
   mutations: {
     increment (state) { //this.$store.commit('increment') 子模块有相同函数时，都会触发执行
@@ -97,7 +115,7 @@ const store = new Vuex.Store({
     installModule(this, state, [], this._modules.root);
 
     // 初始化store vm, 用于数据响应
-    // 同属注册 _wrappedGetters 作为计算属性)
+    // 同时注册 _wrappedGetters 作为计算属性)
     resetStoreVM(this, state);
 
     // 使用插件处理
@@ -202,6 +220,7 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
   ```
   this._modules = new ModuleCollection(options);
   ```
+
   this._modules为如下对象
   ```
   ModuleCollection {
@@ -215,6 +234,8 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
     __proto__: Object
   }
   ```
+
+
   ModuleCollection对象上的其他方法
   ```
   ModuleCollection.prototype.get = function get (path) {
@@ -248,8 +269,9 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
 ```
 //初始化调用时传参 （this, state, [], this._modules.root)
 function installModule (store, rootState, path, module, hot) {
-  //参数分别为store本身，跟模块state, [], 根模块，undefined
-  var isRoot = !path.length;//空数组即根模块
+  //根模块时，参数分别为store本身，根模块state, [], 根模块，undefined
+  //递归子模块时，参数为 store本身，根模块state,子模块在modules对象中的路径key值
+  var isRoot = !path.length; //空数组即根模块
   //ModuleCollection.prototype.getNamespace 根模块返回空字符串''
   var namespace = store._modules.getNamespace(path); 
 
@@ -273,7 +295,7 @@ function installModule (store, rootState, path, module, hot) {
           );
         }
       }
-      Vue.set(parentState, moduleName, module.state);
+      Vue.set(parentState, moduleName, module.state); //将子模块state按照模块名添加到父模块state中
     });
   }
   //根据有无namespace
@@ -317,7 +339,7 @@ Module.prototype.forEachMutation = function forEachMutation (fn) {
     forEachValue(this._rawModule.mutations, fn);
   }
 };
-
+//参数：store本身，经过namespace拼接后的类型标记，具体对应的mutation,当前模块上封装好的state,getters,commit,dispatch
 function registerMutation (store, type, handler, local) {
   var entry = store._mutations[type] || (store._mutations[type] = []);
   entry.push(function wrappedMutationHandler (payload) {
@@ -325,6 +347,12 @@ function registerMutation (store, type, handler, local) {
   });
 }
 ```
+小结：将当前模块的mutations上的各个mutations结合namespace存储到store._mutations属性上
+可见，如果子模块没有namespace,同名的mutation会跟根模块的mutation存储在相同的type下面
+所以当触发commit的时候会一起执行，
+如果子模块设置了namespace，这时存储的type会包含该模块对应的名称，
+即使同名的mutation也被存放在不同的type中，实现了隔离
+
 ## 注册 Action
 ```
 Module.prototype.forEachAction = function forEachAction (fn) {
@@ -358,6 +386,7 @@ function registerAction (store, type, handler, local) {
   });
 }
 ```
+小结：将当前模块的actions上的各个action结合namespace存储到store._actions属性上
 
 ## 注册 Getter
 ```
@@ -376,15 +405,18 @@ function registerGetter (store, type, rawGetter, local) {
   }
   store._wrappedGetters[type] = function wrappedGetter (store) {
     return rawGetter(
-      local.state, // local state
-      local.getters, // local getters
-      store.state, // root state
-      store.getters // root getters
+      local.state, // 当前模块state
+      local.getters, // 当前模块 getters
+      store.state, // 根模块 state
+      store.getters // 根模块 getters
     )
   };
 }
 ```
+小结：将当前模块的getters上的各个getter结合namespace存储到store._wrappedGetters属性上
+
 ## 注册 Module
+
 递归调用installModule注册子模块
 ```
 Module.prototype.forEachChild = function forEachChild (fn) {
@@ -483,33 +515,85 @@ function getNestedState (state, path) {
   return path.reduce(function (state, key) { return state[key]; }, state)
 }
 ```
-# resetStoreVM
+
+## 小结
+
+该步骤完成后
+
+store对象长这样
+
 ```
+commit: ƒ boundCommit(type, payload, options)
+dispatch: ƒ boundDispatch(type, payload)
+strict: false
+_actionSubscribers: []
+_actions: {} //存放所有模块的action
+_committing: false
+_makeLocalGettersCache: {}
+_modules: ModuleCollection {
+  root: Module
+  context: //新增根据namespace处理后的触发函数
+    commit: ƒ boundCommit(type, payload, options)
+    dispatch: ƒ boundDispatch(type, payload)
+    getters: (...)
+    state: (...)
+    get getters: ƒ ()
+    get state: ƒ ()
+    __proto__: Object
+  runtime: false
+  state: //将子模块state集中到根模块state
+    a: {counta: 2329}
+    b:
+      aa: {counta: 2329}
+      countb: 0
+      __proto__: Object
+    count: 0
+    __proto__: Object
+  _children: //对子模块递归过程挂载context属性
+    a: Module {runtime: false, _children: {…}, _rawModule: {…}, state: {…}, context: {…}}
+    b: Module {runtime: false, _children: {…}, _rawModule: {…}, state: {…}, context: {…}}
+  _rawModule: {state: {…}, mutations: {…}, modules: {…}}
+  namespaced: (...)
+  __proto__: Object
+__proto__: Object
+}
+_modulesNamespaceMap: {b/: Module} //存放设置了namespace的模块
+_mutations: {increment: Array(1), incrementaaa: Array(1), b/increment: Array(1), b/incrementaaa: Array(1)} //存放所有模块的mutation
+_subscribers: []
+_watcherVM: Vue {_uid: 0, _isVue: true, $options: {…}, _renderProxy: Proxy, _self: Vue, …}
+_wrappedGetters: {} //存放所有模块的getters
+state: (...) //对局部变量做了处理，还没有挂到store上
+```
+
+# resetStoreVM
+利用vue的数据处理逻辑，解决getters和state之间订阅发布关系
+```
+function partial (fn, arg) {
+  return function () {
+    return fn(arg)
+  }
+}
 function resetStoreVM (store, state, hot) {
     var oldVm = store._vm;
-
-    // bind store public getters
+    //绑定存储公共的getters
     store.getters = {};
-    // reset local getters cache
+    // 重置内部getters缓存到_makeLocalGettersCache
     store._makeLocalGettersCache = Object.create(null);
     var wrappedGetters = store._wrappedGetters;
     var computed = {};
     forEachValue(wrappedGetters, function (fn, key) {
-      // use computed to leverage its lazy-caching mechanism
-      // direct inline function use will lead to closure preserving oldVm.
-      // using partial to return function with only arguments preserved in closure environment.
+      //如果直接使用，闭包里面会包含oldVm
       computed[key] = partial(fn, store);
       Object.defineProperty(store.getters, key, {
-        get: function () { return store._vm[key]; },
+        get: function () { return store._vm[key]; },//直接调用vue的compute属性
         enumerable: true // for local getters
       });
     });
 
-    // use a Vue instance to store the state tree
-    // suppress warnings just in case the user has added
-    // some funky global mixins
+    //使用vue实例存放state和getters
     var silent = Vue.config.silent;
-    Vue.config.silent = true;
+    /* Vue.config.silent暂时设置为true的目的是在new一个Vue实例的过程中不会报出一切警告 */
+    Vue.config.silent = true
     store._vm = new Vue({
       data: {
         $$state: state
@@ -518,7 +602,7 @@ function resetStoreVM (store, state, hot) {
     });
     Vue.config.silent = silent;
 
-    // enable strict mode for new vm
+     /* 使能严格模式，保证修改store只能通过mutation */
     if (store.strict) {
       enableStrictMode(store);
     }
@@ -535,4 +619,186 @@ function resetStoreVM (store, state, hot) {
     }
   }
 
+```
+# store上的其他方法
+```
+Store.prototype.commit = function commit (_type, _payload, _options) {
+  var this$1 = this;
+
+  // check object-style commit
+  var ref = unifyObjectStyle(_type, _payload, _options);
+  var type = ref.type;
+  var payload = ref.payload;
+  var options = ref.options;
+
+  var mutation = { type: type, payload: payload };
+  var entry = this._mutations[type];
+  if (!entry) {
+    {
+      console.error(("[vuex] unknown mutation type: " + type));
+    }
+    return
+  }
+  this._withCommit(function () {
+    entry.forEach(function commitIterator (handler) {
+      handler(payload);
+    });
+  });
+
+  this._subscribers
+    .slice() // shallow copy to prevent iterator invalidation if subscriber synchronously calls unsubscribe
+    .forEach(function (sub) { return sub(mutation, this$1.state); });
+
+  if (
+    options && options.silent
+  ) {
+    console.warn(
+      "[vuex] mutation type: " + type + ". Silent option has been removed. " +
+      'Use the filter functionality in the vue-devtools'
+    );
+  }
+};
+
+Store.prototype.dispatch = function dispatch (_type, _payload) {
+      var this$1 = this;
+
+    // check object-style dispatch
+    var ref = unifyObjectStyle(_type, _payload);
+      var type = ref.type;
+      var payload = ref.payload;
+
+    var action = { type: type, payload: payload };
+    var entry = this._actions[type];
+    if (!entry) {
+      {
+        console.error(("[vuex] unknown action type: " + type));
+      }
+      return
+    }
+
+    try {
+      this._actionSubscribers
+        .slice() // shallow copy to prevent iterator invalidation if subscriber synchronously calls unsubscribe
+        .filter(function (sub) { return sub.before; })
+        .forEach(function (sub) { return sub.before(action, this$1.state); });
+    } catch (e) {
+      {
+        console.warn("[vuex] error in before action subscribers: ");
+        console.error(e);
+      }
+    }
+
+    var result = entry.length > 1
+      ? Promise.all(entry.map(function (handler) { return handler(payload); }))
+      : entry[0](payload);
+
+    return result.then(function (res) {
+      try {
+        this$1._actionSubscribers
+          .filter(function (sub) { return sub.after; })
+          .forEach(function (sub) { return sub.after(action, this$1.state); });
+      } catch (e) {
+        {
+          console.warn("[vuex] error in after action subscribers: ");
+          console.error(e);
+        }
+      }
+      return res
+    })
+  };
+
+  Store.prototype.subscribe = function subscribe (fn) {
+    return genericSubscribe(fn, this._subscribers)
+  };
+
+  Store.prototype.subscribeAction = function subscribeAction (fn) {
+    var subs = typeof fn === 'function' ? { before: fn } : fn;
+    return genericSubscribe(subs, this._actionSubscribers)
+  };
+
+  Store.prototype.watch = function watch (getter, cb, options) {
+      var this$1 = this;
+
+    {
+      assert(typeof getter === 'function', "store.watch only accepts a function.");
+    }
+    return this._watcherVM.$watch(function () { return getter(this$1.state, this$1.getters); }, cb, options)
+  };
+
+  Store.prototype.replaceState = function replaceState (state) {
+      var this$1 = this;
+
+    this._withCommit(function () {
+      this$1._vm._data.$$state = state;
+    });
+  };
+
+  Store.prototype.registerModule = function registerModule (path, rawModule, options) {
+      if ( options === void 0 ) options = {};
+
+    if (typeof path === 'string') { path = [path]; }
+
+    {
+      assert(Array.isArray(path), "module path must be a string or an Array.");
+      assert(path.length > 0, 'cannot register the root module by using registerModule.');
+    }
+
+    this._modules.register(path, rawModule);
+    installModule(this, this.state, path, this._modules.get(path), options.preserveState);
+    // reset store to update getters...
+    resetStoreVM(this, this.state);
+  };
+
+  Store.prototype.unregisterModule = function unregisterModule (path) {
+      var this$1 = this;
+
+    if (typeof path === 'string') { path = [path]; }
+
+    {
+      assert(Array.isArray(path), "module path must be a string or an Array.");
+    }
+
+    this._modules.unregister(path);
+    this._withCommit(function () {
+      var parentState = getNestedState(this$1.state, path.slice(0, -1));
+      Vue.delete(parentState, path[path.length - 1]);
+    });
+    resetStore(this);
+  };
+
+  Store.prototype.hotUpdate = function hotUpdate (newOptions) {
+    this._modules.update(newOptions);
+    resetStore(this, true);
+  };
+
+  Store.prototype._withCommit = function _withCommit (fn) {
+    var committing = this._committing;
+    this._committing = true;
+    fn();
+    this._committing = committing;
+  };
+  
+  function genericSubscribe (fn, subs) {
+    if (subs.indexOf(fn) < 0) {
+      subs.push(fn);
+    }
+    return function () {
+      var i = subs.indexOf(fn);
+      if (i > -1) {
+        subs.splice(i, 1);
+      }
+    }
+  }
+
+  function resetStore (store, hot) {
+    store._actions = Object.create(null);
+    store._mutations = Object.create(null);
+    store._wrappedGetters = Object.create(null);
+    store._modulesNamespaceMap = Object.create(null);
+    var state = store.state;
+    // init all modules
+    installModule(store, state, [], store._modules.root, true);
+    // reset vm
+    resetStoreVM(store, state, hot);
+  }
 ```

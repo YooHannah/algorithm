@@ -60,10 +60,16 @@
     //   routes
     // })
     let moduleA = {
-      // namespaced: true,
+      namespaced: true,
       state(){ 
         return{
           counta: 2329,
+        }
+      },
+      getters:{
+        getCount(...args){
+          console.log(args)
+          return  'this is a getter~~~~~'
         }
       },
       mutations: {
@@ -77,6 +83,12 @@
       namespaced: true,
       state: { 
         countb: 0,
+      },
+      getters:{
+        getCount(...args){
+          console.log(args)
+          return  'this is a getter~~~~~'
+        }
       },
       mutations: {
         increment (state) {
@@ -93,6 +105,12 @@
     const store = new Vuex.Store({
       state: { 
         count: 0,
+      },
+      getters:{
+        getCount(...args){
+          console.log(args)
+          return  'this is a getter'
+        }
       },
       mutations: {
         increment (state) {
@@ -130,9 +148,9 @@
         //   console.log(this)
         //   this.a = 'hello hell'
         // },5000)
-        console.log(this.$store.state.count,this.$store.state.a.counta)
+        console.log(this.$store.getters.getCount,this.$store,this.$store.state.count,this.$store.state.a.counta)
         this.$store.commit('increment')
-        this.$store.commit('incrementaaa')
+        this.$store.commit('a/incrementaaa')
         // this.$store.commit('b/aa/increment')
         console.log(this.$store.state.count,this.$store.state.a.counta,this.$store.state.b.countb,this.$store.state.b.aa.counta)
       },

@@ -353,7 +353,7 @@
     // this also recursively registers all sub-modules
     // and collects all module getters inside this._wrappedGetters
     installModule(this, state, [], this._modules.root);
-
+    console.log('store:',this)
     // initialize the store vm, which is responsible for the reactivity
     // (also registers _wrappedGetters as computed properties)
     resetStoreVM(this, state);
@@ -563,7 +563,7 @@
 
   function resetStoreVM (store, state, hot) {
     var oldVm = store._vm;
-
+    console.log('vm',oldVm)
     // bind store public getters
     store.getters = {};
     // reset local getters cache
@@ -574,7 +574,9 @@
       // use computed to leverage its lazy-caching mechanism
       // direct inline function use will lead to closure preserving oldVm.
       // using partial to return function with only arguments preserved in closure environment.
+      console.log(fn)
       computed[key] = partial(fn, store);
+      console.log(computed[key])
       Object.defineProperty(store.getters, key, {
         get: function () { return store._vm[key]; },
         enumerable: true // for local getters
