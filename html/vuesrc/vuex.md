@@ -1,8 +1,4 @@
-套嵌条件下,state 会处理成树状结构进行访问，但要进行更改操作时，
-如果有子模块没有进行命名空间设置，但又包含跟全局状态相同处理名称的 mutation 或 action
-则在调用时，都会执行
 
-默认情况下，模块内部的 action、mutation 和 getter 是注册在全局命名空间的——这样使得多个模块能够对同一 mutation 或 action 作出响应。
 
 ```
 let moduleA = {
@@ -53,11 +49,7 @@ const store = new Vuex.Store({
 })
 
 ```
-小结
-namespaced: true相当于子模块的隔离层，
-如果设置了，外界不能直接通过mutations里面的函数名进行commit调用，
-即当调用相同函数名时，可以防止一起被调用
-如果没有设置，则当调用相同类型commit时，会一起被调用
+以上面store结构为例，分析vuex源码
 # new Store
 ```
  var Store = function Store (options) {
@@ -202,6 +194,9 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
   Module.prototype.addChild = function addChild (key, module) {
     this._children[key] = module;
   };
+  Module.prototype.getChild = function getChild (key) {
+    return this._children[key]
+  };
   ```
   所以这一步结束后
   ```
@@ -220,6 +215,7 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
     __proto__: Object
   }
   ```
+  ModuleCollection对象上的其他方法
   ```
   ModuleCollection.prototype.get = function get (path) {
     return path.reduce(function (module, key) {
@@ -229,8 +225,9 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
 
   ModuleCollection.prototype.getNamespace = function getNamespace (path) {
     var module = this.root;
+    //对设置了namespaced的模块进行拼接
     return path.reduce(function (namespace, key) {
-      module = module.getChild(key);
+      module = module.getChild(key); //从_children取出子模块
       return namespace + (module.namespaced ? key + '/' : '')
     }, '')
   };
@@ -252,10 +249,11 @@ var ModuleCollection = function ModuleCollection (rawRootModule) {
 //初始化调用时传参 （this, state, [], this._modules.root)
 function installModule (store, rootState, path, module, hot) {
   //参数分别为store本身，跟模块state, [], 根模块，undefined
-  var isRoot = !path.length;
-  var namespace = store._modules.getNamespace(path);
+  var isRoot = !path.length;//空数组即根模块
+  //ModuleCollection.prototype.getNamespace 根模块返回空字符串''
+  var namespace = store._modules.getNamespace(path); 
 
-  // register in namespace map
+  //如果模块设置了命名空间 在store._modulesNamespaceMap属性中注册
   if (module.namespaced) {
     if (store._modulesNamespaceMap[namespace] && "development" !== 'production') {
       console.error(("[vuex] duplicate namespace " + namespace + " for the namespaced module " + (path.join('/'))));
@@ -263,7 +261,7 @@ function installModule (store, rootState, path, module, hot) {
     store._modulesNamespaceMap[namespace] = module;
   }
 
-  // set state
+  //对子模块state进行数据劫持处理
   if (!isRoot && !hot) {
     var parentState = getNestedState(rootState, path.slice(0, -1));
     var moduleName = path[path.length - 1];
@@ -278,7 +276,9 @@ function installModule (store, rootState, path, module, hot) {
       Vue.set(parentState, moduleName, module.state);
     });
   }
-
+  //根据有无namespace
+  //截取state,getter的get,
+  //封装触发函数dispactch和commit,有namespace拼接后再触发
   var local = module.context = makeLocalContext(store, namespace, path);
 
   module.forEachMutation(function (mutation, key) {
@@ -300,6 +300,187 @@ function installModule (store, rootState, path, module, hot) {
   module.forEachChild(function (child, key) {
     installModule(store, rootState, path.concat(key), child, hot);
   });
+}
+```
+## forEachValue
+公共方法
+```
+ function forEachValue (obj, fn) {
+    Object.keys(obj).forEach(function (key) { return fn(obj[key], key); });
+  }
+```
+
+## 注册 Mutation
+```
+Module.prototype.forEachMutation = function forEachMutation (fn) {
+  if (this._rawModule.mutations) {
+    forEachValue(this._rawModule.mutations, fn);
+  }
+};
+
+function registerMutation (store, type, handler, local) {
+  var entry = store._mutations[type] || (store._mutations[type] = []);
+  entry.push(function wrappedMutationHandler (payload) {
+    handler.call(store, local.state, payload);
+  });
+}
+```
+## 注册 Action
+```
+Module.prototype.forEachAction = function forEachAction (fn) {
+  if (this._rawModule.actions) {
+    forEachValue(this._rawModule.actions, fn);
+  }
+};
+
+function registerAction (store, type, handler, local) {
+  var entry = store._actions[type] || (store._actions[type] = []);
+  entry.push(function wrappedActionHandler (payload) {
+    var res = handler.call(store, {
+      dispatch: local.dispatch,
+      commit: local.commit,
+      getters: local.getters,
+      state: local.state,
+      rootGetters: store.getters,
+      rootState: store.state
+    }, payload);
+    if (!isPromise(res)) {
+      res = Promise.resolve(res);
+    }
+    if (store._devtoolHook) {
+      return res.catch(function (err) {
+        store._devtoolHook.emit('vuex:error', err);
+        throw err
+      })
+    } else {
+      return res
+    }
+  });
+}
+```
+
+## 注册 Getter
+```
+Module.prototype.forEachGetter = function forEachGetter (fn) {
+  if (this._rawModule.getters) {
+    forEachValue(this._rawModule.getters, fn);
+  }
+};
+
+function registerGetter (store, type, rawGetter, local) {
+  if (store._wrappedGetters[type]) {
+    {
+      console.error(("[vuex] duplicate getter key: " + type));
+    }
+    return
+  }
+  store._wrappedGetters[type] = function wrappedGetter (store) {
+    return rawGetter(
+      local.state, // local state
+      local.getters, // local getters
+      store.state, // root state
+      store.getters // root getters
+    )
+  };
+}
+```
+## 注册 Module
+递归调用installModule注册子模块
+```
+Module.prototype.forEachChild = function forEachChild (fn) {
+  forEachValue(this._children, fn);
+};
+
+module.forEachChild(function (child, key) {
+  installModule(store, rootState, path.concat(key), child, hot);
+});
+```
+
+## makeLocalContext
+优化 dispatch, commit, getters and state
+如果没有设置namespace, 就使用根模块的名称
+```
+  function makeLocalContext (store, namespace, path) {
+    var noNamespace = namespace === '';
+
+    var local = {
+      dispatch: noNamespace ? store.dispatch : function (_type, _payload, _options) {
+        var args = unifyObjectStyle(_type, _payload, _options);
+        var payload = args.payload;
+        var options = args.options;
+        var type = args.type;
+
+        if (!options || !options.root) {
+          type = namespace + type;//有namespace拼接后再触发
+          if (!store._actions[type]) {
+            console.error(("[vuex] unknown local action type: " + (args.type) + ", global type: " + type));
+            return
+          }
+        }
+
+        return store.dispatch(type, payload)
+      },
+
+      commit: noNamespace ? store.commit : function (_type, _payload, _options) {
+        var args = unifyObjectStyle(_type, _payload, _options);
+        var payload = args.payload;
+        var options = args.options;
+        var type = args.type;
+
+        if (!options || !options.root) {
+          type = namespace + type; //有namespace拼接后再触发
+          if (!store._mutations[type]) {
+            console.error(("[vuex] unknown local mutation type: " + (args.type) + ", global type: " + type));
+            return
+          }
+        }
+
+        store.commit(type, payload, options);
+      }
+    };
+
+    // getters and state object must be gotten lazily
+    // because they will be changed by vm update
+    Object.defineProperties(local, {
+      getters: {
+        get: noNamespace
+          ? function () { return store.getters; }
+          : function () { return makeLocalGetters(store, namespace); }
+      },
+      state: {
+        get: function () { return getNestedState(store.state, path); }
+      }
+    });
+
+    return local
+  }
+
+function makeLocalGetters (store, namespace) {
+  if (!store._makeLocalGettersCache[namespace]) {
+    var gettersProxy = {};
+    var splitPos = namespace.length;
+    Object.keys(store.getters).forEach(function (type) {
+      // skip if the target getter is not match this namespace
+      if (type.slice(0, splitPos) !== namespace) { return }
+
+      // extract local getter type
+      var localType = type.slice(splitPos);
+
+      // Add a port to the getters proxy.
+      // Define as getter property because
+      // we do not want to evaluate the getters in this time.
+      Object.defineProperty(gettersProxy, localType, {
+        get: function () { return store.getters[type]; },
+        enumerable: true
+      });
+    });
+    store._makeLocalGettersCache[namespace] = gettersProxy;
+  }
+
+  return store._makeLocalGettersCache[namespace]
+}
+function getNestedState (state, path) {
+  return path.reduce(function (state, key) { return state[key]; }, state)
 }
 ```
 # resetStoreVM

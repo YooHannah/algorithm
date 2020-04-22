@@ -614,7 +614,6 @@
   function installModule (store, rootState, path, module, hot) {
     var isRoot = !path.length;
     var namespace = store._modules.getNamespace(path);
-
     // register in namespace map
     if (module.namespaced) {
       if (store._modulesNamespaceMap[namespace] && "development" !== 'production') {
