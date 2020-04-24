@@ -100,7 +100,7 @@
 
       var matched = route.matched[depth];
       var component = matched && matched.components[name];
-
+      console.log(component)
       // render empty node if no matched route or no config component
       if (!matched || !component) {
         cache[name] = null;

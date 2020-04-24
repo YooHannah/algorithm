@@ -17,114 +17,116 @@
     </div>
     <textarea>hey jude<p>123</p></textarea>
     <div>hello</div>-->
-    <!-- <p>
+    <p>
       <router-link to="/foo">Go to Foo</router-link>
       <router-link to="/bar/user">Go to Bar</router-link>
     </p>
-    <router-view></router-view>  -->
+    <router-view></router-view> 
   </div>
   
   <script type="text/javascript" src="vue.js"></script>
-  <!-- <script type="text/javascript" src="vue-router.js"></script> -->
-  <script type="text/javascript" src="vuex.js"></script>
+  <script type="text/javascript" src="vue-router.js"></script>
+  <!-- <script type="text/javascript" src="vuex.js"></script> -->
   <script>
     //vue router相关
-    // const Foo = { template: '<div>foo</div>',mounted(){
-    //   console.log(this.$route.query,typeof this.$route.query.name)
-    // }  }
-    // const Bar = { 
-    //   template: '<div>bar<div>{{id}}</div><a @click="aa">go to foo</a></div>',
-    //   data(){
-    //     return {
-    //       id:'',
+    const Foo = { 
+      template: '<div>foo</div>',
+      mounted(){
+      console.log(this.$route.query,typeof this.$route.query.name)
+    }  }
+    const Bar = { 
+      template: '<div>bar<div>{{id}}</div><a @click="aa">go to foo</a></div>',
+      data(){
+        return {
+          id:'',
         
+        }
+      },
+      methods:{
+        aa(){
+          console.log(this.$router)
+          this.$router.push({name:'foo',params:{name:'jck'}})
+        }
+      },
+      mounted(){
+        console.log(this.$route,this.$router)
+        this.id = this.$route.params.id
+      } 
+    }
+
+    const routes = [
+        { path: '/foo',name:'foo', component: ()=>import('./tempC.vue') },
+        { path: '/bar/:id?',name:'bar', component: Bar }
+      ]
+    const router = new VueRouter({
+      routes
+    })
+    // let moduleA = {
+    //   namespaced: true,
+    //   state(){ 
+    //     return{
+    //       counta: 2329,
     //     }
     //   },
-    //   methods:{
-    //     aa(){
-    //       console.log(this.$router)
-    //       this.$router.push({name:'foo',params:{name:'jck'}})
+    //   getters:{
+    //     getCount(...args){
+    //       console.log(args)
+    //       return  'this is a getter~~~~~'
     //     }
     //   },
-    //   mounted(){
-    //     console.log(this.$route,this.$router)
-    //     this.id = this.$route.params.id
-    //   } 
+    //   mutations: {
+    //     incrementaaa (state) {
+    //       state.counta++
+    //     }
+    //   }
     // }
 
-    // const routes = [
-    //     { path: '/foo/:name',name:'foo', component: Foo },
-    //     { path: '/bar/:id?',name:'bar', component: Bar }
-    //   ]
-    // const router = new VueRouter({
-    //   routes
+    // let moduleB = {
+    //   namespaced: true,
+    //   state: { 
+    //     countb: 0,
+    //   },
+    //   getters:{
+    //     getCount(...args){
+    //       console.log(args)
+    //       return  'this is a getter~~~~~'
+    //     }
+    //   },
+    //   mutations: {
+    //     increment (state) {
+    //       state.countb++
+    //     }
+    //   },
+    //   modules: {
+    //     aa: moduleA,
+    //   }
+    // }
+
+
+    // // vuex相关代码
+    // const store = new Vuex.Store({
+    //   state: { 
+    //     count: 0,
+    //   },
+    //   getters:{
+    //     getCount(...args){
+    //       console.log(args)
+    //       return  'this is a getter'
+    //     }
+    //   },
+    //   mutations: {
+    //     increment (state) {
+    //       state.count++
+    //     }
+    //   },
+    //   modules: {
+    //     a: moduleA,
+    //     b: moduleB
+    //   }
     // })
-    let moduleA = {
-      namespaced: true,
-      state(){ 
-        return{
-          counta: 2329,
-        }
-      },
-      getters:{
-        getCount(...args){
-          console.log(args)
-          return  'this is a getter~~~~~'
-        }
-      },
-      mutations: {
-        incrementaaa (state) {
-          state.counta++
-        }
-      }
-    }
-
-    let moduleB = {
-      namespaced: true,
-      state: { 
-        countb: 0,
-      },
-      getters:{
-        getCount(...args){
-          console.log(args)
-          return  'this is a getter~~~~~'
-        }
-      },
-      mutations: {
-        increment (state) {
-          state.countb++
-        }
-      },
-      modules: {
-        aa: moduleA,
-      }
-    }
-
-
-    // vuex相关代码
-    const store = new Vuex.Store({
-      state: { 
-        count: 0,
-      },
-      getters:{
-        getCount(...args){
-          console.log(args)
-          return  'this is a getter'
-        }
-      },
-      mutations: {
-        increment (state) {
-          state.count++
-        }
-      },
-      modules: {
-        a: moduleA,
-        b: moduleB
-      }
-    })
     let app = new Vue({
       el:'#app',
-      store,
+      // store,
       // comments:true,
       data(){
         return {
@@ -148,18 +150,13 @@
         //   console.log(this)
         //   this.a = 'hello hell'
         // },5000)
-        console.log(this.$store.getters.getCount,this.$store,this.$store.state.count,this.$store.state.a.counta)
-        this.$store.commit('increment')
-        this.$store.commit('a/incrementaaa')
-        // this.$store.commit('b/aa/increment')
-        console.log(this.$store.state.count,this.$store.state.a.counta,this.$store.state.b.countb,this.$store.state.b.aa.counta)
       },
       methods:{
         search(val){
           console.log('input:',val.target.composing,this.a)
         }
       },
-      // router,
+      router,
     })
   </script>
 </body>
