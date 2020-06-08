@@ -33,7 +33,11 @@
       template: '<div>foo</div>',
       mounted(){
       console.log(this.$route.query,typeof this.$route.query.name)
-    }  }
+      },
+      destoryed(){
+        console.log(111)
+      }
+    }
     const Bar = { 
       template: '<div>bar<div>{{id}}</div><a @click="aa">go to foo</a></div>',
       data(){
@@ -55,7 +59,7 @@
     }
 
     const routes = [
-        { path: '/foo',name:'foo', component: ()=>import('./tempC.vue') },
+        { path: '/foo',name:'foo', component: Foo },
         { path: '/bar/:id?',name:'bar', component: Bar }
       ]
     const router = new VueRouter({
