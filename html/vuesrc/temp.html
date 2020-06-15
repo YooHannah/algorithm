@@ -9,22 +9,25 @@
 </head>
 <body>
   <div id = 'app' class='hello'>
-    <p :class='sync' class='hello'>{{a+'...'+arr[0]}}</p>
+    <!-- <p :class='sync' class='hello'>{{a+'...'+arr[0]}}</p> -->
     <!-- <input class="kk" key='kkk' ref='hellodiv' v-model='a' @input='search'/> -->
     <!-- <div>hello</div> -->
-    <!-- <div v-for="item in arr">
-      hello{{item+1}}
-    </div>
-    <textarea>hey jude<p>123</p></textarea>
-    <div>hello</div>-->
-    <p>
+    <ul>
+      <template  v-for="(item,index) in arr">
+          <li :key='index'>hello{{item}}</li>
+      </template>
+     
+    </ul>
+    <!-- <textarea>hey jude<p>123</p></textarea>
+    <div>hello</div> -->
+    <!-- <p>
       <router-link to="/foo">Go to Foo</router-link>
       <router-link to="/bar/user">Go to Bar</router-link>
     </p>
-    <router-view></router-view> 
+    <router-view></router-view>  -->
   </div>
   
-  <script type="text/javascript" src="vue.js"></script>
+  <script type="text/javascript" src="vue-exercise.js"></script>
   <script type="text/javascript" src="vue-router.js"></script>
   <!-- <script type="text/javascript" src="vuex.js"></script> -->
   <script>
@@ -150,10 +153,9 @@
         }
       },
       mounted(){
-        // setTimeout(()=>{
-        //   console.log(this)
-        //   this.a = 'hello hell'
-        // },5000)
+        setTimeout(()=>{
+          this.arr = [3,4,1]
+        },5000)
       },
       methods:{
         search(val){
