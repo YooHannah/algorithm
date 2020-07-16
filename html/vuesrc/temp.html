@@ -12,33 +12,62 @@
     <!-- <p :class='sync' class='hello'>{{a+'...'+arr[0]}}</p> -->
     <!-- <input class="kk" key='kkk' ref='hellodiv' v-model='a' @input='search'/> -->
     <!-- <div>hello</div> -->
-    <ul>
       <template  v-for="(item,index) in arr">
-          <li :key='index'>hello{{item}}</li>
+          <div :key="item" :class='"box color"+item'></div>
       </template>
-     
-    </ul>
     <!-- <textarea>hey jude<p>123</p></textarea>
     <div>hello</div> -->
-    <!-- <p>
+    <p>
       <router-link to="/foo">Go to Foo</router-link>
       <router-link to="/bar/user">Go to Bar</router-link>
     </p>
-    <router-view></router-view>  -->
+    <router-view></router-view> 
   </div>
-  
-  <script type="text/javascript" src="vue-exercise.js"></script>
+  <style>
+  .box{
+    width:200px;
+    height:50px;
+  }
+  .color3{
+    background-color: red;
+  }
+  .color4{
+    background-color: blue;
+  }
+  .color1{
+    background-color: yellow;
+  }
+  </style>
+  <script type="text/javascript" src="vue.js"></script>
   <script type="text/javascript" src="vue-router.js"></script>
   <!-- <script type="text/javascript" src="vuex.js"></script> -->
   <script>
     //vue router相关
     const Foo = { 
-      template: '<div>foo</div>',
+      template: '<div>foo<router-view></router-view></div>',
       mounted(){
-      console.log(this.$route.query,typeof this.$route.query.name)
+      console.log(this.$route.query,this.$route,this.$router)
       },
       destoryed(){
         console.log(111)
+      }
+    }
+    const Foo1 = { 
+      template: '<div>foo1</div>',
+      mounted(){
+      console.log(this.$route.query,this.$route,this.$router)
+      },
+      destoryed(){
+        console.log(222)
+      }
+    }
+    const Foo2 = { 
+      template: '<div>foo3</div>',
+      mounted(){
+      console.log(this.$route.query,this.$route,this.$router)
+      },
+      destoryed(){
+        console.log(333)
       }
     }
     const Bar = { 
@@ -62,12 +91,19 @@
     }
 
     const routes = [
-        { path: '/foo',name:'foo', component: Foo },
-        { path: '/bar/:id?',name:'bar', component: Bar }
-      ]
+      { path: '/foo',name:'foo', component: Foo,children:[{ path: '/bar2/:id?',name:'bar2', component: Foo1 }]},
+      { path: '/bar/:id?',name:'bar', component: Bar }
+    ]
+    const routes1 = [
+      { path: '/foo2',name:'foo2', redirect:'/foo', component: Foo ,children:[{ path: '/bar21/:id?',name:'bar21', component: Foo2 }]},
+      { path: '/bar1/:id?',name:'bar1', component: Bar }
+    ]
     const router = new VueRouter({
       routes
     })
+    console.log(router)
+    router.addRoutes(routes1)
+    console.log(router)
     // let moduleA = {
     //   namespaced: true,
     //   state(){ 

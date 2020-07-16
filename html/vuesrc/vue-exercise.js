@@ -5706,6 +5706,13 @@
     return document.createComment(text)
   }
 
+  // Node.insertBefore() 方法在参考节点之前插入一个拥有指定父节点的子节点。
+  // 如果给定的子节点是对文档中现有节点的引用，insertBefore() 会将其从当前位置移动到新位置
+  //（在将节点附加到其他节点之前，不需要从其父节点删除该节点）
+  //意味着一个节点不能同时位于文档的两个点中。因此，如果节点已经有父节点，则首先删除该节点，然后将其插入到新位置。
+  //在将节点追加到新父节点之前，可以使用 Node.clonenode() 复制节点。注意，使用 cloneNode() 创建的节点副本不会自动与原始节点保持同步。
+  //如果引用节点为 null，则将指定的节点添加到指定父节点的子节点列表的末尾。
+  //如果 referenceNode 为 null 则 newNode 将被插入到子节点的末尾。
   function insertBefore (parentNode, newNode, referenceNode) {
     parentNode.insertBefore(newNode, referenceNode);
   }
@@ -6190,7 +6197,7 @@
       }
 
       while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-        console.log('新一轮')
+        console.log('新一轮',oldStartVnode,newStartVnode,sameVnode(oldStartVnode, newStartVnode))
         if (isUndef(oldStartVnode)) {
           oldStartVnode = oldCh[++oldStartIdx]; // Vnode has been moved left
         } else if (isUndef(oldEndVnode)) {
@@ -6200,6 +6207,7 @@
           patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
           oldStartVnode = oldCh[++oldStartIdx];
           newStartVnode = newCh[++newStartIdx];
+          console.log(' updateChildren:',oldStartIdx,newStartIdx,oldCh)
         } else if (sameVnode(oldEndVnode, newEndVnode)) {
           console.log(' updateChildren:oldEndVnode, newEndVnode')
           patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
@@ -6208,9 +6216,11 @@
         } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
           console.log(' updateChildren:start————end')
           patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
+          console.log('xxxxx:',oldEndVnode.elm,nodeOps.nextSibling(oldEndVnode.elm))
           canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm));
           oldStartVnode = oldCh[++oldStartIdx];
           newEndVnode = newCh[--newEndIdx];
+          console.log(' updateChildren:',nodeOps.nextSibling(oldEndVnode.elm))
         } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
           console.log(' updateChildren:oldEndVnode, newStartVnode')
           patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
@@ -6218,9 +6228,10 @@
           oldEndVnode = oldCh[--oldEndIdx];
           newStartVnode = newCh[++newStartIdx];
         } else {
-          console.log(' updateChildren:zzz')
+          console.log(' updateChildren:',oldStartIdx,oldEndIdx,newStartIdx,newEndIdx)
           if (isUndef(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); }
-          idxInOld = isDef(newStartVnode.key)
+          //在老节点里面查找有没有新开始节点
+          idxInOld = isDef(newStartVnode.key) 
             ? oldKeyToIdx[newStartVnode.key]
             : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
           if (isUndef(idxInOld)) { // New element
@@ -6239,8 +6250,10 @@
           newStartVnode = newCh[++newStartIdx];
         }
       }
+      
       if (oldStartIdx > oldEndIdx) {
         refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm;
+        console.log('end',parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
         addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
       } else if (newStartIdx > newEndIdx) {
         removeVnodes(oldCh, oldStartIdx, oldEndIdx);
@@ -6331,7 +6344,7 @@
       if (isUndef(vnode.text)) {
         if (isDef(oldCh) && isDef(ch)) {
           if (oldCh !== ch) { 
-            console.log('fire',oldCh.map(item=>item.elm),ch.map(item=>item.elm))
+            console.log('fire',oldCh,ch)
             updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly); 
           }
         } else if (isDef(ch)) {

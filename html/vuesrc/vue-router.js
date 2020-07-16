@@ -1303,7 +1303,7 @@
         warn(false, ("Non-nested routes must include a leading slash character. Fix the following routes: \n" + pathNames));
       }
     }
-
+    console.log(pathList,pathMap)
     return {
       pathList: pathList,
       pathMap: pathMap,

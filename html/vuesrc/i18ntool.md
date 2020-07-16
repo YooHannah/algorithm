@@ -392,6 +392,18 @@ VueI18n.prototype._interpolate = function _interpolate (
   return this._render(ret, interpolateMode, values, key)
 };
 
+VueI18n.prototype._render = function _render (message, interpolateMode, values, path) {
+    var ret = this._formatter.interpolate(message, values, path);
+
+    // If the custom formatter refuses to work - apply the default one
+    if (!ret) {
+      ret = defaultFormatter.interpolate(message, values, path);
+    }
+
+    // if interpolateMode is **not** 'string' ('row'),
+    // return the compiled data (e.g. ['foo', VNode, 'bar']) with formatter
+    return interpolateMode === 'string' && typeof ret !== 'string' ? ret.join('') : ret
+  };
 ```
 
 
