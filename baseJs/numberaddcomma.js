@@ -372,3 +372,106 @@ var arr = [ [1, 2, 2], [3, 4, 5, 5], [6, 7, 8, 9, [11, 12, [12, 13, [14] ] ] ], 
 
 编写一个程序将数组扁平化去并除其中重复部分数据，最终得到一个升序且不重复的数组*/
 Array.from(new Set(arr.flat(Infinity))).sort((a,b)=>{ return a-b})
+
+//给定一个8x8的棋盘, 上面有若干个车,
+//写一个函数检查这些车有没有互相攻击的情况.
+function generateChess(){
+    let x = parseInt(Math.random()*8)
+    let y = parseInt(Math.random()*8)
+    return [x,y]
+ }
+ function checkSame(a,b){
+     return a[0] === b[0] && a[1] === b[1]
+ }
+ function checkIncludes(arr,chess){
+     return arr.includes(item=>checkSame(item,chess))
+ }
+ function generateChessPanel(n){
+     let arr = []
+     for(let i=0;i<n;i++){
+         let chess = generateChess()
+         if(!checkIncludes(arr,chess)){
+             arr.push(chess)
+         }else{
+            i--
+         }
+     }
+     return arr
+ }
+ function testWar(n){
+    let chesses = generateChessPanel(n)
+    console.log('棋子分布情况：',chesses.join('---'))
+    for(let i = 0;i<n;i++){
+        let car =chesses[i]
+        for(let j = i+1;j<n;j++){
+            let enemy = chesses[j]
+            if(enemy[0] === car[0] || enemy[1] === car[1]){
+                 return true
+             }
+         }
+    }
+    return false
+ }
+ console.log(testWar(5))
+
+/*  在1的基础上, 给定一个初始棋盘状态, 
+问最多还能放置多少个车, 使他们不会互相攻击, 如何放置?*/
+function generateChess(){
+    let x = parseInt(Math.random()*8)
+    let y = parseInt(Math.random()*8)
+    return [x,y]
+ }
+ function checkSame(a,b){
+     return a[0] === b[0] && a[1] === b[1]
+ }
+ function checkIncludes(arr,chess){
+     return arr.includes(item=>checkSame(item,chess))
+ }
+ 
+ function testWar(chesses,enemy){
+    for(let i = 0;i<chesses.length;i++){
+        let car =chesses[i]
+        if(!enemy || enemy[0] === car[0] || enemy[1] === car[1]){
+             return true
+         }
+    }
+    return false
+ }
+ function generateChessPanel(n){
+     let arr = []
+     for(let i=0;i<n;i++){
+         let chess = generateChess()
+         if(!checkIncludes(arr,chess)&& !testWar(arr,chess)){
+             arr.push(chess)
+         }else{
+            i--
+         }
+     }
+     return arr
+ }
+ function generatePanel(){
+     let arr = []
+     for(let i = 0;i<8;i++){
+         for(let j = 0;j<8;j++){
+             arr.push([i,j])
+         }
+     }
+     return arr 
+ }
+ function computeMax(n){
+     let chesses = generateChessPanel(n)
+     console.log('初始棋盘：'+chesses.join('---'))
+     let allChesses = generatePanel()
+     for(let i = 0;i<64;i++){
+         let chess = allChesses[i]
+         if(!checkIncludes(chesses,chess) && !testWar(chesses,chess)){
+             chesses.push(chess)
+         }
+     }
+     let MAX = chesses.length -n
+     let position = chesses.slice(n)
+     return {MAX,position}
+ }
+ let obj = computeMax(3)
+ console.log('最多还能放：'+obj.MAX+'个')
+ console.log('他们的位置是：'+obj.position.join('---'))
