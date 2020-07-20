@@ -91,19 +91,17 @@
     }
 
     const routes = [
-      { path: '/foo',name:'foo', component: Foo,children:[{ path: '/bar2/:id?',name:'bar2', component: Foo1 }]},
-      { path: '/bar/:id?',name:'bar', component: Bar }
+      { path: '/foo',name:'foo', component: Foo,children:[{ path: '/bar2/:id?',name:'bar2', component: Foo1 }]}
     ]
     const routes1 = [
-      { path: '/foo2',name:'foo2', redirect:'/foo', component: Foo ,children:[{ path: '/bar21/:id?',name:'bar21', component: Foo2 }]},
-      { path: '/bar1/:id?',name:'bar1', component: Bar }
+      { path: '/foo',name:'foo', component: Foo ,children:[{ path: '/bar21/:id?',name:'bar21', component: Foo2 }]},
     ]
     const router = new VueRouter({
       routes
     })
-    console.log(router)
+    // console.log('hhah',router)
     router.addRoutes(routes1)
-    console.log(router)
+    // console.log('ddd',router)
     // let moduleA = {
     //   namespaced: true,
     //   state(){ 

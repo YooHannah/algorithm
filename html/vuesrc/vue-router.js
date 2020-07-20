@@ -1303,7 +1303,6 @@
         warn(false, ("Non-nested routes must include a leading slash character. Fix the following routes: \n" + pathNames));
       }
     }
-    console.log(pathList,pathMap)
     return {
       pathList: pathList,
       pathMap: pathMap,
@@ -1382,15 +1381,16 @@
         var childMatchAs = matchAs
           ? cleanPath((matchAs + "/" + (child.path)))
           : undefined;
+          console.log(childMatchAs)
         addRouteRecord(pathList, pathMap, nameMap, child, record, childMatchAs);
       });
     }
-
+    
     if (!pathMap[record.path]) {
       pathList.push(record.path);
       pathMap[record.path] = record;
     }
-
+    console.log('add',record.path,pathMap[record.path])
     if (route.alias !== undefined) {
       var aliases = Array.isArray(route.alias) ? route.alias : [route.alias];
       for (var i = 0; i < aliases.length; ++i) {
