@@ -58,3 +58,4 @@ new Foo().getName()//3  先执行new Foo(),返回Foo{},Foo.getName 为构造函�
 new new Foo().getName();//3 执行顺序为，先初始化Foo的实例化对象，然后将其原型上的getName函数作为构造函数再次new
 console.log('baidu' && 'google'); //google
 console.log('baidu' || 'google'); //百度
+
