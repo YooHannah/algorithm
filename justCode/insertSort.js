@@ -1,4 +1,5 @@
-// 插入排序
+// 插入排序 最坏情况下的时间复杂度为O(N^2)
+
 // 拿后面的数插入到前面排好的顺序中去
 const insertionSort = arr => {
   if(arr === null || arr.length <2) {

@@ -88,3 +88,63 @@ const heapSort = arr => {
 
 // 插入一个数调整的时间复杂度是O（logN)
 // 删除一个数调整的时间复杂度是O(logN)
+// 使用堆结构在处理数据时要注意
+// A；扩容不会影响性能，只会在扩容的时候会使运算变慢一些，但是整体不会造成影响
+// B；各种语言提供的堆结构黑盒。有时候不会支持，在变更某个位置数据后依然保持堆结构
+// 所以在实际解决问题时，有时需要自己手写堆结构维护函数
+
+
+/***
+ * 小分堆思想应用
+ * 
+ * 已知一个几乎有序的数组，几乎有序是指，如果把数组排好序的话
+ * 每个元素移动的距离可以不超过k, 并且k 相对于数组来说比较小
+ * 请选择一个合适的排序算法针对这个数据进行排序
+ * 
+ * 主要思想就是因为在一个可范围和下一个K范围顺序已知
+ * 首先构建k个数的小根堆，将小根堆第一个数，也就是k范围内的最小值
+ * 从0位置开始放到原始数组中，放一个往后移一个，小根堆里面的数始终是k个
+ * 最后对K个数每次进行小分堆处理，取第一个数然后放到原始数组中
+ * 
+ */
+// 将数组构建成一个小分堆结构
+function smallRootHeapCreat(arr) {
+  let {length} = arr;
+  for(let i = 0; i< length; i++) {
+    let curr = i;
+    let left = curr * 2 + 1;
+    while(left < length) {
+      const right = left + 1;
+      let min = right <length && arr[right] <arr[left] ? right : left;
+      min = arr[min] <arr[curr] ? min : curr;
+      if(min === curr) {
+        break;
+      } 
+      [arr[min], arr[i]] = [arr[i], arr[min]]
+      curr = min;
+      left = min * 2 +1;
+    }
+  }
+}   
+
+const sortedArrayDistanceLessK = (arr, k) => {
+  const heap = [];
+  let index = 0;
+  for(; index< Math.min(arr.length, k);index++) {
+    heap.push(arr[index]);
+    smallRootHeapInsert(heap)
+  }
+  let i = 0; 
+  for(;index < arr.length; i++, index++) {
+    heap.push(arr[index]);
+    smallRootHeapInsert(heap);
+    arr[i] = heap.shift();
+    smallRootHeapInsert(heap);
+  }
+  while(heap.length) {
+    arr[i++] = heap.shift();
+    smallRootHeapInsert(heap);
+  }
+}
+
+sortedArrayDistanceLessK([3,2,1,6,4,5,9,7,8], 4)

@@ -34,14 +34,14 @@ const oddTimesNum2 = arr => {
   // num = a ^ b;
   // num != 0; num 必然有一个位置上是1
 
-  const rightOne = num & (~ num + 1); // 提取一个数最右边的一个1
+  const rightOne = num & (~num + 1); // 提取一个数最右边的一个1
   let onlyOne = 0;
   arr.forEach(element => {
     // 找到 a 或者 b, 在最右边1的位置等于0或者等于1,相同结果为1，反之为0
     // 这里假如是0，onlyOne 异或结果，就是a 和 b 中在该位置不是1的那个数
     // 如果a 在最右侧1位的数字是0，那么b就是1，onlyOne就是a,num ^ a =>b 
     // 中间满足条件的其他数，因为出现偶数次，会被N^N = 0 抵消掉
-    if(element & rightOne == 0) {
+    if((element & rightOne) == 0) {
       onlyOne ^= element
     }
   })
