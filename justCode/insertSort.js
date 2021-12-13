@@ -1,6 +1,9 @@
 // 插入排序 最坏情况下的时间复杂度为O(N^2)
 
 // 拿后面的数插入到前面排好的顺序中去
+
+// 相同时不交换，可实现稳定性,eg.[3,2,2...]
+
 const insertionSort = arr => {
   if(arr === null || arr.length <2) {
     return arr;

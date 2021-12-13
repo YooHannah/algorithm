@@ -31,6 +31,9 @@ const heapInsert = (arr, index) => {
 
 // heapify 过程 【重点重点】
 // 某个数现在处在index位置， 向下移动形成大根堆
+
+// 形成大根堆的过程会使跟排序失去稳定性 eg.[5 4 4 6]
+
 const heapify = (arr, index, heapSize) => {
   const left = index * 2 + 1;
   while(left < heapSize) {

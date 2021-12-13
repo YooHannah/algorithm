@@ -45,6 +45,7 @@ const process = (arr, L, R) => {
     process(arr,P[1]+1,R);// 在>区递归
   }
 }
+// partition 过程使快排失去稳定性 eg.[6,6,7,6,6,3,...]
 // 处理L~R范围内的数据
 const partition = (arr, L, R) => {
   const less = L-1; // 小于区域的右边界

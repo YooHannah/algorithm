@@ -21,7 +21,7 @@ const process = (arr, L, R) => {
   process(arr, mid+1, R);
   merge(arr,L,mid,R);
 }
-
+// merge时，左右相等，先拷贝左边的可以实现稳定性
 const merge = (arr, L, M, R) => {
   const help = new Array(R-L +1);
   let i = 0;
@@ -71,7 +71,7 @@ const process = (arr, L, R) => {
   process(arr, mid+1, R) +
   merge(arr,L,mid,R);
 }
-
+// 虽然时O(NlogN),但是会丧失稳定性
 const merge = (arr, L, M, R) => {
   const help = new Array(R-L +1);
   let i = 0;
