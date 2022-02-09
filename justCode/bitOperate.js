@@ -8,6 +8,9 @@
 // 一堆数异或结果跟运算顺序无关，结果都是相同的
 
 const swap = (arr, i, j) => {
+  if(i === j){ // 相同位置处理后结果会变成0
+    return;
+  }
   arr[i] = arr[i] ^ arr[j]; 
   arr[j] = arr[i] ^ arr[j]; // 相当于 arr[i] ^ arr[j] ^ a[j] => arr[i] ^ 0 => arr[i] 
   arr[i] = arr[i] ^ arr[j];// 相当于 arr[i] ^ arr[j] ^ a[i] => arr[j]

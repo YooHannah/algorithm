@@ -25,7 +25,7 @@ const process = (arr, L, R) => {
 const merge = (arr, L, M, R) => {
   const help = new Array(R-L +1);
   let i = 0;
-  let p1 = M;
+  let p1 = L;
   let p2 = M + 1;
   while(p1 <= M && p2 <= R) { 
     // 把两边排好序的按大小装进help => 谁小谁进help,然后右移一位 ！！！重点重点

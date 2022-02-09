@@ -22,9 +22,10 @@
 // heapInsert过程 【重点重点】
 // 某个数现在处在index位置，往上继续移动形成大根堆
 const heapInsert = (arr, index) => {
-  while(arr[index] > arr[(index - 1)/2]) { // 自己比自己的根结点大
-    swap(arr, index, (index-1)/2);
-    index = (index - 1)/2;
+  while(arr[index] > arr[parseInt((index - 1)/2)]) { // 自己比自己的根结点大
+    let rootPos = parseInt((index - 1)/2)
+    swap(arr, index, rootPos);
+    index = rootPos;
   }
 }
 

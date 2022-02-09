@@ -12,7 +12,7 @@
  */
 // 以下面这个例子解释
 const getMax = arr => {
-  return ProcessingInstruction(arr, 0, arr.length-1);
+  return process(arr, 0, arr.length-1);
 }
 
 // arr[L...R]范围上最大值

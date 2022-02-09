@@ -40,9 +40,9 @@ const process = (arr, L, R) => {
   if(L < R) {
     // 随机选一个位置跟最右侧数做交换，相当于随机选一个数做基准数
     swap(arr, L+parseInt(Math.random() * (R-L+1)), R)
-    const P = partition(arr, L, R); // 返回等于区域的左右边界
-    process(arr, L, P[0] - 1); // 在<区递归
-    process(arr,P[1]+1,R);// 在>区递归
+    const [left, right] = partition(arr, L, R); // 返回等于区域的左右边界
+    process(arr, L, left); // 在<区递归
+    process(arr, right, R);// 在>区递归
   }
 }
 // partition 过程使快排失去稳定性 eg.[6,6,7,6,6,3,...]
@@ -61,7 +61,8 @@ const partition = (arr, L, R) => {
   }
   // 基准数R的位置一直在最后，跟左边界数据交换，实现大于基准数的全在基准数右边
   swap(arr, more, R);
-  return [less + 1, more] // 返回等于num值区域的左右边界位置，继续对大于区和小于区进行快排
+  //less是小于num的最后一个数的位置, more+1是第一个大于num的数的位置
+  return [less, more + 1] // 返回等于num值区域的左右边界位置，继续对大于区和小于区进行快排
 }
 
 /**
