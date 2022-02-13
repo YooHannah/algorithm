@@ -34,21 +34,51 @@
  * 
  * 单链表
  * 
- * nodeKey : {
- *  value: xxx,
- *  nextNodeKey: yyyy
+ * class Node {
+ *   int value;
+ *   Node next;
  * }
  * 
  * 
  * 双链表
  * 
- * nodeKey {
- *  value: xxx,
- *  nextNodeKey: yyyy,
- *  lastNodeKey: zzzz
+ * class Node {
+ *   int value;
+ *   Node next;
+ *   Node last;
  * }
  * 
  */
+// 生成一个单链表
+ const originarr = [1,2,3,4,5];
+ const generateDoubleLink = (originarr)=> {
+   const link = {};
+   originarr.forEach((value, i) => {
+     const currentNode = i ? link[i-1].next : {
+         value: value,
+         next: null,
+         last: null
+       };
+      link[i] = currentNode;
+     if(i != originarr.length - 1) {
+       const nextValue = originarr[i+1]
+       const nextNode = {
+         value: nextValue,
+         next: null,
+         last: null
+       };;
+       currentNode.next = nextNode;
+     }
+     if(i) {
+       const lastNode = link[i-1];
+       currentNode.last = lastNode;
+     }
+   })
+   return link;
+ }
+ 
+ const link = generateDoubleLink(originarr);
+ console.log(link);
 
 /**
  * 题目: 翻转单向和双向链表
@@ -56,6 +86,46 @@
  * 
  * 注意点： 要求返回head的逻辑要注意写法 head = F(head), 传入老head，返回新head
  */
+const printLink = (head) => {
+  let node = head;
+  let str = ''
+  while(node) {
+    str+=`--->${node.value}`;
+    // str+=`--->${node.value}/${node.next && node.next.value}/${node.rand && node.rand.value}`
+    node = node.next;
+  }
+  console.log(str);
+}
+const turnLink = (head)=> {
+  printLink(head);
+  let lastNode = head;
+  let currentNode = head.next;
+  while(currentNode) {
+    const nextNode = currentNode.next;
+    currentNode.next = lastNode;
+    lastNode = currentNode;
+    currentNode = nextNode;
+  }
+  head.next = null;
+  printLink(lastNode)
+  return lastNode
+}
+
+const turnDoubleLink = (head) => {
+  printLink(lastNode);
+  let currentNode = head.next;
+  let lastNode = head;
+  while(currentNode) {
+    const nextNode = currentNode.next;
+    currentNode.next = lastNode;
+    currentNode.last = nextNode;
+    lastNode = currentNode;
+    currentNode = nextNode;
+  }
+  head.next = null;
+  printLink(lastNode)
+  return lastNode
+}
 
 /**
  * 题目：打印两个有序链表的公共部分
@@ -65,6 +135,36 @@
  * 直到一个链表的结点指向null
  * 
  */
+
+ const printCommonPart = (list1, list2) => {
+  let i = 0;
+  let j = 0;
+  const length1 = list1.length;
+  const length2 = list2.length;
+  if(length1 < 2 && length1 === length2) {
+    if(length1 === 1 && list1[0] === list2[0]) {
+      console.log(list1[0]);
+    }
+    return
+  }
+  const fromSmallToBig = list1[0]<list1[1];
+  while(i < length1 && j< length2) {
+    if(list1[i] === list2[j]) {
+      console.log(list1[i]);
+      i++;
+      j++;
+    } else {
+      if(list1[i] > list2[j]){
+       fromSmallToBig ? j++ : i++;
+      } else {
+        fromSmallToBig ? i++ : j++;
+      }
+    }
+  }
+}
+
+printCommonPart([10,9,8,7,6,5,4,3,2,1], [100,13,9,7,4,2,1])
+printCommonPart([1,2,3,4,5,6,7,8,9,10], [1,4,7,9,10,100])
 
 /**
  * 题目： 判断一个单链表是否为回文结构
@@ -90,6 +190,29 @@
  * 
  * 
  */
+ const judgePalindrome = (head) => {
+  let fast = head;
+  let slow = head;
+  while(fast) {
+    slow = slow.next;
+    fast = fast.next &&  fast.next.next;
+  }
+  const tempHead = turnLink(slow)
+  let current1 = head;
+  let current2 = tempHead;
+  while(current1 && current2) {
+    if(current1.value !== current2.value) {
+      turnLink(tempHead)
+      console.log('不是回文')
+      return false
+    }
+  }
+  console.log('是回文')
+  turnLink(tempHead)
+  return true
+}
+judgePalindrome(link[0])
+console.log(link)
 
 /**
  * 题目：将单向链表按某值划分成左边小，中间相等，右边大的形式
@@ -107,6 +230,63 @@
  * 最终将链表分成大于值，等于值，小于值，三个链表，再将三个链表串起来
  * 注意处理这三部分没有值的情况
  */
+ const generatePartLink = (head,tail,node) => {
+  if(head) {
+    if(tail) {
+      tail.next = node;
+      tail = node;
+      tail.next = null;
+    } else {
+      tail = node;
+      head.next = tail;
+    }
+  } else {
+    head = node;
+    head.next = null;
+  }
+  return { head, tail };
+}
+const linkPartition = (head, value) => {
+  let smallerHeader = null;
+  let smallerTail = null;
+  let equalHeader = null;
+  let equalTail = null;
+  let biggerHeader = null;
+  let biggerTail = null;
+  let currentNode = head;
+  while(currentNode) {
+    const currentValue = currentNode.value;
+    const nextNode = currentNode.next;
+    if(currentValue < value){
+      const { head, tail } = generatePartLink(smallerHeader, smallerTail, currentNode);
+      smallerTail = tail;
+      smallerHeader = head; 
+    }else if(currentValue === value){
+      const { head, tail } = generatePartLink(equalHeader,equalTail,currentNode);
+      equalTail = tail;
+      equalHeader = head; 
+    }else if(currentValue > value){
+      const { head, tail } = generatePartLink(biggerHeader,biggerTail,currentNode);
+      biggerTail = tail;
+      biggerHeader = head; 
+    }
+    currentNode = nextNode;
+  }
+  // printLink(smallerHeader)
+  // printLink(equalHeader)
+  // printLink(biggerHeader)
+  const hasSmaller = smallerTail || smallerHeader;
+  const hasEqual = equalTail || equalHeader;
+  const hasBigger = biggerHeader;
+  if(hasSmaller) {
+    hasSmaller.next = equalHeader || biggerHeader;
+  } 
+  if(hasEqual) {
+    hasEqual.next = biggerHeader;
+  }
+  printLink(smallerHeader || equalHeader || biggerHeader)
+  return smallerHeader || equalHeader || biggerHeader;
+}
 
 
 
@@ -139,7 +319,35 @@
  * 利用位置关系处理next和rand指向，最后将复制链表从原始链表摘出来
  * 
  */
-
+ const copyRandomLink = (head) => {
+  let currentNode = head;
+  while(currentNode) {
+    const nextNode = currentNode.next;
+    const currentCopyNode = {...currentNode};
+    currentNode.next = currentCopyNode;
+    currentCopyNode.next = nextNode;
+    currentNode = nextNode;
+  }
+  currentNode = head;
+  while(currentNode) {
+    const copyNode = currentNode.next;
+    const randomNode = currentNode.rand;
+    copyNode.rand = randomNode.next;
+    currentNode = copyNode.next;
+  }
+  const copyLinkHead = head.next;
+  currentNode = head;
+  while(currentNode) {
+    const currentCopyNode = currentNode.next;
+    const nextNode = currentCopyNode.next;
+    currentNode.next = nextNode;
+    currentCopyNode.next = nextNode && nextNode.next;
+    currentNode = nextNode;
+  }
+  printLink(head);
+  printLink(copyLinkHead);
+  return copyLinkHead
+}
 
 
 /**
