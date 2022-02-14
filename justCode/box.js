@@ -359,7 +359,118 @@ const linkPartition = (head, value) => {
  * 如果不相交，返回null
  * 
  * 要求：如果两个链表长度之和为N， 时间复杂度要求为O(N),额外空间复杂度为O(1)
+ * 
+ * 思路：
+ * 1，如何判断单链表是否有环
+ * 快慢指针，两个指针相等了，一定有环
+ * 将快指针重新回到head,每次走一步，二者相交点即入环第一个节点
+ * 2. 如何判断有无环同步情况下两链表是否相交
+ * a. 二者都没有环，找到各自最后一个结点看是有相同，相同则相交，不同就是不相交
+ *    相交的话，长的链表先走二者长度差个点，二者再每次往下走一步，找到相同节点即相交第一个节点
+ * b. 二者都有环，入环节点相同，二者相交，长链表先走长度差个结点，再一起往下走，走到相同的则是相交点
+ * c. 二者都有环，入环节点不同，让其中一个入环节点走一个环看是否经过另一个入环节点，经过则相交，不经过则不想交
  */
+
+// 判断是否有环
+const getLoopNode = (head) => {
+  if(head === null || head.next === null || head.next.next === null) {
+    return null;
+  }
+  let n1 = head.next;
+  let n2 = head.next.next;
+  while(n1 != n2) {
+    if(n2.next === null || n2.next.next === null) {
+      return null;
+    }
+    n2 = n2.next.next;
+    n1 = n1.next;
+  }
+  n2 = head;
+  while(n1 != n2) {
+    n1 = n1.next;
+    n2 = n2.next;
+  }
+  return n1;
+}
+
+// 如果两个链表都没有环
+const noLoop = (head1, head2) => {
+  if(head1 === null || head2 === null) {
+    return null;
+  }
+
+  let cur1 = head1;
+  let cur2 = head2;
+  let n = 0;
+  while(cur1.next != null) {
+    n++;
+    cur1 = cur1.next;
+  }
+  while(cur2.next != null) {
+    n--;
+    cur2 = cur2.next;
+  }
+  if(cur1 != cur2) {
+    return null
+  }
+  cur1 = n > 0 ? head1 : head2;
+  cur2 = cur1 === head1 ? head2 : head1;
+  n = Math.abs(n);
+  while(n != 0) {
+    n--;
+    cur1 = cur1.next;
+  }
+  while(cur1 != cur2) {
+    cur1 = cur1.next;
+    cur2 = cur2.next;
+  }
+  return cur1;
+} 
+
+// 如果两个单链表都有环
+const bothLoop = (head1, loop1, head2, loop2) => {
+  let cur1 = null;
+  let cur2 = null;
+  if(loop1 === loop2) {
+    cur1 = head1;
+    cur2 = head2;
+    let n = 0;
+    while(cur1 !== loop1) {
+      n++;
+      cur1 = cur1.next;
+    }
+    while(cur2 !== loop2) {
+      n--;
+      cur2 = cur2.next;
+    }
+    cur1 = n > 0 ? head1 : head2;
+    cur2 = cur1 === head1 ? head2 : head1;
+    n = Math.abs(n);
+    while(n != 0) {
+      n--;
+      cur1 = cur1.next;
+    }
+    while(cur1 != cur2) {
+      cur1 = cur1.next;
+      cur2 = cur2.next;
+    }
+    return curl1;
+  } else {
+    cur1 = loop1.next; // 从入环节点下一个开始走环，找loop2
+    while (cur1 != loop1) {
+      if(cur1 == loop2) {
+         return loop1 || loop2;
+      }
+      cur1 = cur1.next;
+    }
+    return null;
+  }
+}
+
+
+
+
+
 
 /**
  * 面试链表解题方法论
