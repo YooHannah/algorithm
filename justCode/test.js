@@ -1,72 +1,49 @@
- const originarr = [10,3,6,7,78];
- const generateDoubleLink = (originarr)=> {
-   const link = {};
-   originarr.forEach((value, i) => {
-     const currentNode = i ? link[i-1].next : {
-         value: value,
-         next: null,
-         last: null
-       };
-      link[i] = currentNode;
-     if(i != originarr.length - 1) {
-       const nextValue = originarr[i+1]
-       const nextNode = {
-         value: nextValue,
-         next: null,
-         last: null
-       };;
-       currentNode.next = nextNode;
-     }
-     if(i) {
-       const lastNode = link[i-1];
-       currentNode.last = lastNode;
-     }
-   })
-   Object.keys(link).forEach(key => {
-     const node = link[key];
-     node.rand = link[parseInt(Math.random() * 5)]
-   })
-   return link;
- }
- 
- const link = generateDoubleLink(originarr);
-//  console.log(link);
-const printLink = (head) => {
-  let node = head;
-  let str = ''
-  while(node) {
-    str+=`--->${node.value}/${node.next && node.next.value}/${node.rand && node.rand.value}`;
-    node = node.next;
+const list = [1,2,3,4,5,6,7, null, 8, null, null, 9];
+let i = 0; 
+const generateBinaryTree = (data, i) => {
+  if(i=== data.length) {
+    return null
   }
-  console.log(str);
+  const value = data[i];
+  const left = 2 * i + 1 < data.length ?  generateBinaryTree(data, 2 * i + 1) : null;
+  const right =  2 * i + 2 < data.length ? generateBinaryTree(data, 2 * i + 2) : null;
+  const node = value ? {
+    value,
+    left,
+    right
+  } : null; 
+  return node
 }
-const copyRandomLink = (head) => {
-  let currentNode = head;
-  while(currentNode) {
-    const nextNode = currentNode.next;
-    const currentCopyNode = {...currentNode};
-    currentNode.next = currentCopyNode;
-    currentCopyNode.next = nextNode;
-    currentNode = nextNode;
+
+const root = generateBinaryTree(list, 0);
+const horizonBinaryTree = (head) => {
+  const arr = [head];
+  let currLevelEnd = head;
+  let nextLevelEnd = null;
+  let currLevelNumber = 0;
+  let max = -1;
+  while(arr.length) {
+    const currNode = arr.shift();
+    const { left, right } = currNode;
+    if(left) {
+      arr.push(left);
+      nextLevelEnd = left;
+    }
+    if(right) {
+      arr.push(right);
+      nextLevelEnd = right;
+    }
+    currLevelNumber++;
+    if (currNode === currLevelEnd) {
+      max = Math.max(max, currLevelNumber);
+      currLevelEnd = nextLevelEnd;
+      nextLevelEnd = null;
+      currLevelNumber = 0;
+    }
   }
-  currentNode = head;
-  while(currentNode) {
-    const copyNode = currentNode.next;
-    const randomNode = currentNode.rand;
-    copyNode.rand = randomNode.next;
-    currentNode = copyNode.next;
-  }
-  const copyLinkHead = head.next;
-  currentNode = head;
-  while(currentNode) {
-    const currentCopyNode = currentNode.next;
-    const nextNode = currentCopyNode.next;
-    currentNode.next = nextNode;
-    currentCopyNode.next = nextNode && nextNode.next;
-    currentNode = nextNode;
-  }
-  printLink(head);
-  printLink(copyLinkHead);
-  return copyLinkHead
+  console.log(max);
 }
-copyRandomLink(link['0']);
+
+horizonBinaryTree(root);
+
+
