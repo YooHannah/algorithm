@@ -1,4 +1,5 @@
-const list = [1,2,3,4,5,6,7, null, 8, null, null, 9];
+// const list = [1,2,3,4,5,6,7, 10, 8, null, null, null, null, null,null,11,12];
+const list = [1,2,3,4,5,6,7];
 let i = 0; 
 const generateBinaryTree = (data, i) => {
   if(i=== data.length) {
@@ -10,40 +11,55 @@ const generateBinaryTree = (data, i) => {
   const node = value ? {
     value,
     left,
-    right
-  } : null; 
+    right,
+    parent: null
+  } : null;
   return node
 }
-
+// const addParent= head => {
+//   if(!head) {
+//     return
+//   }
+//   if (head.left) {
+//     head.left.parent = head;
+//   } 
+//   if (head.right) {
+//     head.right.parent = head;
+//   }
+//   addParent(head.left);
+//   addParent(head.right);
+// }
 const root = generateBinaryTree(list, 0);
-const horizonBinaryTree = (head) => {
-  const arr = [head];
-  let currLevelEnd = head;
-  let nextLevelEnd = null;
-  let currLevelNumber = 0;
-  let max = -1;
-  while(arr.length) {
-    const currNode = arr.shift();
-    const { left, right } = currNode;
-    if(left) {
-      arr.push(left);
-      nextLevelEnd = left;
-    }
-    if(right) {
-      arr.push(right);
-      nextLevelEnd = right;
-    }
-    currLevelNumber++;
-    if (currNode === currLevelEnd) {
-      max = Math.max(max, currLevelNumber);
-      currLevelEnd = nextLevelEnd;
-      nextLevelEnd = null;
-      currLevelNumber = 0;
-    }
+console.log(root);
+const serialByPre = head => {
+  if (!head) {
+    return '#_';
   }
-  console.log(max);
+  let res = head.value + '_';
+  res +=  serialByPre(head.left);
+  res +=  serialByPre(head.right);
+  return res;
+}
+const str = serialByPre(root);
+console.log('vvvv', str);
+const reconPreOrder = list => {
+  const value = list.shift();
+  if(value === '#') {
+    return null;
+  }
+  const head = {
+    value,
+    left: reconPreOrder(list),
+    right: reconPreOrder(list),
+  }
+  return head;
 }
 
-horizonBinaryTree(root);
+const reconBySerialString = str => {
+  const list = str.split('_');
+  return reconPreOrder(list)
+}
+
+console.log(reconBySerialString(str));
 
 

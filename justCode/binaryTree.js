@@ -297,3 +297,345 @@ const horizonBinaryTree = (head) => {
   }
   console.log(max);
 }
+
+/**
+ * 二叉树一种常见的解题思路是树型DP
+ * 简单来说就是根据左右子树的结果
+ * 处理出来整个树的结果
+ * 
+ * 以下题目和概念均可以用来实践
+ * 
+ */
+
+/***
+ * 
+ * 搜索二叉树：中序遍历的顺序，任一子树的左叶子结点< 根结点 < 右叶子结点
+ * 
+ * 如何判断一颗二叉树是否是搜索二叉树
+ * 
+ */
+
+/**
+ * 思路1： 借助递归中序遍历过程，打印逻辑替换为判断逻辑
+ */
+
+let preValue = -1; // 记录当前结点的上一个结点值
+const checkBST1 = (head) => {
+  if (!head) {
+    return;
+  }
+  checkBST1(head.left);
+  if (head.value <= preValue) { // 搜索二叉树是升序，所以，一旦上一个结点值大于当前节点值，那就不是搜索二叉树
+    return false;
+  } else {
+    preValue = head.value;
+  }
+  checkBST1(head.right);
+  return true;
+};
+
+/**
+ * 思路2： 借助非递归中序遍历过程，打印逻辑替换为判断逻辑
+ */
+ let preValue = -1;
+ const checkBST2 = (head) => {
+  const arr = [];
+  let currNode = head;
+  while (arr.length || currNode) {
+    if (currNode) {
+     arr.push(currNode);
+     currNode = currNode.left;
+    } else {
+     currNode = arr.pop();
+     if (currNode.value <= preValue) { // 搜索二叉树是升序，所以，一旦上一个结点值大于当前节点值，那就不是搜索二叉树
+      return false;
+    } else {
+      preValue = currNode.value;
+    }
+     currNode = currNode.right;
+    }
+  }
+  return true;
+}
+
+/**
+ * 思路3: 先拿到中序结果，再遍历
+ */
+
+ const processSort = (head, arr) => {
+   if (!head) {
+    return null;
+   }
+   processSort(head.left, arr);
+   arr.push(head.value);
+   processSort(head.right,arr);
+ }
+ const checkBST3 = (head) => {
+   const arr = [];
+   processSort(head, arr);
+   let i = 1;
+   while(i<arr.length-1) {
+    if(arr[i-1] > arr[i] || arr[i+1] < arr[i]) {
+      return false;
+    }
+    i++
+   }
+   return true;
+ }
+/***
+ * 
+ * 完全二叉树：宽度优先遍历的结果是连续的，没有中断的
+ * 
+ * 如何判断一颗二叉树是否是完全二叉树
+ * 
+ * 思路：根据完全二叉树定义，明确判断条件
+ * 
+ * 1. 任意一个节点，有右子树没有左子树的一定不是完全二叉树
+ * 2. 在没有触发条件1，情况下，如果出现了左右子树不完全的情况
+ *    即只有左树情况，那么接下来的结点，按照宽度优先遍历顺序只能是叶子结点
+ *
+ */
+ 
+let onlyLeft = false; // 记录是否出现了只有左子树的结点
+const isCBT = (head) => {
+  const arr = [head];
+  while(arr.length) {
+    const currNode = arr.shift();
+    const { left, right } = currNode;
+    if(!left && right || onlyLeft && (left || right)) { // 判断条件
+      return false
+    }
+    left && arr.push(left);
+    right && arr.push(right);
+    if(left && !right) {
+      onlyLeft = true
+    }
+  }
+  return true;
+}
+
+/***
+ * 
+ * 满二叉树：除深度最深的一层叶子结点以外，每个结点都有左右叶子结点
+ * 
+ * 满二叉树最大深度L和结点个数N存在这样的关系：N = 2^L -1
+ * 
+ * 如何判断一颗二叉树是否是满二叉树
+ * 思路：算出二叉树的L和N，判断二者关系是否满足上述式子
+ * 二叉树的最大深度 = max(左右子树深度) + 1;
+ * 二叉树节点个数 = 左子树节点个数 + 右子树节点个数
+ */
+ const process = (head) => {
+  if (!head) {
+    return {
+      level: 0,
+      count: 0,
+    }
+  }
+  const leftInfo = process(head.left);
+  const rightInfo = process(head.right);
+  const level = Math.max(leftInfo.level, rightInfo.level) + 1;
+  const count = leftInfo.count + rightInfo.count + 1;
+  return { level, count }
+}
+
+const isFBT = head => {
+  const { level, count } = process(head);
+  return count === (1<<level) - 1
+}
+/***
+ * 
+ * 平衡二叉树： 左右子树的深度<2
+ * 
+ * 如何判断一颗二叉树是否是平衡二叉树
+ * 
+ */
+ const process = (head) => {
+  if (!head) {
+    return {
+      isBBT: true,
+      level: 0
+    }
+  }
+  const leftInfo = process(head.left);
+  const rightInfo = process(head.right);
+  const level = Math.max(leftInfo.level, rightInfo.level) + 1;
+  const isBBT = leftInfo.isBBT && rightInfo.isBBT && Math.abs(leftInfo.level - rightInfo.level) < 2;
+  return { level, isBBT }
+}
+
+const isBBT = head => {
+  const { level, isBBT } = process(head);
+  return isBBT;
+}
+
+/**其他题目 */
+
+/**
+ * 给定一个二叉树的两个结点node1和node2找到他们最低公共祖先节点
+ * 
+ * 思路：分两种情况
+ * 1. 两个节点其中一个结点是另外一个结点的祖先节点，那么其中一个节点遍历到root过程中肯定会经过另外一个节点
+ * 2. 两个节点确实在不同子树上，那么二者遍历到root节点过程中，碰到的第一个公共结点，则是最低公共祖先节点
+ */
+
+/** 方法一 */
+ const process = (head, fatherMap) => {
+  if(!head) {
+    return
+  }
+  fatherMap.set(head.left, head);
+  fatherMap.set(head.right, head);
+  process(head.left, fatherMap);
+  process(head.right, fatherMap);
+}
+
+const LCA = (head, node1, node2) => {
+  const fatherMap = new Map();
+  process(head, fatherMap);
+  fatherMap.set(head,head);
+  let currNode = node1;
+  const node1Parents = [];
+  while(fatherMap.get(currNode) !== currNode) {
+    node1Parents.push(currNode);
+    currNode = fatherMap.get(currNode);
+  }
+  currNode = node2;
+  while(fatherMap.get(currNode) !== currNode) {
+    if(node1Parents.includes(currNode)) {
+      return currNode;
+    } else {
+      currNode = fatherMap.get(currNode);
+    }
+  }
+  return head;
+}
+/** 
+ * 方法二 
+ * 从上往下，分别从左右子树找o1,和o2，有谁返回谁，
+ * 如果两个点分别在左右子树上，那当前节点就是二者最小公共祖先
+ * 如果两个点一个点是另一个点的祖先，那作为祖先的这个点的左右子树遍历结果肯定其中一个为null
+ * 有值的一边也就是最小公共祖先。
+*/
+const LowestAncestor = (head, o1, o2) => {
+  if (!head || head === o1 || head === o2) {
+    return head;
+  }
+  const left = LowestAncestor(head.left, o1, o2);
+  const right = LowestAncestor(head.right,o1, o2);
+  if(right && left) {
+    return head;
+  }
+  return left ? left: right;
+}
+/**
+ * 在二叉树中找到一个节点的后继结点
+ * 后继节点：中序遍历顺序中，一个节点的后一个结点
+ * 前驱节点：中序遍历顺序中，一个节点的前一个结点
+ * 
+ * 现有一种新的二叉树的节点类型如下
+ * class Node {
+ *  int value;
+ *  Node left;
+ *  Node right;
+ *  Node parent;
+ * }
+ * 
+ * 这个结构比普通二叉树节点多了一个指向父节点的parent指针，
+ * 假设有一颗Node类型节点组成的二叉树，树中每个节点parent指向自己的父节点，头节点的parent指向null
+ * 只给一个在二叉树的某个节点Node,请返回Node 的后继节点
+ * 
+ * 思路： 
+ * 1. 如果结点有右子树，那后继结点就是右子树做左边的叶子节点
+ * 2. 如果节点没有右子树，一直往上判断当前结点是不是父节点的左孩子，是的话，这个父节点就是这个节点的后继节点
+ * 
+ */
+ const getSuccessorNode  = node => {
+  if (node.right) {
+   let currNode = node.right;
+   while(currNode.left) {
+     currNode = currNode.left;
+   }
+   return currNode;
+  } else {
+    let currNode = node;
+    while(currNode.parent) {
+      if(currNode = currNode.parent.left) {
+       return currNode.parent;
+      } else {
+        currNode = currNode.parent;
+      }
+    }
+    return currNode;
+  }
+}
+
+/**
+ * 二叉树的序列化和反序列化
+ * 
+ */
+
+/**
+ *  按先序遍历将二叉树序列化成字符串
+ */
+const serialByPre = head => {
+  if (!head) {
+    return '#_';
+  }
+  let res = head.value + '_';
+  res +=  serialByPre(head.left);
+  res +=  serialByPre(head.right);
+  return res;
+}
+
+/**
+ * 按先序将字符串恢复成二叉树
+ */
+ const reconPreOrder = list => {
+  const value = list.shift();
+  if(value === '#') {
+    return null;
+  }
+  const head = {
+    value,
+    left: reconPreOrder(list),
+    right: reconPreOrder(list),
+  }
+  return head;
+}
+
+const reconBySerialString = str => {
+  const list = str.split('_');
+  return reconPreOrder(list)
+}
+
+/**
+ * 折纸问题
+ * 请把一段纸条竖着放在桌子上，然后从纸条的下边向上方对折1次，压出折痕后展开
+ * 此时折痕是凹下去的，即折痕突起的方向指向纸条的背面
+ * 如果从纸条的下边向上方连续对折2次，压出折痕后展开，此时有三条折痕，从上到下依次是
+ * 下折痕，下折痕，上折痕
+ * 给定一个输入参数N, 代表纸条从下往上连续对折N次
+ * 请从上到下，打印所有折痕的方向
+ * 例如N = 1时，打印 down, N = 2时，打印 down down up
+ * 
+ * 思路：对折结果用树表示就是
+ *         down        第一次产生的折痕
+ *     down      up    第二次产生的折痕
+ *   down up  down up  第三次产生的折痕
+ * 
+ * 左子树都是down,右子树都是up;
+ * 打印顺序顺序就是中序遍历的顺序;
+ */
+const printProcess = (i, N, down) => {
+  if( i > N ) {
+    return;
+  }
+  printProcess(i+1, N, true);
+  console.log(down ? 'down' : 'up')
+  printProcess(i+1, N, false);
+}
+
+const printAllFolders = N => {
+  printProcess(1, N, true);
+}
