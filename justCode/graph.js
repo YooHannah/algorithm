@@ -73,29 +73,103 @@ const creatGraph = matrix => {
  /**
   * 图的宽度优先遍历
   * 1. 利用队列实现
-  * 2. 从源节点开始依次按照宽度进队列，然后弹出
+  * 2. 从源节点开始依次按照宽度进队列(与当前节点相连的节点都进去)，然后弹出
   * 3. 每弹出一个点，把该节点所有没有进过队列的临界点放入队列
   * 4. 直到队列变空
   * 
   */
 
- 
+ const bfs = node => {
+   if (!node) {
+    return null
+   }
+   const quenu = [];
+   const set = new Set();
+   quenu.push(node);
+   set.add(node);
+   while(!queue.length) {
+     const cur = queue.shift();
+     console.log(cur.value);
+     cur.nexts.forEach(nextNode => {
+       if(!set.has(nextNode)) {
+        set.add(nextNode);
+        queue.push(nextNode);
+       }
+     })
+   }
+ }
 
 
  /**
   * 广度优先遍历
   * 1.利用栈实现
-  * 2. 从源节点开始把节点按照深度放入栈，然后弹出
+  * 2. 从源节点开始把节点按照深度放入栈(与当前节点相连的节点只进去一个)，然后弹出
   * 3. 每弹出一个点，把该节点下一个没有进过栈的邻接点放入栈中
   * 4，直到栈变空
   * 
   */
 
+ const dfs = node => {
+   if (!node) {
+    return
+   }
+   const stack = [];
+   const set = new Set();
+   stack.push(node);
+   set.add(node);
+   console.log(node.value);
+   while(stack.length) {
+     const currNode = stack.pop();
+     currNode.nexts.forEach(nextNode => {
+       if(!set.has(nextNode)) {
+        stack.push(currNode);
+        stack.push(nextNode);
+        set.add(nextNode);
+        console.log(nextNode.value);
+        break
+       }
+     })
+   }
+
+ }
+
  /**
   * 拓扑排序算法
+  * 
   * 适用范围：要求有向图，且有入度为0的结点，且没有环
+  * 实际应用： 处理项目编译中的文件依赖关系
+  * 
+  * 思路：
+  * 从入度为0的节点开始，遍历其nexts节点，
+  * 并记录遍历过的节点入度减一
+  * 当节点入度减为0时，存入集合中即所有指向整个节点的点都已经被遍历过了
   * 
   */
+
+ const sortedTopology = graph => {
+   // key: Node, value: 剩余的入度
+   const inMap = new Map();
+   const zeroInQueue = []; // 入度为0的点的集合
+   graph.nodes.forEach(node => {
+     inMap.set(node, node.in);
+     if(!node.in) {
+      zeroInQueue.push(node)
+     }
+   })
+   // 排序结果
+   const result = [];
+   while(zeroInQueue.length) {
+     const currNode = zeroInQueue.shift();
+     result.push(currNode);
+     currNode.nexts.forEach(nextNode => {
+       inMap.set(nextNode, inMap.get(nextNode)-1);
+       if (!inMap.get(nextNode)) {
+        zeroInQueue.push(nextNode)
+       }
+     })
+   }
+   return result;
+ }
 
  /**
   * kruskal算法
@@ -107,7 +181,68 @@ const creatGraph = matrix => {
   * 适用范围: 要求无向图
   */
 
+ const primMst = graph => {
+   const priorityQueue = []; // 用于存放解锁的边，每次取权重最小的
+   const set = new Set();
+   const result = new Set(); // 存放每次选中的边
+
+   graph.nodes.forEach(node=> {
+     // node 是起点
+      if(!set.has(node)) {
+        set.set(node);
+        node.edges.forEach(edge => priorityQueue.push(edge));
+        while(priorityQueue.length) {
+          const edge = priorityQueue.sort((a,b)=>a.weight-b.weight)[0];
+          const toNode = edge.to;
+          if (!set.has(toNode)) {
+            set.set(toNode);
+            result.set(toNode);
+            toNode.edges.forEach(edge=> priorityQueue.push(edge))
+          }
+        }
+      }
+    })
+    return result;
+ }
+
  /**
   * Dijkstra算法
   * 适用范围: 没有权值为负数的边，或者有权值为负值的边，但该边不再一个环里面
+  * 
+  * 目的： 用权重最小的边，遍历完整个图，每次找当前节点出发边的最小权重的边走，走过的点不再走
   */
+const getMinDistanceAndUnselectedNode = (distanceMap, touchedNodes) => {
+  let minNode = null;
+  let minDistance = Number.MAX_VALUE;
+  distanceMap.forEach((distance, node) => {
+    if(!touchedNodes.has(node) && distance < minDistance) {
+      minNode = node;
+      minDistance = distance;
+    }
+  });
+  return minNode
+}
+ const dijkstral = head => {
+   // 从head出发到所有点的最小距离
+   // key: 从head出发到达的点
+   // value: 从head出发到达的点的最小距离
+   // 如果在表中，没有T记录，含义是从head出发到T这个点的距离为正无穷
+   const distanceMap = new Map();
+   distanceMap.set(head, 0);
+   // 已经求过距离的节点，存在selectedNodes中，以后再也不碰
+   const selectedNodes = new Set();
+   let minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes);
+   while(minNode) {
+     const distance = distanceMap.get(minNode);
+     minNode.edges.forEach(edge => {
+       const toNode = edge.to;
+       if (!distanceMap.has(toNode)) {
+        distance.set(toNode, distance + edge.weight)
+       }
+       distance.set(toNode, Math.min(distanceMap.get(toNode), distance + edge.weight))
+     })
+     selectedNodes.set(minNode);
+     minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes)
+   }
+   return distanceMap;
+ }
