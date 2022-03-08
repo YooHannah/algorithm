@@ -1,65 +1,72 @@
-// const list = [1,2,3,4,5,6,7, 10, 8, null, null, null, null, null,null,11,12];
-const list = [1,2,3,4,5,6,7];
-let i = 0; 
-const generateBinaryTree = (data, i) => {
-  if(i=== data.length) {
-    return null
+const creatNode = value => (
+  {
+    value: value,
+    in: 0,
+    out: 0,
+    nexts: [],
+    edges: []
   }
-  const value = data[i];
-  const left = 2 * i + 1 < data.length ?  generateBinaryTree(data, 2 * i + 1) : null;
-  const right =  2 * i + 2 < data.length ? generateBinaryTree(data, 2 * i + 2) : null;
-  const node = value ? {
-    value,
-    left,
-    right,
-    parent: null
-  } : null;
-  return node
-}
-// const addParent= head => {
-//   if(!head) {
-//     return
-//   }
-//   if (head.left) {
-//     head.left.parent = head;
-//   } 
-//   if (head.right) {
-//     head.right.parent = head;
-//   }
-//   addParent(head.left);
-//   addParent(head.right);
-// }
-const root = generateBinaryTree(list, 0);
-console.log(root);
-const serialByPre = head => {
-  if (!head) {
-    return '#_';
+);
+const creatGraph = matrix => {
+  const graph = {
+    nodes: new Map(),
+    edges: new Set()
   }
-  let res = head.value + '_';
-  res +=  serialByPre(head.left);
-  res +=  serialByPre(head.right);
-  return res;
-}
-const str = serialByPre(root);
-console.log('vvvv', str);
-const reconPreOrder = list => {
-  const value = list.shift();
-  if(value === '#') {
-    return null;
+  for(let i = 0; i< matrix.length; i++) {
+    const [weight, fromValue, toValue] = matrix[i];
+    if (!graph.nodes.get(fromValue)) {
+      graph.nodes.set(fromValue, creatNode(fromValue))
+    }
+    if (!graph.nodes.get(toValue)) {
+      graph.nodes.set(toValue, creatNode(toValue))
+    }
+    const from = graph.nodes.get(fromValue);
+    const to = graph.nodes.get(toValue);
+    const edge = { weight, from, to };
+    from.out++;
+    to.in +=1;
+    from.nexts.push(to);
+    from.edges.push(edge);
+    graph.edges.add(edge);
   }
-  const head = {
-    value,
-    left: reconPreOrder(list),
-    right: reconPreOrder(list),
-  }
-  return head;
+  return graph;
+ }
+
+ const originData = [[3, 5,6],[2,5,3],[1,5,4],[5,6,2],[8,6,3],[2,4,3],[7,4,2],[4,3,2]];
+ const graph = creatGraph(originData);
+ const getMinDistanceAndUnselectedNode = (distanceMap, touchedNodes) => {
+  let minNode = null;
+  let minDistance = Number.MAX_VALUE;
+  distanceMap.forEach((distance, node) => {
+    if(!touchedNodes.has(node) && distance < minDistance) {
+      minNode = node;
+      minDistance = distance;
+    }
+  });
+  return minNode
 }
-
-const reconBySerialString = str => {
-  const list = str.split('_');
-  return reconPreOrder(list)
-}
-
-console.log(reconBySerialString(str));
-
-
+ const dijkstral = head => {
+   // 从head出发到所有点的最小距离
+   // key: 从head出发到达的点
+   // value: 从head出发到达的点的最小距离
+   // 如果在表中，没有T记录，含义是从head出发到T这个点的距离为正无穷
+   const distanceMap = new Map();
+   distanceMap.set(head, 0);
+   // 已经求过距离的节点，存在selectedNodes中，以后再也不碰
+   const selectedNodes = new Set();
+   let minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes);
+   while(minNode) {
+     const distance = distanceMap.get(minNode);
+     minNode.edges.forEach(edge => {
+       const toNode = edge.to;
+       if (!distanceMap.has(toNode)) {
+        distanceMap.set(toNode, distance + edge.weight)
+       }
+       distanceMap.set(toNode, Math.min(distanceMap.get(toNode), distance + edge.weight))
+     })
+     selectedNodes.add(minNode);
+     minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes)
+   }
+   return distanceMap;
+ }
+console.log(dijkstral(graph.nodes.get(5)));
