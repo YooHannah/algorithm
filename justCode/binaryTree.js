@@ -639,3 +639,132 @@ const printProcess = (i, N, down) => {
 const printAllFolders = N => {
   printProcess(1, N, true);
 }
+
+/***
+ * 前缀树
+ * 
+ * 用于描述一个由字符串组成的数组
+ * 假如现在有一个数组List长这样：['acb','bdf', 'ace']
+ * 将数组中每个字符串中的每个字母当做树的edge的weight
+ * 每个节点包含两个属性
+ * {
+ *    pass: 有多少字符串经过
+ *    end: 当前节点是否是字符串最后一个字母
+ *    nexts: 用0-25的下标位置表示是否有a-z26个字母为权重的边，有的话，把边的to节点存入
+ * }
+ * 数组List 表示成前缀树会成为这样子
+ * 
+ *                     {pass: 3, end: 0}
+ *                    a/                 \b
+ *           {pass: 2, end: 0}     {pass: 1, end: 0}
+ *                 c/                      \d
+ *          {pass: 2, end: 0}          {pass: 1, end: 0}
+ *            b/        \e                   \f
+ * {pass: 1, end: 1}  {pass: 1, end: 1}     {pass: 1, end: 1}  
+ * 
+ * 好处就是可以直接通过pass,end值了解到数组中字符串的情况
+ * 比如检查摸个字符串是否出现过
+ * 就遍历树的节点到该字符串最后一个字符看该edge的toNode的end值是否不等于0，
+ * 大于0，出现过end次，等于0，就是没有出现过
+ * 
+ * 再比如检查有多少字符串是以某个字符串开头的(做前缀)，同样遍历到该字符串最后一个字母的边的toNode
+ * 该toNode的pass值就是有多少字符串以该字符串开头
+ * 
+ * 
+ * 题目： 一个字符串数组arr1,另一个字符串数组arr2,
+ * arr2 中有哪些字符是arr1中出现的，请打印
+ * arr2 中有哪些字符是作为arr1中某个字符串前缀出现的，请打印
+ * arr2 中有哪些字符是作为arr1中某个字符串前缀出现的，请打印arr2中出现次数最多的前缀
+ * 
+ */
+
+ class treeNode {
+  constructor() {
+    this.pass = 0;
+    this.end = 0;
+    this.nexts = {};
+  }
+}
+
+class PreTree {
+  constructor () {
+    this.root = new treeNode;
+  }
+  // 将字符串加入树中
+  insert(str) {
+    if(!str) {
+      return;
+    }
+    const list = str.split('').filter(e=>e);
+    let node = this.root;
+    node.pass++;
+    let index = 0;
+    for(let i = 0; i< list.length;i++) { // 从左往右遍历字符串
+      const char = list[i]; // 由字符对应成走向哪条路
+      if (!node.nexts[char]) {
+        node.nexts[char] = new treeNode()
+      }
+      node = node.nexts[char];
+      node.pass++;
+    }
+    node.end++
+  }
+  // str 之前加入过几次
+  search(str) {
+    if(!str) {
+      return 0;
+    }
+    let node = this.root;
+    const list = str.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(node.nexts[char]) {
+        node = node.nexts[char];
+      } else {
+        return 0;
+      }
+    }
+    return node.end;
+  }
+  // 所有加入的字符串中，有几个是以pre这个字符串作为前缀的
+  prefixNumber(pre) {
+    if(!pre) {
+      return 0;
+    }
+    let node = this.root;
+    const list = pre.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(node.nexts[char]) {
+        node = node.nexts[char];
+      } else {
+        return 0;
+      }
+    }
+    return node.pass;
+  }
+  // 删除已经加在树里面的字符串
+  delete(str) {
+    if(!this.search(str)) {
+      return;
+    }
+    let node = this.root;
+    node.pass--
+    const list = str.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(!(--node.nexts[char].pass)) {
+        delete node.nexts[char];
+        return
+      }
+      node = node.nexts[char];
+    }
+    node.end--;
+  }
+}
+const tree = new PreTree();
+const arr = ['abf', 'abc', 'abe', 'bkg', 'bsd'];
+for(let i = 0; i<arr.length; i++) {
+  tree.insert(arr[i]);
+}
+console.log(tree);

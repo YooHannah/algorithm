@@ -1,72 +1,90 @@
-const creatNode = value => (
-  {
-    value: value,
-    in: 0,
-    out: 0,
-    nexts: [],
-    edges: []
+class trieNode {
+  constructor() {
+    this.pass = 0;
+    this.end = 0;
+    this.nexts = {};
   }
-);
-const creatGraph = matrix => {
-  const graph = {
-    nodes: new Map(),
-    edges: new Set()
-  }
-  for(let i = 0; i< matrix.length; i++) {
-    const [weight, fromValue, toValue] = matrix[i];
-    if (!graph.nodes.get(fromValue)) {
-      graph.nodes.set(fromValue, creatNode(fromValue))
-    }
-    if (!graph.nodes.get(toValue)) {
-      graph.nodes.set(toValue, creatNode(toValue))
-    }
-    const from = graph.nodes.get(fromValue);
-    const to = graph.nodes.get(toValue);
-    const edge = { weight, from, to };
-    from.out++;
-    to.in +=1;
-    from.nexts.push(to);
-    from.edges.push(edge);
-    graph.edges.add(edge);
-  }
-  return graph;
- }
-
- const originData = [[3, 5,6],[2,5,3],[1,5,4],[5,6,2],[8,6,3],[2,4,3],[7,4,2],[4,3,2]];
- const graph = creatGraph(originData);
- const getMinDistanceAndUnselectedNode = (distanceMap, touchedNodes) => {
-  let minNode = null;
-  let minDistance = Number.MAX_VALUE;
-  distanceMap.forEach((distance, node) => {
-    if(!touchedNodes.has(node) && distance < minDistance) {
-      minNode = node;
-      minDistance = distance;
-    }
-  });
-  return minNode
 }
- const dijkstral = head => {
-   // 从head出发到所有点的最小距离
-   // key: 从head出发到达的点
-   // value: 从head出发到达的点的最小距离
-   // 如果在表中，没有T记录，含义是从head出发到T这个点的距离为正无穷
-   const distanceMap = new Map();
-   distanceMap.set(head, 0);
-   // 已经求过距离的节点，存在selectedNodes中，以后再也不碰
-   const selectedNodes = new Set();
-   let minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes);
-   while(minNode) {
-     const distance = distanceMap.get(minNode);
-     minNode.edges.forEach(edge => {
-       const toNode = edge.to;
-       if (!distanceMap.has(toNode)) {
-        distanceMap.set(toNode, distance + edge.weight)
-       }
-       distanceMap.set(toNode, Math.min(distanceMap.get(toNode), distance + edge.weight))
-     })
-     selectedNodes.add(minNode);
-     minNode = getMinDistanceAndUnselectedNode(distanceMap, selectedNodes)
-   }
-   return distanceMap;
- }
-console.log(dijkstral(graph.nodes.get(5)));
+
+class Trie {
+  constructor () {
+    this.root = new trieNode;
+  }
+  // 将字符串加入树中
+  insert(str) {
+    if(!str) {
+      return;
+    }
+    const list = str.split('').filter(e=>e);
+    let node = this.root;
+    node.pass++;
+    let index = 0;
+    for(let i = 0; i< list.length;i++) { // 从左往右遍历字符串
+      const char = list[i]; // 由字符对应成走向哪条路
+      if (!node.nexts[char]) {
+        node.nexts[char] = new trieNode()
+      }
+      node = node.nexts[char];
+      node.pass++;
+    }
+    node.end++
+  }
+  // str 之前加入过几次
+  search(str) {
+    if(!str) {
+      return 0;
+    }
+    let node = this.root;
+    const list = str.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(node.nexts[char]) {
+        node = node.nexts[char];
+      } else {
+        return 0;
+      }
+    }
+    return node.end;
+  }
+  // 所有加入的字符串中，有几个是以pre这个字符串作为前缀的
+  prefixNumber(pre) {
+    if(!pre) {
+      return 0;
+    }
+    let node = this.root;
+    const list = pre.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(node.nexts[char]) {
+        node = node.nexts[char];
+      } else {
+        return 0;
+      }
+    }
+    return node.pass;
+  }
+  // 删除已经加在树里面的字符串
+  delete(str) {
+    if(!this.search(str)) {
+      return;
+    }
+    let node = this.root;
+    node.pass--
+    const list = str.split('').filter(e=>e);
+    for(let i = 0; i<list.length; i++) {
+      const char = list[i];
+      if(!(--node.nexts[char].pass)) {
+        delete node.nexts[char];
+        return
+      }
+      node = node.nexts[char];
+    }
+    node.end--;
+  }
+}
+const tree = new Trie();
+const arr = ['abf', 'abc', 'abe', 'bkg', 'bsd'];
+for(let i = 0; i<arr.length; i++) {
+  tree.insert(arr[i]);
+}
+console.log(tree);
