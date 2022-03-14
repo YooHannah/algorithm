@@ -24,7 +24,20 @@
  * 返回这个最多的宣讲场次
  * 
  */
-
+// 假设programs = [{start:xxxx, end: ccc}];
+const bestArrange = (programs) => {
+  const list = programs.sort((a,b) => a.end -b.end);
+  let timePoint = list[0].start;
+  let count = 0;
+  for(let i = 0;i<list.length;i++) {
+    const { end , start } = list[i];
+    if (timePoint <= list[i].start) {
+      count++;
+      timePoint = end;
+    }
+  }
+  return count;
+}
 
 
 /***
@@ -45,6 +58,17 @@
  * 
  */
 
+const lessMoney = (arr) => {
+  const list = arr.sort((a,b) => b-a);
+  let count = 0;
+  while (list.length >1) {
+    const curr = list.pop() + list.pop();
+    count += curr;
+    list.push(curr);
+  }
+  return count;
+}
+
 /***
  * 题目：
  * 输入
@@ -58,6 +82,26 @@
  * 
  */
 
+ const getMaxProfit = (costs, profits, K, W) => {
+  const originList = costs.map((c, i) => ({
+    c,
+    p: profits[i]
+  }));
+  const minCosts = originList.sort((a,b) => b.c-a.c);
+  let maxProfits = [];
+  for(let i = 0; i< K; i++) {
+    while(minCosts.length && minCosts[minCosts.length - 1].c <= W) {
+      maxProfits.push(minCosts.pop());
+    }
+    maxProfits = maxProfits.sort((a,b) => a.p - b.p);
+    if (!maxProfits.length) {
+      return W
+    }
+    W += maxProfits.pop().p; 
+  }
+  return W;
+}
+
 
 
 /**
@@ -65,6 +109,8 @@
  * 一个数组流中，随时可以取得中位数
  * 
  */
+
+
 
 
 /***
