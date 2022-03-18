@@ -1,20 +1,43 @@
-const getMaxProfit = (costs, profits, K, W) => {
-  const originList = costs.map((c, i) => ({
-    c,
-    p: profits[i]
-  }));
-  const minCosts = originList.sort((a,b) => b.c-a.c);
-  let maxProfits = [];
-  for(let i = 0; i< K; i++) {
-    while(minCosts.length && minCosts[minCosts.length - 1].c <= W) {
-      maxProfits.push(minCosts.pop());
+const getMid = () => {
+  const maxList = [];
+  const minList = [];
+  return curr => {
+    if (!maxList.length && !minList.length) {
+      maxList.push(curr)
+      return curr;
     }
-    maxProfits = maxProfits.sort((a,b) => a.p - b.p);
-    if (!maxProfits.length) {
-      return W
+    const maxInMazList = maxList.sort((a,b)=>b-a)[0];
+    if (curr<=maxInMazList) {
+      maxList.push(curr);
+    } else {
+      minList.push(curr);
     }
-    W += maxProfits.pop().p; 
+    const minInMinList = minList.sort((a,b)=>a-b)[0];
+    if (Math.abs(maxList.length - minList.length)>= 2) {
+      if (maxList.length > minList.length) {
+        minList.push(maxInMazList);
+        const pos = maxList.findIndex(e => e === maxInMazList);
+        maxList.splice(pos, 1);
+      } else {
+        maxList.push(minInMinList);
+        const pos = minList.findIndex(e=> e === minInMinList);
+        minList.splice(pos, 1);
+      }
+    }
+    return maxList.length > minList.length ? maxList.sort((a,b)=> b-a)[0] : minList.sort((a,b)=>a-b)[0];
   }
-  return W;
 }
-console.log(getMaxProfit([1,1,2,2,3,4], [1,4,3,7,2,10], 4,1));
+
+const getMidNumber = getMid();
+
+console.log(getMidNumber(0));
+
+console.log(getMidNumber(3));
+
+console.log(getMidNumber(6));
+
+console.log(getMidNumber(7));
+
+console.log(getMidNumber(2));
+
+console.log(getMidNumber(1));

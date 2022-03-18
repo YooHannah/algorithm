@@ -110,7 +110,38 @@ const lessMoney = (arr) => {
  * 
  */
 
+ const getMid = () => {
+  const maxList = []; // 始终拿最大的值，但存的是偏小的值
+  const minList = []; // 始终拿最小的值，但存的是偏大的值
+  return curr => {
+    if (!maxList.length && !minList.length) {
+      maxList.push(curr)
+      return curr;
+    }
+    const maxInMazList = maxList.sort((a,b)=>b-a)[0];
+    if (curr<=maxInMazList) {
+      maxList.push(curr);
+    } else {
+      minList.push(curr);
+    }
+    const minInMinList = minList.sort((a,b)=>a-b)[0];
+    if (Math.abs(maxList.length - minList.length)>= 2) { 
+      // 如果一个比另外一个多了两个数字，就把maxList的最大值或者minList最小值移到对方数组中
+      if (maxList.length > minList.length) {
+        minList.push(maxInMazList);
+        const pos = maxList.findIndex(e => e === maxInMazList);
+        maxList.splice(pos, 1);
+      } else {
+        maxList.push(minInMinList);
+        const pos = minList.findIndex(e=> e === minInMinList);
+        minList.splice(pos, 1);
+      }
+    }
+    return maxList.length > minList.length ? maxList.sort((a,b)=> b-a)[0] : minList.sort((a,b)=>a-b)[0];
+  }
+}
 
+const getMidNumber = getMid();
 
 
 /***
@@ -122,3 +153,83 @@ const lessMoney = (arr) => {
  * n = 2 或者3，无法实现，返回0；
  * n = 8,返回92
  */
+
+/** 方法一 */
+
+// record[0...i-1] 你需要看，record[i...]不需要看
+// 返回i行皇后放在j列，是否有效
+const isValid = (record, i, j) => {
+  for(let k = 0; k < i; k++) {// i 之前的某个k行的皇后
+    if(j == record[k] || Math.abs(record[k] -j) == Math.abs(i - k)) {
+      return false;
+    }
+  }
+  return true;  
+}
+/**
+ * 潜台词：record[0...i-1]的皇后，任何两个皇后一定都不共行，不共列，不共斜线
+ * @param {*} i 目前来到第i行，
+ * @param {*} record record[0...i-1] 表示之前的行，放了皇后的位置
+ * @param {*} n  一共有多少行
+ * @returns 摆完所有皇后，合理的摆法有多少种
+ */
+const process1 = (i, record, n) {
+  if ( i == n) {
+    return 1;
+  }
+  let res = 0;
+  for(let j = 0;j<n; j++) { // 当前在i行，尝试行所有列 --> j
+    // 判断当前i行皇后，放在j列，会不会和之前(0...i-1)的皇后，共行，共列或者共斜线
+    // 如果是，认为无效，如果不是，认为有效
+    if(isValid(record, i, j)) {
+      record[i] = j;
+      res = process1(i+1, record, n);
+    }
+  }
+  return res;
+}
+const num1 = n => {
+  if (n < 1) {
+    return 0;
+  }
+  const record = [];
+  return process1(0, record, n);
+}
+
+/**方法二 适用于不超过32个皇后的情况 */
+
+/**
+ * 
+ * @param {*} limit 
+ * @param {*} colLim 列的限制，1的位置不能放皇后，0的位置可以
+ * @param {*} leftDiaLim 左斜线的限制，1的位置不能放皇后，0的位置可以
+ * @param {*} rightDaiLim 右斜线的限制，1的位置不能放皇后，0的位置可以
+ */
+const process2 = (limit,colLim,leftDiaLim,rightDaiLim) => {
+  if (colLim == limit) { // base case
+    return 1;
+  }
+  // 所有候选皇后的位置，都在pos上
+  let pos = limit & (~(colLim | leftDiaLim | rightDaiLim));
+  let mostRightOne = 0;
+  let res = 0;
+  while(pos != 0) {
+    mostRightOne = pos & (~pos + 1);
+    pos = pos - mostRightOne;
+    res += process2(
+      limit,
+      colLim | mostRightOne,
+      (leftDiaLim | mostRightOne) << 1,
+      (rightDaiLim | mostRightOne) >> 1
+    );
+  }
+  return res
+}
+
+const num2 = n => {
+  if (n < 1 || n > 32) {
+    return 0;
+  }
+  let limit = n == 32 ? -1 : (1<<n) - 1;
+  return process2(limit, 0, 0, 0)
+}
