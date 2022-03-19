@@ -49,16 +49,96 @@ const process = (arr, L, R) => {
 
 /**
  * 题目：
+ * 汉诺塔问题
+ */
+
+const func = (i, start, end, other) => {
+  if (i === 1) {
+    console.log(`Move 1 from ${start} to ${end}`);
+  } else {
+    func(i - 1, start, other, end);
+    console.log(`Move ${i} from ${start} to ${end}`);
+    func(i - 1, other, end, start);
+  }
+}
+
+const hani = (n) => {
+  if( n > 0) {
+    func(n, '左', '右', '中')
+  }
+}
+
+
+/**
+ * 题目：
  * 打印一个字符串的全部子序列，包括空字符串
  * 
  */
+// 方法一
+const process1 = (strList, i, res) => {
+  if ( i === strList.length) {
+    console.log(res.join(''));
+    return
+  }
+  const resKeep = res.slice();
+  resKeep.push(strList[i])
+  process1(strList, i+1, resKeep);
+  const resNoInclude = res.slice();
+  process1(strList, i+1, resNoInclude);
+}
+const printStrSubsequence1 = str => {
+  const strList = str.split('');
+  process1(strList, 0, []);
+}
 
+// 方法二
+const process2 = (strList, i) => {
+  if ( i === strList.length) {
+    console.log(res.filter(e=>e).join(''));
+    return
+  }
+  process2(strList, i+1);
+  const temp = strList[i];
+  strList[i] = 0;
+  process2(strList, i+1);
+ strList[i] = temp
+}
+const printStrSubsequence2 = str => {
+  const strList = str.split('');
+  process(strList, 0, []);
+}
 
 /**
  * 题目：
  * 打印一个字符串的全排列
  * 打印一个字符串的全部排列，要求不要出现重复的排列
  */
+
+const process = (str, i, res) => {
+  if (i === str.length) {
+    res.push(str.join(''));
+  }
+  const visit = {};
+  for(let j = i; j<str.lengt;j++) {
+    const char = str[j];
+    if(!visit[char]) {
+      visit[char] = true;
+      swap(str,i,j);
+      process(str, i+1, res);
+      swap(str, i, j);
+    }
+  }
+}
+
+const Permulatin = str => {
+  const res = [];
+  if (!str) {
+    return res;
+  }
+  const list = str.split('');
+  process(list, 0, res);
+  return res;
+}
 
 /**
  * 题目：
@@ -85,6 +165,27 @@ const process = (arr, L, R) => {
  * 
  */
 
+const f = (arr, i, j) => {
+  if(i === j) {
+    return arr[i];
+  }
+  return Math.max(arr[i] + s(arr, i+1,j),arr[j] + s(arr, i, j-1))
+}
+
+const s = (arr, i,j) => {
+  if(i == j) {
+    return 0;
+  }
+  return Math.min(f(arr, i + 1, j), f(arr, i, j - 1))
+}
+
+const win1 = arr => {
+  if(!arr || !arr.length) {
+    return 0;
+  }
+  return Math.max(f(arr, 0, arr.length - 1), s(arr, 0, arr.length - 1));
+}
+
 
 
 
@@ -92,7 +193,25 @@ const process = (arr, L, R) => {
  * 题目：
  * 给你一个栈，请逆序这个栈，不能申请额外的数据结构，只能使用递归函数，如何实现
  */
+const f = stack => {
+  const result = stack.pop();
+  if (!stack.length) {
+    return result
+  } else {
+    const last = f(stack);
+    stack.push(result);
+    return last;
+  }
+}
 
+const reverse = stack => {
+  if(!stack.length) {
+    return stack;
+  }
+  const i = f(stack);
+  reverse(stack);
+  stack.push(i);
+}
 
 /**
  * 题目：
@@ -100,6 +219,32 @@ const process = (arr, L, R) => {
  * 那么一个数字字符串，比如“111”，就可以转化为“AAA”, "kA"和“AK”
  * 给定一个只有数字字符组成的字符串str,返回有多少种转化结果
  */
+
+const process = (str, i) => {
+  if (i == str.length) {
+    return 1;
+  }
+  if (str[i] === '0') {
+    return 0;
+  }
+  if(str[i] == '1') {
+    const res = process(str, i+1); // i 自己作为单独的部分后续有多少种方法
+    if(i + 1 < str.length) {
+      res += process(str, i + 2); // (i 和 i+1) 作为单独的部分，后续有多少种方法
+    }
+    return res;
+  }
+  if (str[i] === '2') {
+    const res = process(str, i+1);// i 自己作为单独的部分后续有多少种方法
+    // (i 和 i+1) 作为单独的部分并且没有超过26，后续有多少种方法
+    if(i+1 < str.length && (str[i+1] >= '0' && str[i+1]<= '0')) {
+      res += process(str, i+1);
+    }
+    return res;
+  }
+  // str[i] == '3' ~ '9'
+  return process(str, i+1);
+}
 
 
 /***
@@ -110,3 +255,37 @@ const process = (arr, L, R) => {
  * 返回你能装下的最多的价值是多少？
  * 
  */
+/**
+ * 
+ * @param {*} weights 所有重量
+ * @param {*} values 所有价值
+ * @param {*} i i...的货物自由选择， 形成最大的价值返回
+ * @param {*} alreadyweight 之前做的决定，所达到的重量，alreadyweight
+ * @param {*} bag 不能超过的重量
+ * @returns 
+ */
+const process1 = (weights, values, i, alreadyweight, bag) => {
+  if(alreadyweight > bag) {
+    return 0;
+  }
+  if(i == weights.length) {
+    return 0;
+  }
+  return Math.max(
+    process1(weight, values, i + 1, alreadyweight,bag),
+    values[i] + process(weights, values, i + 1, alreadyweight + weights[i],bag)
+  );
+}
+
+const process2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
+  if (alreadyWeight > bag) {
+    return 0;
+  }
+  if(i == values.length) {
+    return alreadyValue;
+  }
+  return Math.max(
+    process2(weights, values, i+1,alreadyWeight,alreadyValue,bag),
+    process2(weights, values, i+1,alreadyWeight + weights[i], alreadyValue + values[i],bag)
+  )
+}
