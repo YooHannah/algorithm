@@ -155,7 +155,6 @@ const getMidNumber = getMid();
  */
 
 /** 方法一 */
-
 // record[0...i-1] 你需要看，record[i...]不需要看
 // 返回i行皇后放在j列，是否有效
 const isValid = (record, i, j) => {
@@ -173,7 +172,7 @@ const isValid = (record, i, j) => {
  * @param {*} n  一共有多少行
  * @returns 摆完所有皇后，合理的摆法有多少种
  */
-const process1 = (i, record, n) {
+const process1 = (i, record, n) =>{
   if ( i == n) {
     return 1;
   }
@@ -183,7 +182,7 @@ const process1 = (i, record, n) {
     // 如果是，认为无效，如果不是，认为有效
     if(isValid(record, i, j)) {
       record[i] = j;
-      res = process1(i+1, record, n);
+      res += process1(i+1, record, n);
     }
   }
   return res;

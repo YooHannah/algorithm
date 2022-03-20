@@ -50,6 +50,12 @@ const process = (arr, L, R) => {
 /**
  * 题目：
  * 汉诺塔问题
+ * 有一种被称为汉诺塔(Hanoi)的游戏。
+ * 该游戏是在一块铜板装置上，有三根杆(编号A、B、C)，
+ * 在A杆自下而上、由大到小按顺序放置64个金盘。
+ * 游戏的目标：把A杆上的金盘全部移到C杆上，并仍保持原有顺序叠好。
+ * 操作规则：每次只能移动一个盘子，并且在移动过程中三根杆上都始终保持大盘在下，小盘在上，
+ * 操作过程中盘子可以置于A、B、C任一杆上。
  */
 
 const func = (i, start, end, other) => {
@@ -94,7 +100,7 @@ const printStrSubsequence1 = str => {
 // 方法二
 const process2 = (strList, i) => {
   if ( i === strList.length) {
-    console.log(res.filter(e=>e).join(''));
+    console.log(strList.filter(e=>e).join(''));
     return
   }
   process2(strList, i+1);
@@ -105,7 +111,7 @@ const process2 = (strList, i) => {
 }
 const printStrSubsequence2 = str => {
   const strList = str.split('');
-  process(strList, 0, []);
+  process2(strList, 0, []);
 }
 
 /**
@@ -118,8 +124,8 @@ const process = (str, i, res) => {
   if (i === str.length) {
     res.push(str.join(''));
   }
-  const visit = {};
-  for(let j = i; j<str.lengt;j++) {
+  const visit = {}; // 防止有相同字符时产生相同的组合
+  for(let j = i; j<str.length;j++) {
     const char = str[j];
     if(!visit[char]) {
       visit[char] = true;
@@ -165,14 +171,14 @@ const Permulatin = str => {
  * 
  */
 
-const f = (arr, i, j) => {
+ function f(arr, i, j) {
   if(i === j) {
     return arr[i];
   }
   return Math.max(arr[i] + s(arr, i+1,j),arr[j] + s(arr, i, j-1))
 }
 
-const s = (arr, i,j) => {
+function s(arr, i,j) {
   if(i == j) {
     return 0;
   }
@@ -211,6 +217,7 @@ const reverse = stack => {
   const i = f(stack);
   reverse(stack);
   stack.push(i);
+  return stack;
 }
 
 /**
@@ -220,7 +227,7 @@ const reverse = stack => {
  * 给定一个只有数字字符组成的字符串str,返回有多少种转化结果
  */
 
-const process = (str, i) => {
+ const process = (str, i) => {
   if (i == str.length) {
     return 1;
   }
@@ -228,7 +235,7 @@ const process = (str, i) => {
     return 0;
   }
   if(str[i] == '1') {
-    const res = process(str, i+1); // i 自己作为单独的部分后续有多少种方法
+    let res = process(str, i+1); // i 自己作为单独的部分后续有多少种方法
     if(i + 1 < str.length) {
       res += process(str, i + 2); // (i 和 i+1) 作为单独的部分，后续有多少种方法
     }
@@ -244,6 +251,11 @@ const process = (str, i) => {
   }
   // str[i] == '3' ~ '9'
   return process(str, i+1);
+}
+
+const generateCode = (str) => {
+  const list = str.split('');
+  return process(list, 0);
 }
 
 
@@ -264,7 +276,7 @@ const process = (str, i) => {
  * @param {*} bag 不能超过的重量
  * @returns 
  */
-const process1 = (weights, values, i, alreadyweight, bag) => {
+ const method1 = (weights, values, i, alreadyweight, bag) => {
   if(alreadyweight > bag) {
     return 0;
   }
@@ -272,12 +284,12 @@ const process1 = (weights, values, i, alreadyweight, bag) => {
     return 0;
   }
   return Math.max(
-    process1(weight, values, i + 1, alreadyweight,bag),
-    values[i] + process(weights, values, i + 1, alreadyweight + weights[i],bag)
+    method1(weights, values, i + 1, alreadyweight,bag),
+    values[i] + method1(weights, values, i + 1, alreadyweight + weights[i],bag)
   );
 }
 
-const process2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
+const method2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
   if (alreadyWeight > bag) {
     return 0;
   }
@@ -285,7 +297,7 @@ const process2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
     return alreadyValue;
   }
   return Math.max(
-    process2(weights, values, i+1,alreadyWeight,alreadyValue,bag),
-    process2(weights, values, i+1,alreadyWeight + weights[i], alreadyValue + values[i],bag)
+    method2(weights, values, i+1,alreadyWeight,alreadyValue,bag),
+    method2(weights, values, i+1,alreadyWeight + weights[i], alreadyValue + values[i],bag)
   )
 }
