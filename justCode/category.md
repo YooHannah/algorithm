@@ -72,3 +72,8 @@
 [二叉树](https://github.com/YooHannah/algorithm/blob/master/justCode/binaryTree.js)
 [图](https://github.com/YooHannah/algorithm/blob/master/justCode/graph.js)
 
+# 其他
+[贪心算法](https://github.com/YooHannah/algorithm/blob/master/justCode/greedy.js)
+[哈希相关](https://github.com/YooHannah/algorithm/blob/master/justCode/hash.js)
+
+
