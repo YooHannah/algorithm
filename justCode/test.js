@@ -1,37 +1,36 @@
-const getNextArray = str => {
-  const list = str.split('');
-  const next = [-1, 0];
-  let cn = 0;
-  let i = 2;
-  while(i<list.length) {
-    if (list[i -1] === list[cn]) {
-      next[i++] = ++cn;
-    } else if (cn > 0) {
-      cn = next[cn];
-    } else {
-      next[i++] = 0;
+const infect = (arr, i, j, lines, columns) => {
+  if(i<0 || i>=lines || j <0 || j>=columns || arr[i][j] !=1) {
+    return;
+  }
+  arr[i][j] = 2;
+  infect(arr,i-1,j,lines, columns);
+  infect(arr,i+1,j,lines, columns);
+  infect(arr,i,j-1,lines, columns);
+  infect(arr,i,j+1,lines, columns);
+}
+const countIslands = arr => {
+  const lines = arr.length;
+  const columns = arr[0].length;
+  if (!arr || !lines || !columns) {
+    return 0;
+  }
+  let j = 0;
+  let count = 0;
+  for(let i=0; i<lines; i++) {
+    const line = arr[i];
+    for(let j = 0;j < columns; j++) {
+      const value = line[j];
+      if(value === 1) {
+        count++;
+        infect(arr, i, j, lines, columns);
+      }
     }
   }
-  return next;
+  return count;
 }
-
-const kmp = (str1, str2) => {
-  const list1 = str1.split('');
-  const list2 = str2.split('');
-  const next = getNextArray(str2);
-  console.log(next);
-  let i1 = 0;
-  let i2 = 0;
-  while(i1 < list1.length && i2 < list2.length) {
-    if (list1[i1] === list2[i2]) {
-      i1++;
-      i2++;
-    } else if(i2 === 0) {
-      i1++;
-    } else {
-      i2 = next[i2];
-    }
-  }
-  return i2 === list2.length ? i1 - i2 : -1
-}
-console.log(kmp('568121212123489', '1212121234'))
+console.log(countIslands([
+  [0,0,1,0,1,0],
+  [1,1,1,0,1,0],
+  [1,0,0,1,0,0],
+  [0,0,0,0,0,0]
+]))

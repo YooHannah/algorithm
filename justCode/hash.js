@@ -15,7 +15,68 @@
  * 
  */
 
-//应用：并查集
+/**
+ * 应用：并查集
+ * 解决如何快速判断两个元素是否在统一集合中，快速合并元素为一个集合的问题
+ */
+
+class UnionFindSet () {
+  constructor() {
+    this.elementMap = new Map();
+    this.fatherMap = new Map();
+    this.sizeMap = new Map();
+  }
+
+  initSet(list) {
+    for(let i = 0;i<list.length;i++) {
+      const value = list[i];
+      const element = { value };
+      this.elementMap.set(value, element);
+      this.fatherMap.set(element,element);
+      this.sizeMap.set(element, 1);
+    } 
+  }
+
+  findHead(element) {
+    const path = [];
+    let tempElement = element;
+    while(tempElement != this.fatherMap.get(tempElement)){
+      path.push(tempElement);
+      tempElement = this.fatherMap.get(tempElement)
+    }
+    if(path.length) {
+      const size = this.sizeMap.get(tempElement);
+      this.sizeMap.set(tempElement, size+path.length)
+    }
+    while(path.length) {
+      const pathElemet = path.pop();
+      this.fatherMap.set(pathElemet, tempElement);
+    }
+    // return tempElement;
+  }
+
+  isSameSet(a,b) {
+    if(this.elementMap.has(a) && this.elementMap.has(b)) {
+      return this.findHead(this.elementMap.get(a)) === this.findHead(this.elementMap.get(b))
+    }
+    // return false;
+  }
+  
+  union(a,b) {
+    if(!this.elementMap.has(a) && this.elementMap.has(b)) {
+      return
+    }
+    const aF = findHead(elementMap.get(a));
+    const bF = findHead(elementMap.get(b));
+    if(aF != bF) {
+      const big = sizeMap.get(aF) > sizeMap.get(bF) ? aF : bF;
+      const small = big === aF ? bF : aF;
+      fatherMap.set(big, small);
+      sizeMap.put(big, sizeMap.get(aF) + sizeMap(bF));
+      sizeMap.delete(small);
+    }
+  }
+}
 
 /**
  * 设计RandomPool结构
@@ -47,3 +108,33 @@
  * 如何设计一个并行算法解决这个问题
  * 
  */
+ const infect = (arr, i, j, lines, columns) => {
+  if(i<0 || i>=lines || j <0 || j>=columns || arr[i][j] !=1) {
+    return;
+  }
+  arr[i][j] = 2;
+  infect(arr,i-1,j,lines, columns);
+  infect(arr,i+1,j,lines, columns);
+  infect(arr,i,j-1,lines, columns);
+  infect(arr,i,j+1,lines, columns);
+}
+const countIslands = arr => {
+  const lines = arr?.length;
+  const columns = arr && arr[0]?.length;
+  if (!arr || !lines || !columns) {
+    return 0;
+  }
+  let j = 0;
+  let count = 0;
+  for(let i=0; i<lines; i++) {
+    const line = arr[i];
+    for(let j = 0;j < columns; j++) {
+      const value = line[j];
+      if(value === 1) {
+        count++;
+        infect(arr, i, j, lines, columns);
+      }
+    }
+  }
+  return count;
+}
