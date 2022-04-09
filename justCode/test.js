@@ -1,36 +1,34 @@
-const infect = (arr, i, j, lines, columns) => {
-  if(i<0 || i>=lines || j <0 || j>=columns || arr[i][j] !=1) {
-    return;
+const manacherString = str => `#${str.split('').join('#')}#`;
+
+const maxLcpStringLength = str => {
+  if (!str) {
+    return '输入非法';
   }
-  arr[i][j] = 2;
-  infect(arr,i-1,j,lines, columns);
-  infect(arr,i+1,j,lines, columns);
-  infect(arr,i,j-1,lines, columns);
-  infect(arr,i,j+1,lines, columns);
-}
-const countIslands = arr => {
-  const lines = arr.length;
-  const columns = arr[0].length;
-  if (!arr || !lines || !columns) {
-    return 0;
-  }
-  let j = 0;
-  let count = 0;
-  for(let i=0; i<lines; i++) {
-    const line = arr[i];
-    for(let j = 0;j < columns; j++) {
-      const value = line[j];
-      if(value === 1) {
-        count++;
-        infect(arr, i, j, lines, columns);
+  // 将字符串中插入#
+  const list = manacherString(str);
+  let c = -1;
+  let r = -1;
+  let max = Number.MIN_VALUE;
+  let pArr = [];
+  const { length } = list;
+  for (let i = 0; i<length; i++) {
+    pArr[i] = r > i ? Math.min(pArr[2 * c - i] || 1, r -i)  : 1;
+    while (i + pArr[i] < length && i - pArr[i] > -1) {
+      const distance = pArr[i];
+      if (list[i - distance] === list[i + distance]) {
+        pArr[i]++
+      } else {
+        break
       }
     }
+    if(i + pArr[i] > r) {
+      r = i + pArr[i];
+      c = i;
+    }
+    console.log(list[i], pArr[i]);
+    max = Math.max(max, pArr[i])
   }
-  return count;
+  return max - 1;
 }
-console.log(countIslands([
-  [0,0,1,0,1,0],
-  [1,1,1,0,1,0],
-  [1,0,0,1,0,0],
-  [0,0,0,0,0,0]
-]))
+
+console.log(maxLcpStringLength('65122189'))
