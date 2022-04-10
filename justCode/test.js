@@ -1,34 +1,48 @@
-const manacherString = str => `#${str.split('').join('#')}#`;
-
-const maxLcpStringLength = str => {
-  if (!str) {
-    return '输入非法';
+const getMinPos = arr => {
+  if (!arr || !arr.length) {
+    return null;
   }
-  // 将字符串中插入#
-  const list = manacherString(str);
-  let c = -1;
-  let r = -1;
-  let max = Number.MIN_VALUE;
-  let pArr = [];
-  const { length } = list;
-  for (let i = 0; i<length; i++) {
-    pArr[i] = r > i ? Math.min(pArr[2 * c - i] || 1, r -i)  : 1;
-    while (i + pArr[i] < length && i - pArr[i] > -1) {
-      const distance = pArr[i];
-      if (list[i - distance] === list[i + distance]) {
-        pArr[i]++
-      } else {
-        break
-      }
+  const pmin = [];
+  const minPos = [];
+  for(let i = 0; i < arr.length; i++) {
+    while (pmin.length && arr[pmin[pmin.length -1]] > arr[i]) {
+     const lastpos = pmin.pop();
+     minPos.push({
+       pos: lastpos,
+       value: arr[lastpos],
+       left: pmin.length > 1 ? pmin[pmin.length - 1] : -1,
+       right: i
+     });
     }
-    if(i + pArr[i] > r) {
-      r = i + pArr[i];
-      c = i;
-    }
-    console.log(list[i], pArr[i]);
-    max = Math.max(max, pArr[i])
+    pmin.push(i);
   }
-  return max - 1;
+  while(pmin.length) {
+    const lastpos = pmin.pop();
+    minPos.push({
+      pos: lastpos,
+      value: arr[lastpos],
+      left: pmin.length ? pmin[pmin.length - 1] : -1,
+      right: -1
+    });
+  }
+  return minPos
 }
-
-console.log(maxLcpStringLength('65122189'))
+const getMaxIndexA = arr => {
+  if (!arr || !arr.length) {
+    return null;
+  }
+  const posInfoList = getMinPos(arr);
+  const IndexAList = [];
+  posInfoList.forEach(item => {
+    const { pos, left, right } = item;
+    const start = left === -1 ? pos : left + 1;
+    const end = right === -1 ? arr.length: right; 
+    const list = arr.slice(start, end);
+    const sum = list.reduce((prev,curr) => prev + curr, 0)
+    const IndexA = sum * arr[pos];
+    console.log(item.value, list)
+    IndexAList.push(IndexA);
+  })
+  return IndexAList.sort((a,b)=> b-a)[0];
+}
+console.log(getMaxIndexA([10,1,2,3,7,8,6,5,4,9]))
