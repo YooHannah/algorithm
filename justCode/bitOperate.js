@@ -59,6 +59,30 @@ const oddTimesNum2 = arr => {
  * 给定两个有符号的32位整数a和b,返回a和b中较大的
  * [要求] 不能做任何比较判断
  */
+// n = 1 => 0; n = 0 => 1
+const flip = n => n^1;
+
+// n 是负数返回 0,n 是非负数返回1
+const sign = n => flip((n >> 31) & 1);
+//a,b 均是正数情况下
+const getMax = (a,b) => {
+  const c = a-b;
+  const scA  = sign(c); // 如果a>b, c是正数，scA是1，
+  const scB = flip(scA); // scB 是scA相反，所以肯定一个是1一个是0
+  return scA * a + scB * b;
+}
+// a,b有符号时
+const getMax2 = (a,b) => {
+  const c = a - b;
+  const sa = sign(a);
+  const sb = sign(b);
+  const sc = sign(c);
+  const difSab = sa ^ sb; // a和b符号不一样为1；一样为0
+  const sameSab = flip(difSab); // // a和b符号不一样为0；一样为1
+  const returnA = difSab * sa + sameSab *b;
+  const returnB = flip(returnA);
+  return a * returnA + b * returnB;
+}
 
 /**
  * 给定两个有符号的32位整数a和b, 不能使用算术运算符，分别实现二者的加减乘除运算
@@ -66,8 +90,52 @@ const oddTimesNum2 = arr => {
  * 如果给定的a,b执行加减乘除的结果会导致数据的溢出，那么你实现的函数不必对此负责
  * 除此之外保证计算过程不发生溢出
  */
-
-
+// 加法
+// 原始两个数相加结果等于二者无进位相加结果加上进位信息结果
+// 无进位相加 = a ^b
+// 进位信息 = (a & b) << 1
+const add = (a,b) => {
+  let sum = a;
+  while(b) {
+    sum = a ^ b;
+    b = (a & b) << 1;
+    a = sum;
+  }
+  return sum;
+}
+// 取相反数反
+const negNum = n => add(~n, 1);
+// 减法
+const minus = (a,b) => add(a, negNum(b))
+// 乘法
+const multi = (a,b) => {
+  let res = 0;
+  while(b) {
+    if(b & 1) {
+      res = add(res, a);
+    }
+    a <<=1;
+    b >>>=1;
+  }
+  return res;
+}
+const isNeg = n => n < 0;
+// 除法 , 乘法逆序
+const div = (a,b) => {
+  let x = isNeg(a) ? negNum(a) : a;
+  let y = isNeg(b) ? negNum(b) : a;
+  let res = 0;
+  for(let i = 31; i > -1;i = minus(i,1)) {
+    if((x >> i) > y) {
+      res |=(1<<i);
+      x = minus(x,y<<i);
+    }
+  }
+  return isNeg(a) ^ isNeg(b) ? negNum(res) : res; 
+}
 /**
  * 判断一个32位正整数是不是2的幂，4的幂？
  */
+
+const is2Power = n => n & (n -1)  === 0;
+const is4Power = n => n & (n-1) === 0 && (n & 0x55555555) != 0;
