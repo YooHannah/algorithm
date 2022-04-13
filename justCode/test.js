@@ -1,48 +1,53 @@
-const getMinPos = arr => {
-  if (!arr || !arr.length) {
-    return null;
+const getMaxHappy = node => {
+  if(!node.nexts.length) {
+     return {
+       come: node.happy,
+       absent: 0
+     }
+   }
+  const { happy, nexts } = node;
+  let come = happy;
+  let absent = 0;
+  for(let i = 0; i<nexts.length; i++) {
+    const result =  getMaxHappy(nexts[i]);
+    const max = Math.max(result.come, result.absent);
+    absent +=max;
+    come +=result.absent;
   }
-  const pmin = [];
-  const minPos = [];
-  for(let i = 0; i < arr.length; i++) {
-    while (pmin.length && arr[pmin[pmin.length -1]] > arr[i]) {
-     const lastpos = pmin.pop();
-     minPos.push({
-       pos: lastpos,
-       value: arr[lastpos],
-       left: pmin.length > 1 ? pmin[pmin.length - 1] : -1,
-       right: i
-     });
+  return {
+    absent,
+    come
+  }
+ }
+const node = {
+  happy: 20,
+  nexts: [
+    {
+      happy: 3,
+      nexts: [
+        {
+          happy: 5,
+          nexts: []
+        },
+        {
+          happy: 7,
+          nexts: []
+        }
+      ]
+    },
+    {
+      happy: 4,
+      nexts: [
+        {
+          happy: 10,
+          nexts: []
+        },
+        {
+          happy: 2,
+          nexts: []
+        }
+      ]
     }
-    pmin.push(i);
-  }
-  while(pmin.length) {
-    const lastpos = pmin.pop();
-    minPos.push({
-      pos: lastpos,
-      value: arr[lastpos],
-      left: pmin.length ? pmin[pmin.length - 1] : -1,
-      right: -1
-    });
-  }
-  return minPos
+  ]
 }
-const getMaxIndexA = arr => {
-  if (!arr || !arr.length) {
-    return null;
-  }
-  const posInfoList = getMinPos(arr);
-  const IndexAList = [];
-  posInfoList.forEach(item => {
-    const { pos, left, right } = item;
-    const start = left === -1 ? pos : left + 1;
-    const end = right === -1 ? arr.length: right; 
-    const list = arr.slice(start, end);
-    const sum = list.reduce((prev,curr) => prev + curr, 0)
-    const IndexA = sum * arr[pos];
-    console.log(item.value, list)
-    IndexAList.push(IndexA);
-  })
-  return IndexAList.sort((a,b)=> b-a)[0];
-}
-console.log(getMaxIndexA([10,1,2,3,7,8,6,5,4,9]))
+console.log(getMaxHappy(node))
