@@ -187,6 +187,174 @@ const frontBinaryTree = (head) => {
   }
 }
 
+/**
+ * 【Morris 遍历】
+ * 一种遍历二叉树的方式，并且时间复杂度O(N), 额外空间复杂度O(1)
+ * 通过利用树中大量空闲的指针的方式，达到节省空间的目的
+ * 
+ * 细节/流程：假设来到当前节点cur,开始时cur来到头结点位置
+ * 1. 如果cur没有左孩子，cur向右移动，cur = cur.right
+ * 2. 如果cur有左孩子，找到左子树上最右的节点mostright
+ *    如果mostright的右指针指向空，让其指向cur，然后cur向左移动 cur = cur.left
+ *    如果mostright的右指针指向cur,让其指向null, 然后cur向右移动 cur = cur.right
+ * 3. cur 为空时遍历停止
+ * 
+ * 对于下面这棵树，
+ *         1
+ *     2        3
+ *   4   5    6    7
+ * 
+ * Morris的curr值的变化顺序是： 1，2，4，2，5，1，3，6，3，7
+ * 
+ * 可以发现相比递归形式各个节点访问次数明显减少，递归时每个节点访问三次
+ * 
+ * 可以发现
+ * 如果对，只出现过一次的数字和出现两次只打印第一次的数字进行打印，得到的结果就是先序遍历顺序
+ * 如果对，只出现过一次的数字和出现两次只打印第二次的数字进行打印，得到的结果就是后序遍历顺序
+ * 
+ * 对于后序遍历，我们可以发现没到第二次访问cur时，左子树最右孩子总是指向cur.所以
+ * 每当遍历到第二次cur时，如果逆序打印左子树的右边界正好就是后序遍历顺序
+ * 如，
+ * 第一个第二次遍历到的点是2,2的左子树是4，打印
+ * 第二个第二次遍历到的点是1,1的左子树是2，2的右边界是，2和5， 逆序打印就5,2
+ * 第三个第二次遍历到的点是3,3的左子树是6，打印
+ * 最后从头结1点开始打印其右边界
+ */
+
+ // 遍历顺序
+
+ const Morris = head => {
+   if(!head) {
+    return;
+   }
+   let cur = head;
+   let mostRight = null;
+   while(cur) {
+     mostRight = cur.left; // mostRight一开始 是cur左孩子
+     if (mostRight) {
+      while(mostRight.right && mostRight.right != cur) {
+        mostRight = mostRight.right;
+      }
+      if (!mostRight.right) { // 第一次来到cur的时候
+        mostRight.right = cur; // 左树最右结点指向当前节点
+        cur = cur.left;// 当前节点移动到自己左树根结点，继续处理叶结点指向
+        continue;
+      } else { // 第二次来到cur的时候，取消左树最右结点指向当前节点
+        mostRight.right = null
+      }
+     }
+     cur = cur.right;
+   }
+ }
+
+ //先序遍历
+ const Morris = head => {
+  if(!head) {
+   return;
+  }
+  let cur = head;
+  let mostRight = null;
+  while(cur) {
+    mostRight = cur.left;
+    if (mostRight) {
+     while(mostRight.right && mostRight.right != cur) {
+       mostRight = mostRight.right;
+     }
+     if (!mostRight.right) {
+       console.log(cur.value); // 会出现两次的结点，只在第一次打印
+       mostRight.right = cur;
+       cur = cur.left;
+       continue;
+     } else {
+       mostRight.right = null
+     }
+    } else {
+      console.log(cur.value); // 只出现一次的结点，叶子结点
+    }
+    cur = cur.right;
+  }
+}
+
+//中序遍历
+const Morris = head => {
+  if(!head) {
+    return;
+  }
+  let cur = head;
+  let mostRight = null;
+  while(cur) {
+    mostRight = cur.left;
+    if (mostRight) {
+      while(mostRight.right && mostRight.right != cur) {
+        mostRight = mostRight.right;
+      }
+      if (!mostRight.right) {
+       
+        mostRight.right = cur;
+        cur = cur.left;
+        continue;
+      } else {
+        mostRight.right = null
+        //console.log(cur.value); // 会出现两次的结点，只在第二次打印
+      }
+    } else {
+      // console.log(cur.value); // 只出现一次的结点，叶子结点
+    }
+    console.log(cur.value); // 上面两次打印优化为一次
+    cur = cur.right;
+  }
+}
+
+// 后续遍历
+// 以传入结点作为头结点，逆序打印这棵树的右边界
+const reverseEdge = from => {
+  let pre = null;
+  let next = null;
+  while(from) {
+    next = from.right;
+    from.right = pre;
+    pre = from;
+    from = next;
+  }
+  return pre;
+}
+const printEdge = x => {
+  const tail = reverseEdge(x); // 先把右边界逆序指向 1->3->7 变成7->3->1
+  let cur = tail;
+  while(cur) {
+    console.log(cur.value); // 打印
+    cur = cur.right;
+  }
+  reverseEdge(tail) // 再恢复回来
+}
+
+const Morris = head => {
+  if(!head) {
+   return;
+  }
+  let cur = head;
+  let mostRight = null;
+  while(cur) {
+    mostRight = cur.left; 
+    if (mostRight) {
+     while(mostRight.right && mostRight.right != cur) {
+       mostRight = mostRight.right;
+     }
+     if (!mostRight.right) {
+       mostRight.right = cur;
+       cur = cur.left;
+       continue;
+     } else {
+       mostRight.right = null;
+       printEdge(cur.left); // 遍历到第二次cur时，逆序打印左子树的右边界
+     }
+    }
+    cur = cur.right;
+  }
+  printEdge(head);
+}
+
+
 
 /**
  * 求一颗二叉树的宽度
