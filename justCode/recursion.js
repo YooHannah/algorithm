@@ -301,3 +301,360 @@ const method2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
     method2(weights, values, i+1,alreadyWeight + weights[i], alreadyValue + values[i],bag)
   )
 }
+
+/**
+ * 动态规划问题思路
+ * 
+ * 1. 尝试用递归方案解决
+ * 2. 在递归实现基础上利用记忆化搜索(dp)进行优化，就是将递归过程计算得到的值缓存下来，减少重复计算
+ * 3. 在记忆化搜索基础上，根据实现规律，建立严格表结构，根据结果的获取在表中位置的关系，进行二次优化
+ * 4. 对严格表结构实现的逻辑再做进一步优化
+ * 
+ */
+
+ /**
+  * 题目：
+  * N 代表 将会有1~N个位置，
+  * 现在要想从S位置走到E位置，要求走K步，请问有多少种走法
+  * 例如，
+  * N = 5，位置情况就是 1 2 3 4 5
+  * S = 2, E = 4， K = 4
+  * 那么走的过程就可以是
+  * 2 -> 3 -> 4 -> 5 -> 4
+  * 2 -> 3 -> 4 -> 3 -> 4
+  * ....
+  * 问一共有多少种
+  * 
+  */
+
+  // 递归实现
+  const process = (n,cur,e,k) => {
+    if (k == 0) {
+      return cur === e ? 1 : 0;
+    }
+    if (cur === 1) {
+      return process(n, 2, e, k-1);
+    }
+    if (cur === n) {
+      return process(n, n-1, e, k-1);
+    }
+    return process(n, cur - 1, e, k-1) + process(n, cur + 1, e, k-1);
+  }
+  
+  const walkWays = (n, s, e, k) => {
+    return process(n,s,e,k)
+  }
+
+  // 可以发现process中n和e是不变的，cur和k是在变的，所以加入记录二者的缓存避免重复计算
+  // 使用二维数组
+  const process = (n,cur,e,k, cache) => {
+    const val = cache[cur][k];
+    if(val != -1) { 
+      return val
+    }
+    if (k == 0) {
+      cache[cur][k] = cur === e ? 1 : 0;
+    } else if (cur == 1) {
+      cache[cur][k] = process(n, 2, e, k-1, cache);
+    } else if (cur == n) {
+      cache[cur][k] = process(n, n-1, e, k-1, cache);
+    } else {
+      cache[cur][k] = process(n, cur - 1, e, k-1, cache) + process(n, cur + 1, e, k-1,cache);
+    }
+    return cache[cur][k]
+  }
+  
+  const walkWays = (n, s, e, k) => {
+    const cache = new Array(n+1).fill(null).map(e => new Array(k+1).fill(-1));
+    return process(n,s,e,k, cache)
+  }
+  // 观察cache 二维数组形成的格子，以n为Y轴，k 为X轴,(0,0)在左下角，可以发现
+  // cur = e, k = 0 的格子值 始终为1
+  // cur != e, k = 0 的格子值 始终为0
+  // cur = 1, 的格子值等于其左上方格子的值
+  // cur = n. 的格子值等于其左下方格子的值
+  // cur = 1~n, 的格子值等于其左下方格子的值 + 左上方格子的值
+  // 进一步优化
+  /**
+   * 计算形成的矩阵
+    [ [ 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 0 ],
+    [ 0, 0, 1, 0, 4 ],
+    [ 0, 1, 0, 3, 0 ],
+    [ 1, 0, 2, 0, 5 ],
+    [ 0, 1, 0, 2, 0 ] ]
+   */
+
+  const walkWays = (n, s, e, k) => {
+    const cache = new Array(n+1).fill(null).map(e => new Array(k+1).fill(0));
+    cache[0]= new Array(k+1).fill(0);
+    cache[e][0] = 1;
+    for(let i = 1; i<k+1; i++) {
+      for (let cur = 1; cur <n+1; cur++) {
+        if (cur == 1) {
+          cache[cur][i] = cache[2][i-1];
+        } else if (cur == n) {
+          cache[cur][i] = cache[n-1][i-1];
+        } else {
+          cache[cur][i] = cache[cur-1][i-1] + cache[cur+1][i-1];
+        }
+      }
+    }
+    return cache[s][k]
+  }
+
+
+  /**
+   * 题目：
+   * 有一个数组arr,数组中每一项的值代表该面值的硬币，不重复
+   * 要想凑出aim大小的钱数，
+   * 请问最少需要的硬币个数
+   * 
+   * 例如，arr = [3,6,7,1,2], aim = 20
+   * 可以用
+   * 20个1块钱的硬币，
+   * 10个2块钱的硬币，
+   * 2个3块钱，2个7块钱 一共4个硬币实现
+   * 最少的就是用4个硬币实现
+   */
+
+
+
+
+   /**
+    * 题目：
+    * 中国象棋马走日的走法，从(0,0)位置出发到(x,y)位置，只能走step步
+    * 请问有多少种走法
+    */
+
+ /**
+  * 
+  * @param {目的地x轴} x 
+  * @param {目的地y轴} y 
+  * @param {棋盘x轴宽} n 
+  * @param {棋盘y轴宽} m 
+  * @param {步数} step 
+  */
+   const process = (x,y, n, m, step) => {
+    if (x < 0 || x > n || y < 0 || y > m) {
+      return 0;
+    }
+    if (step === 0) {
+      return x === 0 && y === 0 ? 1 : 0;
+    }
+    const way1 = process(x-1, y+2, n,m, step - 1 );
+    const way2 = process(x-1, y-2, n,m, step - 1 );
+    const way3 = process(x-2, y+1, n,m, step - 1 );
+    const way4 = process(x-2, y-1, n,m, step - 1 );
+    const way5 = process(x+1, y-2, n,m, step - 1 );
+    const way6 = process(x+1, y+2, n,m, step - 1 );
+    const way7 = process(x+2, y+1, n,m, step - 1 );
+    const way8 = process(x+2, y-1, n,m, step - 1 );
+    return  way1 + way2 + way3 + way4 + way5 + way6 + way7 + way8;
+  }
+  
+  const findWays = (x,y, n, m, step) => {
+    return process(x,y, n, m, step);
+  }
+  // 增加缓存
+  const process = (x,y, n, m, cache, step) => {
+    if (x < 0 || x > n || y < 0 || y > m || step === 0 && (x != 0 || y !=0 )) {
+      return 0;
+    }
+    if(cache[x][y][step] != -1) {
+      return cache[x][y][step];
+    }
+    let count = 0;
+    const nextStep = step - 1;
+    const posInfo = [
+      [x-1, y+2],
+      [x-1, y-2],
+      [x-2, y+1],
+      [x-2, y-1],
+      [x+1, y-2],
+      [x+1, y+2],
+      [x+2, y-1],
+      [x+2, y-1]
+    ]
+    posInfo.forEach(item=> {
+      const [nextX,nextY] = item;
+      console.log(nextX,nextY);
+      const way = process(nextX, nextY,n,m,cache,nextStep);
+      if(nextX >= 0 && nextX <= n && nextY >= 0 && nextY <= m) {
+        cache[nextX][nextY][nextStep] = way;
+      }
+      count +=way;
+    })
+    cache[x][y][step] = count;
+    return cache[x][y][step];
+  }
+  
+  const findWays = (x,y, n, m, step) => {
+    const cache = new Array(n+1).fill(null).map(
+      e => new Array(m+1).fill(null).map(
+        item => new Array(step+1).fill(-1)
+      )
+    );
+    cache[0][0][0] = 1;
+    return process(x,y, n, m, cache, step);
+  }
+
+  // 观察cache 形成的3 维矩阵，以step为z轴，x, y 为平面xy轴
+  // 可以发现，位于step层的点的值等于它下一层的相同位置的响应关系的8个点的值的和
+  // 只有(0,0,0)=1,即只有原点到原点花费0步时是1，其他step = 0时，无论，x,y值是多少都是0
+  const findWays = (x,y, n, m, step) => {
+    const cache = new Array(n+1).fill(null).map(
+      e => new Array(m+1).fill(null).map(
+        item => new Array(step+1).fill(0)
+      )
+    );
+    cache[0][0][0] = 1;
+    for(let h = 1;h<step+1; h++) {
+      for(let i = 0; i<= n; i++) {
+        for(let j = 0; j <= m; j++) {
+          let count = 0;
+          const nextStep = h - 1;
+          const posInfo = [
+            [i-1, j+2],
+            [i-1, j-2],
+            [i-2, j+1],
+            [i-2, j-1],
+            [i+1, j-2],
+            [i+1, j+2],
+            [i+2, j-1],
+            [i+2, j-1]
+          ]
+          posInfo.forEach(item=> {
+            const [nextX,nextY] = item;
+            let way = 0;
+            if(nextX >= 0 && nextX <= n && nextY >= 0 && nextY <= m) {
+              way = cache[nextX][nextY][nextStep]
+            }
+            count +=way;
+          })
+          cache[i][j][h] = count
+        }
+      }
+    }
+   return cache[x][y][step]
+  }
+
+/**
+ * 题目：
+ * Bob 存活问题，N * M 的区域，Bob从(row,col) 出发，走rest步之后，还能存活的方法数
+ * 存活条件：不越界
+ */
+
+ const process = (n,m, row, col, rest) => {
+  if (row < 0 || row === n || col < 0 || col === m) { // 走到边上或者m,n 以外都算越界
+    return 0;
+  }
+  if((row === n || row === 0) && col<= m && col > -1 || (col === m || col === 0) && row > -1 && row <=n) {
+    return 0;
+  }
+  if(rest === 0) { // 还在m,n 里面，且步数走完了
+    return 1;
+  }
+  const posInfo = [
+    [row-1, col],
+    [row+1, col],
+    [row, col+1],
+    [row, col-1]
+  ]
+  let count = 0; // 还在m,n 里面，且步数还没走完，可以向上下左右走
+  const nextRest = rest - 1;
+  posInfo.forEach(item=> { // 
+    const [nextRow, nextCol] = item;
+    count += process(n,m,nextRow,nextCol,nextRest);
+  })
+  return count;
+ }
+
+ // 增加缓存
+ const process = (n,m, row, col, rest, cache) => {
+  if (row < 0 || row === n || col < 0 || col === m) { // 走到边上或者m,n 以外都算越界
+    if(row === n && col<= m && col > -1 || col === m && row > -1 && row <=n) {
+      cache[row][col][rest] = 0;
+    }
+    return 0;
+  }
+  if(cache[row][col][rest] != -1) {
+    return cache[row][col][rest];
+  }
+  if(rest === 0) { // 还在m,n 里面，且步数走完了
+    cache[row][col][rest] = 1;
+    return 1;
+  }
+  
+  const posInfo = [
+    [row-1, col],
+    [row+1, col],
+    [row, col+1],
+    [row, col-1]
+  ]
+  let count = 0; // 还在m,n 里面，且步数还没走完，可以向上下左右走
+  const nextRest = rest - 1;
+  posInfo.forEach(item=> { 
+    const [nextRow, nextCol] = item;
+    const result = process(n,m,nextRow,nextCol,nextRest, cache);
+    if(nextRow >= 0 && nextRow <= n && nextCol >= 0 && nextCol <= m) {
+      cache[nextRow][nextCol][nextRest] = result;
+    }
+    count += result;
+  })
+  cache[row][col][rest] = count
+  return cache[row][col][rest];
+ }
+
+const findWays = (n,m,row, col, rest) => {
+  const cache = new Array(n+1).fill(null).map(
+    e => new Array(m+1).fill(null).map(
+      item => new Array(rest+1).fill(-1)
+    )
+  );
+  return process(n,m, row, col, rest, cache)
+}
+
+// 观察cache 3维矩阵 rest 当z轴
+// rest = 0, 在n,m 范围内的点都是1
+// 在n, m 边上的点都是0；
+// rest > 1的点 等于其下一层对应点上下左右4点的值的和
+
+const findWays = (n,m,row, col, rest) => {
+  const cache = new Array(n+1).fill(null).map(
+    e => new Array(m+1).fill(null).map(
+      item => new Array(rest+1).fill(0)
+    )
+  );
+  for(let h = 0;h<rest+1; h++) {
+    for(let i = 0; i< n; i++) {
+      for(let j = 0; j <= m; j++) {
+        if(h === 0 && i != n && i > 0 && j != m && j > 0) {
+          cache[i][j][h] = 1;
+        } else if(i === 0 || i === n || j === 0 || j === m) {
+          cache[i][j][h] = 0;
+        } else {
+          let count = 0;
+          const nextStep = h - 1;
+          const posInfo = [
+            [row-1, col],
+            [row+1, col],
+            [row, col+1],
+            [row, col-1]
+          ]
+          posInfo.forEach(item=> {
+            const [nextX,nextY] = item;
+            let way = 0;
+            if(nextX >= 0 && nextX <= n && nextY >= 0 && nextY <= m) {
+              way = cache[nextX][nextY][nextStep]
+            }
+            count +=way;
+          })
+          cache[i][j][h] = count
+        }
+       
+      }
+    }
+  }
+  return cache[row][col][rest]
+}
