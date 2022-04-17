@@ -10,7 +10,7 @@
 
 [对数器](https://github.com/YooHannah/algorithm/blob/master/justCode//logMonitor.js)
 
-[递归算法](https://github.com/YooHannah/algorithm/blob/master/justCode/recursion.js)
+[递归算法(动态规划)](https://github.com/YooHannah/algorithm/blob/master/justCode/recursion.js)
 
 [归并排序](https://github.com/YooHannah/algorithm/blob/master/justCode/merge.js)
 
@@ -69,12 +69,12 @@
 # 数据结构
 
 [链表](https://github.com/YooHannah/algorithm/blob/master/justCode/box.js)
-[二叉树](https://github.com/YooHannah/algorithm/blob/master/justCode/binaryTree.js)
+[二叉树/树型DP](https://github.com/YooHannah/algorithm/blob/master/justCode/binaryTree.js)
 [图](https://github.com/YooHannah/algorithm/blob/master/justCode/graph.js)
 
 # 其他
 [贪心算法](https://github.com/YooHannah/algorithm/blob/master/justCode/greedy.js)
-[哈希相关](https://github.com/YooHannah/algorithm/blob/master/justCode/hash.js)
+[大数据相关](https://github.com/YooHannah/algorithm/blob/master/justCode/bigData.js)
 [单调栈结构](https://github.com/YooHannah/algorithm/blob/master/justCode/monotonicStack.js)
 
 

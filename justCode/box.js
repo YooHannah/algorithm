@@ -468,10 +468,6 @@ const bothLoop = (head1, loop1, head2, loop2) => {
 }
 
 
-
-
-
-
 /**
  * 面试链表解题方法论
  * 

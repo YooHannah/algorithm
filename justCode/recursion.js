@@ -408,7 +408,7 @@ const method2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
    * 题目：
    * 有一个数组arr,数组中每一项的值代表该面值的硬币，不重复
    * 要想凑出aim大小的钱数，
-   * 请问最少需要的硬币个数
+   * 请问有多少种拼凑方法/最少需要的硬币个数
    * 
    * 例如，arr = [3,6,7,1,2], aim = 20
    * 可以用
@@ -417,9 +417,63 @@ const method2 = (weights, values, i, alreadyWeight,alreadyValue,bag) => {
    * 2个3块钱，2个7块钱 一共4个硬币实现
    * 最少的就是用4个硬币实现
    */
+// 以下是求拼凑方法实现
+const process = (arr, index, rest) => {
+  if(index === arr.length) {
+    return rest === 0 ? 1 : 0;
+  }
+  let ways = 0;
+  for(let count = 0; arr[index] * count <= rest; count++) {
+    ways += process(arr, index + 1, rest - arr[index] * count);
+  }
+  return ways;
+}
 
+const getWays = (arr, aim) => {
+  return process(arr,0,aim);
+}
 
+// 优化
+const getWays = (arr, aim) => {
+  if(arr === null || !arr.length) {
+    return 0;
+  }
+  let N = arr.length;
+  const dp = new Array(N+1).fill(null).map(
+    e => new Array(aim+1).fill(null)
+  );
+  dp[N][0] = 1;
+  for(let index = N-1;index >=0; index--) {
+    for(let rest = 0; rest <= aim;rest++) {
+      let way = 0;
+      for(let count = 0; arr[index] * count <= rest; count++) {
+        ways += dp[index + 1][rest-arr[index] * count]
+      }
+      dp[index][rest] = ways;
+    }
+  }
+  return dp[0][aim];
+}
 
+const getWays = (arr, aim) => {
+  if(arr === null || !arr.length) {
+    return 0;
+  }
+  let N = arr.length;
+  const dp = new Array(N+1).fill(null).map(
+    e => new Array(aim+1).fill(null)
+  );
+  dp[N][0] = 1;
+  for(let index = N-1;index >=0; index--) {
+    for(let rest = 0; rest <= aim;rest++) {
+      dp[index][rest] =  dp[index + 1][rest];
+      if(rest - arr[index] >= 0) {
+        dp[index][rest] +=  dp[index][rest-arr[index]];
+      }
+    }
+  }
+  return dp[0][aim];
+}
 
    /**
     * 题目：
