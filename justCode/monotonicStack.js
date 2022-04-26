@@ -140,3 +140,52 @@ const getMinPos = arr => {
  * L 左端移动到4时， 能覆盖2个点 : 2, 4
  * L 左端移动到8时， 能覆盖2个点 : 4, 8
  */
+
+
+/**
+ * 现在有一个描述工作情况的池子，每项工作包括该工作需要的难度和报酬、
+ * job: [{hard: 20, money: 15}]
+ * 现在有N个人需要找工作，arr[i]代表第i个人的工作能力
+ * 工作能力大于等于工作难度才可以胜任工作
+ * 每个人要能拿到尽可能多的报酬
+ * 请问这个N个人最终可以拿到的报酬可以是多少？
+ * 
+ * 输入job,arr，返回N个人最高报酬集合
+ * 
+ * 思路：
+ * 对job进行按hard从小到大单调栈排序，hard相同的，money由大到小排序
+ * 排完之后，
+ * 相同hard里面去掉money少的job,仅剩money最多的job
+ * 不同hard里面去掉后面的money比前面mone少的job
+ * 然后arr[i] 在里面找 arr[i] >=hard的job即可
+ */
+
+const getMoneyjob = (jobList, arr) => {
+  jobList.sort((item1,item2) => item1.hard - item2.hard);
+  let jobLength = jobList.length;
+  const tempobj = {};
+  jobList.forEach(item => {
+    const { hard } = item;
+    if(!tempobj[hard]) {
+      tempobj[hard] = []
+    }
+    tempobj[hard].push(item);
+  });
+  let keys = Object.keys(tempobj);
+  keys.forEach(key=>{
+    const list = tempobj[key];
+    list.sort((job1,job2)=> job2.money -job1.money);
+    tempobj[key] = list[0].money;
+  })
+  keys = keys.filter((key, index) => {
+    if(index === 0 || index> 0 && tempobj[keys[index]] > tempobj[keys[index-1]]){
+      return true;
+    }
+    return false
+  }).sort((a,b)=> Number(b) - Number(a));
+  const res = arr.map(ability => {
+    const hard = keys.find(hard => hard <= ability);
+    return tempobj[hard];
+  })
+  return res;
+}

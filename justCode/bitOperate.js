@@ -139,3 +139,49 @@ const div = (a,b) => {
 
 const is2Power = n => n & (n -1)  === 0;
 const is4Power = n => n & (n-1) === 0 && (n & 0x55555555) != 0;
+
+
+ /**
+  * 给定一个字符串，如果一个字符串符合人们日常书写一个整数的形式，
+  * 返回数字类型的这个数，如果不符合，返回-1 或者报错
+  * 
+  * 思路：
+  * 
+  * 符合人们书写习惯的判断
+  * 1. 如果是负数，则只会含有一个‘-’号，且在开头位置，且后面不能跟0
+  * 2. 如果是正数，则不能以0开头
+  * 3. 仅包含数字字符
+  * 
+  * 转换成数字类型
+  * 将每一位累加，但要检测是否越界
+  */
+
+ const verify = strList => {
+  const first = strList[0];
+  const second = strList[1];
+  if(first === '-' && second === '0' || first === '-' && strList.length === 1 || first === '0') {
+    return false
+  }
+  return strList.slice(1).every(str => /^\d$/.test(str));
+}
+
+const transferNumber = str => {
+  const strList = str.split('');
+  const valid = verify(strList);
+  if (!valid) {
+    return '-1'
+  }
+  const first = strList[0];
+  let number = 0;
+  const shang = Number.MAX_SAFE_INTEGER / 10;
+  const yushu = Number.MAX_SAFE_INTEGER % 10;
+  const reg = first === '-';
+  strList.slice(reg ? 1 : 0).reverse().forEach((str, i) => {
+    // 越界
+    if(number > shang || number === shang && str > yushu) {
+      return '-1'
+    }
+    number +=str*Math.pow(10,i)
+  })
+  return reg ? -number : number;
+}

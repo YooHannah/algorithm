@@ -712,3 +712,28 @@ const findWays = (n,m,row, col, rest) => {
   }
   return cache[row][col][rest]
 }
+
+/**
+ * 假设背包容量为w
+ * 现有N带零食，第i带零食体积为v[i]
+ * 请问在不超过背包容量的情况下，一共有多少可以放零食的方法
+ * 思路：
+ * 遍历N带零食，每到一袋零食可以选择要还是不要，每一种都算一种方法
+ * 
+ */
+const process = (w, rest, i, v) => {
+  if (i === v.length -1 && rest >= v[i]) {
+    return 1;
+  } 
+  if(i < v.length && rest < v[i]) {
+    return 0;
+  }
+  const putin = process(w, rest - v[i], i+1, v);
+  const notPutin = process(w, rest, i+1, v);
+  return putin + notPutin + 1;
+}
+
+const bagpack = (w, v) => {
+  // + 1是遍历到最后一项，不要的情况
+  return process(w,w,0,v)+1;
+}
