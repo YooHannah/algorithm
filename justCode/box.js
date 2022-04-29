@@ -479,3 +479,115 @@ const bothLoop = (head1, loop1, head2, loop2) => {
  * 1. 使用合适的结构作为额外存储空间进行记录，如哈希表
  * 2. 善于用快慢指针
  */
+
+ /**
+  * 实现一个特殊的栈，在实现栈的基本功能的基础上，再实现返回栈中最小元素的操作
+  * 要求：
+  * 1. pop, push，getMin操作的时间复杂度都是O(1)
+  * 2. 设计的栈类型可以使用现成的栈结构
+  * 
+  * 思路：
+  * 准备两个栈，一个用来装用户数据，另外一个用来装当前整个栈中最小值
+  * 在push数据的时候，如果push的数据比当前最小值栈顶小，
+  * 它就变成栈中最小值push到最小值栈中
+  * 如果不小于最小值栈顶，那么push栈顶到最小值栈中
+  * 这样每次获取最小值，直接到最小值栈中获取即可
+  */
+ class specialQueue {
+  constructor() {
+    this.basicQueue = [];
+    this.minQueue = [];
+  }
+
+  push(num) {
+    this.basicQueue.push(num);
+    const currentMin = this.minQueue.length ? this.minQueue[this.minQueue.length - 1] : Number.MAX_VALUE;
+    this.minQueue.push(Math.min(currentMin, num));
+  }
+  transferElement(arr1, arr2) {
+    while(arr1.length > 1) {
+      const temp = arr1.shift();
+      arr2.push(temp);
+    }
+  }
+  pop() {
+    return this.basicQueue.pop()
+  }
+  getMin() {
+    return this.minQueue[this.minQueue.length -1]
+  }
+}
+/**
+ * 如何仅用队列结构实现栈结构？
+ * 
+ * 思路：用两个队列
+ * 第一个队列用来装用户push的数据
+ * 当用户想pop时，将第一个队列中除了最后一个进入的以外，全部push到第二个队列
+ * 再对第一个队列进行pop,返回
+ * 如果第一个队列是空，那么，挪第二个队列剩一个，pop出来返回
+ * 
+ * 如何仅用栈结构实现队列结构？
+ * 
+ * 思路： 
+ * 用两个栈，一个栈装push的数据，
+ * 另一个栈在pop时，将第一个栈中数据pop出来装起来，形成逆序的数据再pop
+ * 
+ * 
+ * 实践应用题目：
+ * 用栈实现一个图的宽度优先遍历： 利用两个栈导成队列结构
+ * 用队列实现一个图的深度优先遍历： 利用两个队列导成栈结构
+ */
+class queueToStack {
+  constructor() {
+    this.basicQueue = [];
+    this.backupQueue = [];
+  }
+
+  push(num) {
+    this.basicQueue.push(num);
+  }
+  transferElement(arr1, arr2) {
+    while(arr1.length > 1) {
+      const temp = arr1.shift();
+      arr2.push(temp);
+    }
+  }
+  pop() {
+    if (this.basicQueue.length>1) {
+      this.transferElement(this.basicQueue, this.backupQueue)
+    }
+    if (this.basicQueue.length === 1) {
+      return this.basicQueue.pop()
+    }
+    if(!this.basicQueue.length && this.backupQueue.length>1) {
+      this.transferElement(this.backupQueue, this.basicQueue)
+    }
+    if (this.backupQueue.length === 1) {
+      return this.backupQueue.pop()
+    }
+    return undefined
+  }
+}
+
+class StackToQueue {
+  constructor() {
+    this.basicStack = [];
+    this.backupStack = [];
+  }
+
+  push(num) {
+    this.basicStack.push(num);
+  }
+  transferElement(arr1, arr2) {
+    while(arr1.length) {
+      const temp = arr1.pop();
+      arr2.push(temp);
+    }
+  }
+  pop() {
+    if (!this.backupStack.length) {
+      this.transferElement(this.basicStack, this.backupStack)
+    }
+    return this.backupStack.pop()
+  }
+}

@@ -1,0 +1,192 @@
+
+/**
+ * 给定一个数组arr,如果通过调整，
+ * 可以做到arr中任意两个相邻的数字相乘都是4的倍数
+ * 返回true, 如果不能返回false
+ * 
+ * 思路：
+ * 
+ * 分析数组中数据的情况
+ * 假设有奇数a个，只有一个2因子的数有b个，含有4因子的数有c个
+ * b如果等于0，
+ * 组成==>奇4奇4奇4的结构可以保证相邻相乘是4的倍数
+ * 那么c >= a-1才能保证相邻乘积都是4的倍数
+ * 如果b不等于0，
+ * 2后面跟的肯定是一个4因子的数，不能接奇数
+ * a = 0, c >=0
+ * a =1,c>=1
+ * a > 1, c >= a
+ * 所以 c >= a 可以保证所有这种情况
+ * 
+ */
+const and4 = arr => {
+  let odd = 0;
+  let time2 = 0;
+  let time4 = 0;
+  arr.forEach(item => {
+    const res = item % 4;
+    if (res === 2) {
+      time2++;
+    } else if(!res) {
+      time4++
+    } else {
+      odd++
+    }
+  })
+  if (time2) {
+    return time4 >= odd;
+  } else {
+    return time4 >= odd-1;
+  }
+}
+
+/**
+ * 给定一个数组arr长度为N，你可以把任意长度大于0且小于N的前缀作为左部分
+ * 剩下的作为右部分，但是每种划分下都有左部分的最大值和右部分的最大值，
+ * 请返回最大的，左部分最大值减去右部分最大值的绝对值，
+ * 假设没有重复，都是正数
+ * 
+ * 思路：
+ * 整个数组会有一个最大值，这个最大值被划分到哪部分就是哪部分的最大值
+ * 假如最大值划到左部分
+ * 右部分必须要至少有一个值，那个最右边的那个值无论什么时候都要被划分到右部分
+ * 假如右部分的其他值有比最右值大的数，那么他就不是右部分最大值
+ * 但是要求的差值绝对值会变小
+ * 如果右部分没有比最右值大的，那么最右值就是右部分最大值
+ * 所以结果就是让数组总体最大值减去最右值
+ * 划到右部分同理
+ * 
+ */
+const maxAbs = arr => {
+  const left = arr[0];
+  const right = arr[arr.length -1];
+  const max = arr.sort((a,b) => b-a)[0];
+  return Math.max(Math.abs(max-right), Math.abs(max-left));
+}
+
+/**
+ * 如果一个字符串为str,把字符串的前面任意部分挪到后面形成的字符叫做str的旋转词
+ * 比如
+ * str = '12345',
+ * 它的旋转词有‘23451’， ‘34512’，‘45123’ 和‘51234’
+ * 
+ * 现给定两个字符串a和b，请判断a和b是否互为旋转词
+ * 例
+ * a = 'cdab', b = 'abcd' 返回true
+ * a = '1ab2', b = 'ab12' 返回false
+ * a = '2ab1', b = 'ab12' 返回true
+ * 
+ * 思路：
+ * 将原字符串拼接一个自己形成自己的两倍串，那它所有的旋转词都是他两倍串的子串
+ */
+const judge = (a,b) => {
+  const doubleA = a + a;
+  const doubleB = b + b;
+  return doubleA.includes(b) && doubleB.includes(a);
+}
+
+/**
+ * 给定一个数组arr,已知其中所有的值都是非负的，
+ * 将这个数组看作一个容器，请返回容器能装多少水
+ * 
+ * 例如：
+ * arr = [3,1,2,5,2,4],根据值画出的直方图就是容器形状，
+ * 该容器可以装下5格水
+ *            ____
+ *            |5 |  _____
+ *  ___       |  |  | 4 |         
+ *  |3 |   ___|  |__|   |
+ *  |  |___|2 |  |2 |   |
+ *  |  | 1 |
+ * 
+ * 3125组成的凹陷处可储存3格水
+ * 524组成的凹陷处可储存2格水
+ * arr = [4,5,1,3,2],根据值画出的直方图就是容器形状，
+ * 该容器可以装下2格水
+ * 
+ * 思路：
+ * 求解每个柱子上方可容纳水的体积然后求和
+ * 每个柱子上方可容纳水的体积等于其min(左柱子max, 右柱子max) - 当前柱子值
+ * 假设结果是负值，说明当前柱子比左右两边所有柱子都高，那他上方无法存储水分，就是0
+ */
+
+const getVolumnOfWater = (arr) => {
+  let volumn = 0;
+  arr.forEach((col, index) => {
+    if (index === 0 || index === arr.length -1) {
+      volumn += 0;
+    } else {
+      const leftMax = arr.slice(0, index).sort((a,b) => b-a)[0];
+      const rightMax = arr.slice(index+1).sort((a,b) => b-a)[0];
+      volumn += Math.max(Math.min(leftMax, rightMax) - col, 0);
+    }
+  });
+  return volumn
+}
+
+/**
+ * 现在有咖啡机arr=[3,4,5], 每一项代表该咖啡机煮一杯咖啡需要的时间
+ * 咖啡杯可以选择可重复利用的和一次性的，
+ * 重复利用的咖啡杯需要清洗，洗咖啡杯的机器，只能一次洗一杯，洗一杯的时间是a,
+ * 一次性咖啡杯可以自然降解，降解完成的时间是b
+ * 先在有N个人需要喝咖啡并需要等咖啡杯清洗完或者降解完,才算完成喝咖啡的事
+ * 请算出这帮人全都完成喝咖啡需要的最小用时
+ * 假设喝咖啡不需要时间
+ * 
+ * 思路： 
+ * 利用小根堆算出每个人煮完咖啡的时间
+ * 然后分别计算洗咖啡杯用时和降解用时那个更快
+ */
+
+/**
+ * 
+ * @param {* 每个人煮咖啡喝完的时间N长的数组} drinks 
+ * @param {* 轮到计算第几个人洗咖啡完最少用时} i 
+ * @param {* 洗一只咖啡杯用时 } washtime 
+ * @param {* 降解一只咖啡杯用时} dissolvetime 
+ * @param {* 洗咖啡杯需要等待的时间，前面有人也在洗} washWattingTime 
+ */
+const washProcess = (drinks, i, washtime, dissolvetime, washWattingTime) => {
+  if (i === drinks.length -1) {
+    const wash = Math.max(drinks[i], washWattingTime) + washtime;
+    const dissolve = drinks[i] + dissolvetime;
+    return Math.min(wash,dissolve);
+  }
+  // 如果选择洗咖啡杯，用时
+  const wash = Math.max(drinks[i], washWattingTime) + washtime;
+  // 选择洗咖啡杯的话，
+  // 剩下的人因此造成的完成时间最少和我完成的过程用时的最大值是整体最少用时
+  const restTime = washProcess(drinks, i+1,washtime, dissolvetime, wash);
+  const washAllTime = Math.max(wash, restTime);
+  const dissolve = drinks[i] + dissolvetime;
+  const dissolveAlltime = Math.max(dissolve, washProcess(drinks, i+1, washtime, dissolvetime, washWattingTime));
+  return Math.min(washAllTime, dissolveAlltime);
+ }
+ /**
+  * 
+  */
+ const enjoyCoffee = (machine, count,washtime, dissolvetime) => {
+   // 存放咖啡机在什么时间可用，
+   // key值为咖啡机煮咖啡时间，value为要等的时间
+   // 二者相加表示用户喝完咖啡的时间
+   // 整体里面每组相加和最小，就是该用户当前最少喝完咖啡要用的时间
+   const machineAvaliableTime = new Map();
+   machine.forEach(time => {
+     machineAvaliableTime.set(time, 0);
+   });
+   const drinks = [];
+   for(let i = 0;i<count;i++) {
+     let mintime = Number.MAX_SAFE_INTEGER;
+     let minKey = -1;
+     machineAvaliableTime.forEach((value, key) => {
+       const makeCoffeTime = key + value;
+       if (makeCoffeTime < mintime) {
+         mintime = makeCoffeTime;
+         minKey = key;
+       }
+     })
+     machineAvaliableTime.set(minKey, mintime);
+     drinks[i] = mintime;
+   }
+   return washProcess(drinks, 0, washtime, dissolvetime, 0);
+ }
