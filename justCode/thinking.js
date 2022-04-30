@@ -1,4 +1,51 @@
 
+ /**
+  * 假设s和m初始化 s = 'a', m = s
+  * 在定义两种操作，第一种操作
+  * m = s;
+  * s = s + s;
+  * 第二种操作 
+  * s = s+m
+  * 求最小的操作步骤数，可以将s拼接到长度等于n
+  * 
+  * 思路：
+  * 1. 假如n 是质数，也就不是2的倍数，只能一个劲的执行第二种操作，N-1
+  * 2. 假如n不是质数，那他就可以由多个质数因子组成，那单个质数因子操作数根据推测1得到n-1
+  * 所有的质数因子就是指数因子和减去质数个数
+  */
+// 因子不包含1
+const divSumAndCount = n => {
+  let sum = 0;
+  let count = 0;
+  for(let i = 2; i<=n; i++) {
+    while(n % i == 0) {
+      sum +=i;
+      count++;
+      n /= i;
+    }
+  }
+  return [sum, count];
+}
+// 是否是质数
+const isPrim = n => {
+  for(let i = 2; i<=n; i++) {
+    if(n % i == 0) {
+      return false
+    }
+  }
+  return true;
+}
+const minOps = n => {
+  if (n < 2) {
+    return 0;
+  }
+  if (isPrim(n)) {
+    return n - 1;
+  }
+  const [sum, count] = divSumAndCount(n);
+  return sum - count;
+}
+
 /**
  * 给定一个数组arr,如果通过调整，
  * 可以做到arr中任意两个相邻的数字相乘都是4的倍数
@@ -190,3 +237,75 @@ const washProcess = (drinks, i, washtime, dissolvetime, washWattingTime) => {
    }
    return washProcess(drinks, 0, washtime, dissolvetime, 0);
  }
+
+ /**
+ * 现在每台洗衣机上有不同数量的衣服需要洗
+ * 需要将衣服平均分到每台洗衣机上才可以开始清洗
+ * 每次只能从一台洗衣机上移走一件衣服
+ * 例如
+ * [1,0,5]表示3台洗衣机上现有衣服数量
+ * 经过这些轮之后
+ * 第一轮： 1    0 <- 5 ==> 1 1 4
+ * 第二轮： 1 <- 1 <- 4 ==> 2 1 3
+ * 第三轮： 2    1 <- 3 ==> 2 2 2
+ * 一共移动了3轮，使得每台洗衣机上衣服数量相等
+ * [2,3,2] 无论怎么移动都无法使洗衣机上衣服数量都相等，所以返回-1
+ * 
+ * 思路：
+ * 因为每次只能挨个的移动衣服，
+ * 所以每台洗衣机在完成平均数过程中都会产生需要移动衣服的次数
+ * 这些次数里面的最大值，就是整个过程完成的轮数
+ * 
+ * 假设来到某个位置i，总衣服数目是sum, 最终洗衣机需要达到的平均数是avg
+ * 
+ * 如果i位置左边所有的洗衣机上衣服数量是leftSum
+ * 最终需要达到的衣服数量是(i-1) * avg =>leftFinal
+ * leftNeed = leftFinal - leftSum
+ * leftNeed < 0,说明需要i位置洗衣机把衣服经过位置i洗衣机移到右边Math.abs(leftNeed)件
+ * leftNeed > 0,说明需要i位置洗衣机把衣服经过位置i洗衣机移到左边leftNeed件
+ * 移动多少件衣服意味着需要多少轮
+ * 
+ * 右边同样
+ * 原来衣服数量rightSum = sum - leftSum -arr[i]
+ * 最终需要达到的衣服数量 (arr.length - i -1) * avg => rightFinal
+ * rightNeed = rightFinal - rightSum;
+ * rightNeed < 0 ,需要经过洗衣机i从右边移动Math.abs(rightNeed)移动走
+ * rightNeed > 0, 需要经过洗衣机i从左边移动rightNeed轮
+ * 
+ * 
+ * 假设 
+ * leftNeed > 0 && rightNeed > 0,  说明i位置上衣服有很多需要往左右分
+ * 那么需要移走的次数就是 leftNeed + rightNeed
+ * 
+ * leftNeed < 0 && rightNeed < 0, 说明需要左右两端都往i位置洗衣机移动衣服
+ * 因为没有说接收衣服每次只能一件，就是左右两边向位置移动可以同时在一轮里面进行
+ * 所以每轮可以接收多件
+ * 那么i位置至少需要接收max(Math.abs(rightNeed), Math.abs(leftNeed))
+ * 
+ * 同理 leftNeed > 0 && rightNeed < 0 或者leftNeed < 0 && rightNeed > 0
+ * 位置接收衣服和移走衣服的数量最大值应该为移动的轮数
+ * 
+ * 
+ */
+const minOps = arr => {
+  const sum = arr.reduce((prev,curr)=> prev + curr, 0);
+  const { length } = arr;
+  if (sum % length) {
+    return -1;
+  }
+  const avg = sum / length;
+  let leftSum = 0;
+  let times = 0;
+  for( let i = 0; i< length; i++) {
+    const leftRest = leftSum - i * avg;
+    const rightSum = sum - leftSum - arr[i];
+    const rightRest = rightSum - (length - i - 1) * avg;
+    if (rightRest < 0 && leftRest < 0) {
+      times = Math.max(times, Math.abs(rightRest) + Math.abs(leftRest));
+    } else {
+      times = Math.max(times, Math.max(Math.abs(leftRest),Math.abs(rightRest)));
+    }
+    leftSum += arr[i]
+  }
+  return times;
+}
