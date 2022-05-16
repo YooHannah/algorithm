@@ -13,7 +13,7 @@
 
 const comparator = arr => arr.sort(); // 跟数组本身的排序方法比较，即方法b
 const generateRandomArray = (maxSize,maxValue) => {
-  const arr = new Array(parseInt((maxSize +1) * Math.random()));
+  const arr = (parseInt((maxSize +1) * Math.random()));
   for(let i = 0; i< arr.length; i++) {
     arr[i] = parseInt((maxValue + 1) * Math.random()) - parseInt(maxValue * Math.random())
   }

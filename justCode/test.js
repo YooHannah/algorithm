@@ -1,32 +1,16 @@
-
-const divSumAndCount = n => {
-  let sum = 0;
-  let count = 0;
-  for(let i = 2; i<=n; i++) {
-    while(n % i == 0) {
-      sum +=i;
-      count++;
-      n /= i;
+const validLength = str => {
+  const dp = (new Array(str.length)).fill(0);
+  let matchPos = 0;
+  let maxLength = 0;
+  for(let i = 1; i < str.length; i++) {
+    if (str[i] === ')') {
+      matchPos = i - dp[i-1] -1;
+      if(matchPos >=0 && str[matchPos] === '(') {
+        dp[i] = dp[i-1] + 2 + (matchPos ? dp[matchPos -1] : 0);
+      }
     }
+    maxLength = Math.max(maxLength, dp[i]);
   }
-  return [sum, count];
+  return maxLength;
 }
-const isPrim = n => {
-  for(let i = 2; i<=n; i++) {
-    if(n % i == 0) {
-      return false
-    }
-  }
-  return true;
-}
-const minOps = n => {
-  if (n < 2) {
-    return 0;
-  }
-  if (isPrim(n)) {
-    return n - 1;
-  }
-  const [sum, count] = divSumAndCount(n);
-  return sum - count;
-}
- console.log(minOps(6))
+ console.log(validLength(')) ((()))()())))()()'));

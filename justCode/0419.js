@@ -1,7 +1,49 @@
 /**
  * 给定一个非负整数N,代表二叉树的结点个数，返回能形成多少种不同的二叉树结构
  * 
+ * 思路：
+ * 总要有一个根结点，那剩下的左右子树只能使用n-1个结点
+ * 左树用1个结点的话，右树只需要处理n-2个结点可以形成多少种不同的二叉树，
+ * 左树用2个结点的话，右树只需要处理n-3个结点可以形成多少种不同的二叉树
+ * ...
+ * 左树用i个结点的话，右树只需要处理n-1-i个结点可以形成多少种不同的二叉树
+ * 
+ * 每种情况的结果和就是最终的种类数
  */
+
+const findCount = n => {
+  if (!n) {
+    return 1
+  }
+  if ([1,2].includes(n)) {
+   return n
+  }
+  let count = 0;
+  for (let i = 0; i< n; i++) {
+   const leftWays = findCount(i);
+   const rightWays = findCount(n-1-i);
+   count += leftWays * rightWays;
+  }
+  return count;
+}
+
+// 进一步使用动态规划的概念优化
+
+const findCount = n => {
+  if (n < 2) {
+    return 1
+  }
+  const dp = (new Array(n+1)).fill(0);
+  dp[0] = 1;
+  console.log(dp);
+  for (let i = 1; i< n + 1; i++) {
+    for(let j = 1;j < i + 1; j++) {
+      dp[i] += dp[j-1] * dp[i-j];
+    }
+  }
+  return dp[n];
+}
+
 
 /**
  * 二叉树每个结点都有一个int型的权值，给定一颗二叉树，
@@ -30,6 +72,23 @@
  * 
  * 
  */
+const needParenthese = str => {
+  let leftCount = 0;
+  let rightCount = 0;
+  const length = str.length;
+  for(let i = 0; i<length; i++) {
+    if(str[i] === '(') {
+      leftCount++
+    } else {
+      if (!leftCount) {
+        rightCount++
+      } else {
+        leftCount--
+      }
+    }
+  }
+  return leftCount + rightCount
+}
 
  /**
   * 对于上面的括号字符串定义深度
@@ -38,7 +97,59 @@
   * 3. 如果X字符串深度是x,那么‘（X）’的深度是x+1
   * 例如‘（）（）（）’ 深度是1，‘（（（）））’ 深度是3
   * 请算出合法括号字符串的深度
+  * 
+  * 思路： 声明计数count,遇到左括号加1，遇到有括号减1，count能够达到的最大值就是深度
   */
+ const getStringCount = str => {
+   let count = 0;
+   let max = 0;
+   for(let i = 0; i<str.length;i++) {
+     if (str[i] === '(') {
+      count++
+      max = Math.max(max, count);
+     } else {
+       count && count--;
+     }
+   }
+   return max
+ }
+
+ /**
+  * 给定由左右括号形成的字符串，请找出最长的有效括号子串的长度
+  * 子串意味着连续
+  * 有效括号子串定义为在这段子串中，
+  * 任何右括号都有对应左括号
+  * 任何左括号都有对应右括号
+  * 例如，str = '))((()))()())))()()'
+  * 最长子串是((()))()()，长度为8
+  * 
+  * 思路：
+  * 以每个位置上的字符当做有效字符串的最后一个字符计算长度
+  * 当前位置上
+  * 如果是(,即最后一个字符是（，那么绝对不能形成有效字符串，长度为0
+  * 如果是），
+  * 通过前一个字符的有效长度dp[i-1]，
+  * 找到配对的位置j，
+  * 如果是（，那么至少是dp[i-1] + 2,再看j前面是），看是否能连上，连上的话就是再加上dp[j-1]
+  * 如果不是（，那么当前位置就无法形成有效子串，长度为0
+  * 
+  */
+
+const validLength = str => {
+  const dp = (new Array(str.length)).fill(0);
+  let matchPos = 0;
+  let maxLength = 0;
+  for(let i = 1; i < str.length; i++) {
+    if (str[i] === ')') {
+      matchPos = i - dp[i-1] -1;
+      if(matchPos >=0 && str[matchPos] === '(') {
+        dp[i] = dp[i-1] + 2 + (matchPos ? dp[matchPos -1] : 0);
+      }
+    }
+    maxLength = Math.max(maxLength, dp[i]);
+  }
+  return maxLength;
+}
 
  /**
   * 给定一个数组arr.求差值为K的去重数字对
