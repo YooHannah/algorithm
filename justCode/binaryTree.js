@@ -1040,6 +1040,45 @@ const process = node => {
  }
 
  /**
+ * 二叉树每个结点都有一个int型的权值，给定一颗二叉树，
+ * 要求计算出根结点到叶结点的所有路径中
+ * 权值和最大的值为多少
+ */
+let maxSum = Number.MIN_VALUE;
+const process = (node, prevSum) => {
+  if (!node.left && !node.right) {
+    maxSum = Math.max(maxSum, prevSum + node.value)
+  }
+  if (node.left) {
+    process(node.left, prevSum + node.value);
+  }
+  if(node.right) {
+    process(node.right, prevSum + node.value);
+  }
+}
+const maxPath1 = head => {
+  process(head, 0);
+  return maxSum;
+}
+
+const process2 = node => {
+  if(!node.left && !node.right) {
+    return node.value;
+  }
+  let next = Number.MIN_VALUE;
+  if(node.left) {
+    next = process2(node.left)
+  }
+  if(node.right) {
+    next = Math.max(next, process2(node.right));
+  }
+  return node.value + next;
+}
+const maxPath2 = head => {
+  
+  return process2(head);
+}
+ /**
   * 有序表
   * 1. 
   * 平衡树： 左边数据< 根结点 <右边数据,左右子树高度差相差不多

@@ -158,3 +158,81 @@ const rotate = matrix => {
    [12,13,14,15]
   ] 
  ))
+
+/**
+ * 给定一个元素为非负数的二维数组，每行每列都是从小到大有序的，
+ * 给定一个非负整数aim, 检查aim 是否在二维数组中
+ * 
+ * 思路：
+ * 从右上角开始，大于当前数往左走，小于当前数往下走
+ * 
+ * [
+ *  [1,3,6,10],
+ *  [5,8,9,15],
+ *  [7,12,14,20],
+ * ] 
+ * 
+ */
+
+const judgeExist = (number,matrix) => {
+  const height = matrix.length;
+  const width = matrix[0].length;
+  let curX = width -1;
+  for(let i = 0; i< height; i++) {
+    for(let j = curX; j>= 0; j--){
+      if(matrix[i][j] === number) {
+        return true;
+      }
+      if (matrix[i][j] < number) {
+        curX = j
+        break;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * 类似题目
+ * 一个二维数组，里面的每行元素由0和1组成，且1一定全部在0的右边且连续
+ * 例如
+ * [
+ *  [0,0,0,1,1,1,1]
+ *  [0,0,0,1,1,1,1]
+ *  [0,0,0,0,1,1,1]
+ *  [0,1,1,1,1,1,1]
+ * ]
+ * 求含有1最多的行数和个数
+ * 
+ * 思路：
+ * 同样从右上角开始
+ * 是1就一直往左走，碰到0往下走，同时更新最大值
+ */
+const findMaxOne = (matrix) => {
+  let lines = [];
+  let maxCount = 0;
+  const height = matrix.length;
+  const width = matrix[0].length;
+  let curX = width -1;
+  for(let i = 0; i< height; i++) {
+    let orignal = maxCount;
+    for(let j = curX; j>= 0; j--){
+      if(!matrix[i][j]) {
+        if (j<curX && maxCount === orignal) {
+          lines.push(i)
+        } else if(maxCount > orignal) {
+          lines = [i];
+        }
+        curX = j+1;
+        break;
+      }
+      if (matrix[i][j] && width - maxCount > j) {
+        maxCount++;
+      }
+    }
+  }
+  return {
+    lines,
+    maxCount
+  }
+}

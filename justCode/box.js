@@ -591,3 +591,38 @@ class StackToQueue {
     return this.backupStack.pop()
   }
 }
+
+/**
+ * 对一个栈里的整型数据，按升序进行排序，
+ * 即排序前，栈里的数据是无序的，排序后最大元素位于栈顶
+ * 要求最多只能使用一个额外的栈存放临时数据，但不得将元素复制到别的数据结构中
+ * 
+ * 思路：
+ * 依次从原始栈吐出栈顶放入备用栈，
+ * 如果吐出的元素大于备用栈顶元素，则将备用栈顶元素全部返回原始栈，
+ * 将吐出元素存到备用栈
+ * 再将原始栈元素吐出
+ */
+const upStack = (stack) => {
+  const tempStack = [];
+  while(stack.length) {
+    const cur = stack.pop()
+    if(tempStack.length) {
+      const tempTop = tempStack[tempStack.length -1];
+      if(cur < tempTop) {
+        tempStack.push(cur);
+      } else {
+        while(tempStack.length) {
+          stack.push(tempStack.pop())
+        }
+        tempStack.push(cur);
+      }
+    } else {
+      tempStack.push(cur);
+    }
+  }
+  while(tempStack.length) {
+    stack.push(tempStack.pop())
+  }
+  return stack;
+}

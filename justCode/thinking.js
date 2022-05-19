@@ -309,3 +309,140 @@ const minOps = arr => {
   }
   return times;
 }
+
+/**
+ * 一个完整的括号字符串定义如下
+ * 1.空字符串是完整的，
+ * 2.如果s是完整的字符串，那么（s）也是完整的
+ * 3.如果s和t是完整字符串，那么他们拼接起来st也是完整的
+ * 例如： ‘(()())’ 和‘(())()’是完整的字符串
+ * ‘（））’， ‘（）（’ 和‘）’ 是不完整的括号字符串
+ * 现在想要将不完整的任意一个括号字符串转化成一个完整的括号字符串，请问至少要添加多少个括号
+ * 
+ * 思路：
+ * 分别统计当前字符'(' 和')' 个数，统计过程去掉可以配对的个数，二者之和就是需要添加的左右括号之和
+ * 
+ * 
+ */
+const needParenthese = str => {
+  let leftCount = 0;
+  let rightCount = 0;
+  const length = str.length;
+  for(let i = 0; i<length; i++) {
+    if(str[i] === '(') {
+      leftCount++
+    } else {
+      if (!leftCount) {
+        rightCount++
+      } else {
+        leftCount--
+      }
+    }
+  }
+  return leftCount + rightCount
+}
+
+ /**
+  * 对于上面的括号字符串定义深度
+  * 1. 空字符串深度是0
+  * 2. 如果X字符串深度是x,Y的深度是y,那么二者合起来的字符串'XY'的深度为max(x,y)
+  * 3. 如果X字符串深度是x,那么‘（X）’的深度是x+1
+  * 例如‘（）（）（）’ 深度是1，‘（（（）））’ 深度是3
+  * 请算出合法括号字符串的深度
+  * 
+  * 思路： 声明计数count,遇到左括号加1，遇到有括号减1，count能够达到的最大值就是深度
+  */
+ const getStringCount = str => {
+   let count = 0;
+   let max = 0;
+   for(let i = 0; i<str.length;i++) {
+     if (str[i] === '(') {
+      count++
+      max = Math.max(max, count);
+     } else {
+       count && count--;
+     }
+   }
+   return max
+ }
+
+ /**
+  * 给定由左右括号形成的字符串，请找出最长的有效括号子串的长度
+  * 子串意味着连续
+  * 有效括号子串定义为在这段子串中，
+  * 任何右括号都有对应左括号
+  * 任何左括号都有对应右括号
+  * 例如，str = '))((()))()())))()()'
+  * 最长子串是((()))()()，长度为8
+  * 
+  * 思路：
+  * 以每个位置上的字符当做有效字符串的最后一个字符计算长度
+  * 当前位置上
+  * 如果是(,即最后一个字符是（，那么绝对不能形成有效字符串，长度为0
+  * 如果是），
+  * 通过前一个字符的有效长度dp[i-1]，
+  * 找到配对的位置j，
+  * 如果是（，那么至少是dp[i-1] + 2,再看j前面是），看是否能连上，连上的话就是再加上dp[j-1]
+  * 如果不是（，那么当前位置就无法形成有效子串，长度为0
+  * 
+  */
+
+const validLength = str => {
+  const dp = (new Array(str.length)).fill(0);
+  let matchPos = 0;
+  let maxLength = 0;
+  for(let i = 1; i < str.length; i++) {
+    if (str[i] === ')') {
+      matchPos = i - dp[i-1] -1;
+      if(matchPos >=0 && str[matchPos] === '(') {
+        dp[i] = dp[i-1] + 2 + (matchPos ? dp[matchPos -1] : 0);
+      }
+    }
+    maxLength = Math.max(maxLength, dp[i]);
+  }
+  return maxLength;
+}
+/**
+ * 给定两个集合a和b,分别包含整数元素个数 n 和 m 个
+ * 定义magic 操作，】
+ * 从一个集合中取出一个元素，放到另一个集合中，
+ * 且操作过后，两个集合的平均值大于操作前
+ * 注意：
+ * 1. 不可以把一个集合的元素取空，这样就没有平均值了
+ * 2. 值为x 的元素从集合b取出放入集合a.但集合a中已经有值为x的元素，则a的平均值不变
+ *    因为集合元素不会重复，b的平均值可能会改变，因为x被取出了
+ * 问最多可以进行多少次magic操作
+ * 
+ * 思路： 
+ * 把平均值大的数组里面的
+ * 小于其自己平均值
+ * 但大于
+ * 平均值小的数组的平均值
+ * 的数移到平均值小的数组中
+ */
+const avg = arr => {
+  const sum = arr.reduce((curr,prev) => curr + prev, 0);
+  return sum / arr.length;
+}
+const maxOpt = (arr1, arr2) => {
+  if (!arr1 || !arr1.length || !arr2 || !arr2.length) {
+   return 0;
+  }
+  const arr1IsMore = avg(arr1) > avg(arr2)
+  const moreArr = arr1IsMore ? arr1 : arr2;
+  const lessArr = arr1IsMore ? arr2 : arr1;
+  moreArr.sort((a,b) => a -b);
+  let runTime = moreArr.length;
+  let opt = 0;
+  for(let i = 0; i< runTime;i++) {
+    const cur = moreArr[i];
+    if(cur < avg(moreArr) && cur>avg(lessArr) && !lessArr.includes(cur)) {
+     moreArr.splice(i,1);
+     runTime--;
+     lessArr.push(cur);
+     opt++;
+     i--
+    }
+  }
+  return opt
+}

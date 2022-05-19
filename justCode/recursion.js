@@ -739,6 +739,99 @@ const bagpack = (w, v) => {
 }
 
 /**
+ * 给定一个非负整数N,代表二叉树的结点个数，返回能形成多少种不同的二叉树结构
+ * 
+ * 思路：
+ * 总要有一个根结点，那剩下的左右子树只能使用n-1个结点
+ * 左树用1个结点的话，右树只需要处理n-2个结点可以形成多少种不同的二叉树，
+ * 左树用2个结点的话，右树只需要处理n-3个结点可以形成多少种不同的二叉树
+ * ...
+ * 左树用i个结点的话，右树只需要处理n-1-i个结点可以形成多少种不同的二叉树
+ * 
+ * 每种情况的结果和就是最终的种类数
+ */
+
+const findCount = n => {
+  if (!n) {
+    return 1
+  }
+  if ([1,2].includes(n)) {
+   return n
+  }
+  let count = 0;
+  for (let i = 0; i< n; i++) {
+   const leftWays = findCount(i);
+   const rightWays = findCount(n-1-i);
+   count += leftWays * rightWays;
+  }
+  return count;
+}
+
+// 进一步使用动态规划的概念优化
+
+const findCount = n => {
+  if (n < 2) {
+    return 1
+  }
+  const dp = (new Array(n+1)).fill(0);
+  dp[0] = 1;
+  console.log(dp);
+  for (let i = 1; i< n + 1; i++) {
+    for(let j = 1;j < i + 1; j++) {
+      dp[i] += dp[j-1] * dp[i-j];
+    }
+  }
+  return dp[n];
+}
+
+
+ /**
+  * 将给定数转成字符串，原则如下，1对应a，2对应b, ...26对应z, 
+  * 例如12258，可以转换成‘abbeh’, 'aveh', 'abyh', 'lbeh' 和‘lyh’ 个数为5
+  * 现在给任一数字，返回可以转换成不同字符串的个数
+  * 
+  */
+
+const transforNumberToString = (str, index) => {
+  // if(str.length === 1 && str != '0') {
+  //   return 1;
+  // }
+  if(str.length === index) {
+    return 1;
+  }
+  if (str[index] === '0') {
+    return 0;
+  }
+  // let result = transforNumberToString(str.slice(1), 0);
+  // if (index + 1 < str.length -1 && Number(str.slice(0,2)) < 27) {
+  //   result += transforNumberToString(str.slice(2), 0)
+  // }
+  let result = transforNumberToString(str, index + 1);
+  if (index + 1 < str.length -1 && Number(str.slice(index,index + 2)) < 27) {
+    result += transforNumberToString(str, index + 2)
+  }
+  return result;
+}
+
+// 优化
+const dpWays = str => {
+  const n = str.length;
+  const dp = (new Array(n+1)).fill(0);
+  dp[n] = 1;
+  dp[n -1] = str[n-1] === '0' ? 0 : 1;
+  for(let i = n-2; n>=0;i--) {
+    if(str[i] === '0') {
+      dp[i] = 0;
+    } else {
+      dp[i] = dp[i + 1] + (Number(str.slice(i, i+2)) < 27 ? dp[i+2] : 0)
+    }
+  }
+
+  return dp[0];
+}
+
+
+/**
  * 动态规划的空间压缩技巧
  * 
  * 主要思想就是尝试用数组动态存放矩阵形成的结果

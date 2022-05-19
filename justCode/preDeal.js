@@ -18,6 +18,27 @@
  *  遍历原数组，找到到左侧绿色正方形个数和右侧红色正方形个数和数最小的位置，
  *  这个和就是最小需要染色的正方形个数
  */
+const needColorCount = str => {
+  const list = str.split('');
+  const leftGreenAddRightRed = [];
+  console.log(list);
+  for (let i = 0; i< list.length; i++) {
+   let leftGreen = 0;
+   let rightRed = 0;
+   if(i === 0) {
+     leftGreen = 0;
+   } else {
+     leftGreen = list.slice(0,i).filter(e=> e==='G').length;
+   }
+   if (i === list.length -1) {
+     rightRed = 0;
+   } else {
+     rightRed = list.slice(i+1).filter(e=>e==='R').length;
+   }
+   leftGreenAddRightRed[i] = leftGreen + rightRed;
+  }
+  return leftGreenAddRightRed.sort((a,b) => a-b)[0]
+}
 
  /**
   * 【题目】
@@ -39,6 +60,48 @@
   * 当前点边长最右边点的down矩阵上值漫步满足是不是都是1
   * 最下边的点的right矩阵的值满不满足是不是都是1
   */
+
+const maxSquare = matrix => {
+  const height = matrix.length;
+  const width = matrix[0].length;
+  let sideRightMatrix = (new Array(height)).fill((new Array(width)).fill(0));
+  let sideDownMatrix = (new Array(height)).fill((new Array(width)).fill(0));
+  for(let i = 0; i<height; i++) {
+    for(let j = 0; j<width; j++) {
+      let downCount = 0;
+      for(let line = i + 1; line <height; line++) {
+        if(matrix[line][j]){
+          downCount++
+        } else {
+          break;
+        }
+      }
+      let rightCount = 0;
+      for(let col = j+1; col < width; col++) {
+        if(matrix[i][col]){
+          rightCount++
+        } else {
+          break;
+        }
+      }
+      sideRightMatrix[i][j] = rightCount;
+      sideDownMatrix[i][j] = downCount;
+    }
+  }
+  const validSquareSide = [];
+  for(let i = 0; i<height; i++) {
+    for(let j = 0; j<width; j++) {
+      const side = Math.min(sideRightMatrix[i][j], sideDownMatrix[i][j]);
+      const bottomSide = sideRightMatrix[i+side][j];
+      const rightSide = sideDownMatrix[i][j+side];
+      if(Math.min(bottomSide, rightSide) >= side) {
+        validSquareSide.push(side);
+      }
+    }
+  }
+  return validSquareSide.sort((a,b)=> b-a)[0]
+}
+
 
 /**
  * 【题目】
