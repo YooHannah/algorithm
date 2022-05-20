@@ -18,26 +18,45 @@
  *  遍历原数组，找到到左侧绿色正方形个数和右侧红色正方形个数和数最小的位置，
  *  这个和就是最小需要染色的正方形个数
  */
-const needColorCount = str => {
-  const list = str.split('');
-  const leftGreenAddRightRed = [];
-  console.log(list);
-  for (let i = 0; i< list.length; i++) {
-   let leftGreen = 0;
-   let rightRed = 0;
-   if(i === 0) {
-     leftGreen = 0;
-   } else {
-     leftGreen = list.slice(0,i).filter(e=> e==='G').length;
-   }
-   if (i === list.length -1) {
-     rightRed = 0;
-   } else {
-     rightRed = list.slice(i+1).filter(e=>e==='R').length;
-   }
-   leftGreenAddRightRed[i] = leftGreen + rightRed;
+const maxSquare = matrix => {
+  const height = matrix.length;
+  const width = matrix[0].length;
+  // 初始化时注意每个子数组不要是指向同一个
+  let sideRightMatrix = (new Array(height).fill(null)).map(e => (new Array(width).fill(0)));
+  let sideDownMatrix = (new Array(height).fill(null)).map(e=>(new Array(width)).fill(0));
+  for(let i = 0; i<height; i++) {
+    for(let j = 0; j<width; j++) {
+      let downCount = 0;
+      let row = i + 1;
+      while(row< height && matrix[row][j]) {
+        row++;
+        downCount++;
+      }
+      sideDownMatrix[i][j] = downCount;
+      let rightCount = 0;
+      let col = j + 1;
+      while(col < width && matrix[i][col]){
+       rightCount++;
+       col++;
+      }
+      sideRightMatrix[i][j] = rightCount;
+    }
   }
-  return leftGreenAddRightRed.sort((a,b) => a-b)[0]
+  const validSquareSide = [];
+  for(let i = 0; i<height; i++) {
+    for(let j = 0; j<width; j++) {
+      if(!matrix[i][j] ) {
+       continue;
+      }
+      const side = Math.min(sideRightMatrix[i][j], sideDownMatrix[i][j]);
+      const bottomSide = sideRightMatrix[i+side][j];
+      const rightSide = sideDownMatrix[i][j+side];
+      if(Math.min(bottomSide, rightSide) >= side) {
+        validSquareSide.push(side);
+      }
+    }
+  }
+  return validSquareSide.sort((a,b)=> b-a)[0] + 1;
 }
 
  /**
@@ -112,7 +131,7 @@ const maxSquare = matrix => {
  * 思路：
  * 利用二进制表示整数
  * 先将原等概率函数f改造成等概率返回1和0的函数f1
- * 1~3的数字都能用2位2进制表示，5~7都要用3为的2进制表示
+ * 1~3的数字都能用2位2进制表示，5~7都要用3位的2进制表示
  * 1~7的数字用2进制表示的话，3位二进制上每一位都可能是0或者1
  * 让f1 返回3次的值组成最终的1~7范围内的数即可
  * 
@@ -125,4 +144,59 @@ const maxSquare = matrix => {
  * 如果拿到的是00或者11，那么不返回重新计算两次ff，拿到一对组合
  * 
  */
+// 问题1
+const f1 = () => Math.random() * 5 + 1; // 返回1-5之间的数字
+const r10 = () => { // 等概率返回 0和1
+  let res = 0;
+  do {
+    res = f1();
+  } while (res == 3);
+  return res < 3 ? 0 : 1
+}
+
+const g = () => {
+  let res = 0;
+  do {
+    res = (r10() << 2) + (r10() << 1) + r10(); // 等概率返回0 - 6 整数，等于7 的话重新掷骰子
+  } while( res === 7)
+  return res + 1
+}
+
+// 问题二
+
+const transforfunc = (f,lessLeft,lessRight, aimLeft,aimRight) => {
+  const lessMid = (lessLeft + lessRight ) / 2;
+  const r01 = () => { // 等概率 0 1
+    let res = 0;
+    do {
+      res = f()
+     } while(res === lessMid);
+    return res < lessMid ? 0 : 1;
+  }
+  const diff = aimRight - aimLeft;
+  const count = Math.ceil(Math.log2(diff));
+  let res = 0;
+  do {
+    res = 0;
+    let time = count;
+    while(time) {
+      res += r01() << (time -1);
+      time--;
+    }
+  } while (res > diff);
+   return res + aimLeft
+}
+
+// 题目三
+const f1 = () => Math.random() * 10 + 1; // 返回1-10之间的数字
+const r01 = () => f1() > 7 ? 1:0;
+const equal01 = (f) => {
+  do {
+   res = (f() << 1) + f()
+  } while ( !res  || res === 3)
+  return res === 1 ? 1 : 0
+}
+console.log(equal01(r01));
+
+
 
