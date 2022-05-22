@@ -18,6 +18,42 @@
   * 打印输入不同n值结果，发现规律
   */
 
+ const minBags = n => {
+  const allBigBag = Math.ceil(n/8);
+  const countList = [];
+  for(let i = allBigBag;i>=0;i--) {
+    const rest = n - i * 8;
+    if(rest < 0 || rest%6) {
+      countList[i] = -1;
+      continue;
+    } 
+    const smallBag = rest/6;
+    countList[i] = i + smallBag;
+  }
+  return countList.filter(e => e != -1).sort((a,b) => a-b)[0] || -1;
+}
+
+// 通过执行100次计算结果发现规律
+
+const minBags = n => {
+  if(n & 1) { // 如果是奇数个苹果
+    return -1
+  }
+  if(n < 18) {
+    if (!n) {
+      return 0;
+    }
+    if(n == 6 || n ==8) {
+      return 1;
+    }
+    if([12,14,16].includes(n)) {
+      return 2;
+    }
+    return -1
+  }
+  return Math.floor((n -18) /8) + 3
+}
+
 /**
  * 【题目】
  * 现在要给两头牛喂N份草，两头牛每次只能吃4的n次方份草，谁能够吃到最后一份谁赢，
@@ -31,3 +67,29 @@
  * 就是加入n - 1结果是后吃的牛获胜，那么n的结果就是先吃的牛获胜 
  *
  */
+
+const winner1 = n => {
+  if(n < 5) {
+    return [0,2].includes(n) ? '后手':'先手'
+  }
+  let base = 1;
+  while (base <=n ) {
+    if (winner1(n-base) === '后手') {
+      return '先手'
+    }
+    if (base > n/4) {
+      break;
+    }
+    base *=4;
+  }
+  return '后手'
+}
+
+// 打表后
+const winner2 = n => {
+  if([0,2].includes(n%5)) {
+    return '后手'
+  } else {
+    return '先手'
+  }
+}

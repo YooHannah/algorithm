@@ -1,10 +1,19 @@
 
-const f1 = () => Math.random() * 10 + 1; // 返回1-10之间的数字
-const r01 = () => f1() > 7 ? 1:0;
-const equal01 = (f) => {
-  do {
-   res = (f() << 1) + f()
-  } while ( !res  || res === 3)
-  return res === 1 ? 1 : 0
- }
-console.log(equal01(r01));
+const minBags = n => {
+  const allBigBag = Math.ceil(n/8);
+  const countList = [];
+  for(let i = allBigBag;i>=0;i--) {
+    const rest = n - i * 8;
+    if(rest < 0 || rest%6) {
+      countList[i] = -1;
+      continue;
+    } 
+    const smallBag = rest/6;
+    countList[i] = i + smallBag;
+  }
+  return countList.filter(e => e != -1).sort((a,b) => a-b)[0] || -1;
+}
+for (let i = 1; i<100;i++) {
+  console.log(i, minBags(i));
+}
+console.log(minBags(48));
