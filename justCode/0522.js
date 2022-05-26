@@ -23,6 +23,52 @@
  * 每多一层，多加俩空格
  * 
  */
+class Node {
+  constructor(value) {
+    this.value = value;
+    this.next = {};
+  }
+}
+const generatePreTree = (arr, parent) => {
+  const allStrList = arr.map(str => str.split('\\'));
+  const root = new Node(-1);
+  for(let i = 0; i < allStrList.length; i++) {
+    const currStr = allStrList[i];
+    let node = root;
+    for (let j = 0; j< currStr.length; j++) {
+      const path = currStr[j];
+      if(!node.next[path]) {
+        node.next[path] = new Node(path);
+      }
+      node = node.next[path];
+    }
+  }
+  return root
+}
+const generateSpace = level => {
+  let space = '';
+  for (let i = 0; i < level * 2; i++) {
+    space += ' ';
+  }
+  return space;
+}
+const printProcess = (node, level) => {
+  const list = Object.keys(node.next).sort((a,b) => b > a ? -1 : 1);
+  if (!list.length) {
+    return;
+  }
+  const space = generateSpace(level);
+  for(let i = 0; i<list.length; i++) {
+    const currNode = node.next[list[i]];
+    console.log(`${space}${currNode.value}`);
+    printProcess(currNode, level+1);
+  }
+}
+const printPath = arr => {
+  const root = generatePreTree(arr);
+  printProcess(root, 0)
+}
+printPath(['b\\cst', 'd\\', 'a\\d\\e', 'a\\b\\e']);
 
 
 /**
@@ -35,7 +81,37 @@
  * 然后将左树next指向父节点，父节点last指向左树
  * 父节点next指向右树，右树last指向父节点
  */
+const treeToLink = head => {
+  if (!head) {
+    return null
+  }
+  if (!head.left && !head.right) {
+    return {
+      head: head,
+      tail: head
+    }
+  }
+  const leftLink = treeToLink(head.left);
+  const rightLink = treeToLink(head.right);
+  if(leftLink) {
+    leftLink.tail.next = head;
+    head.last = leftLink.tail;
+  }
+  if(rightLink) {
+    rightLink.head.last = head;
+    head.next = rightLink.head;
+  }
+  return {
+    head: leftLink ? leftLink.head : head,
+    tail: rightLink ? rightLink.tail : head
+  }
+}
 
+let node = treeToLink(root).head;
+while(node) {
+  console.log(node.value);
+  node = node.next
+}
 /**
  * 找到一颗二叉树中最大的搜索二叉子树，返回最大搜索二叉子树的节点个数和头结点
  * 
