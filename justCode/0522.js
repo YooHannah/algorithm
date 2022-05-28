@@ -129,7 +129,55 @@ while(node) {
  * 则判断是都能跟父node形成搜素树，如果能，更新返回值
  * 
  */
-
+const maxBST = root => {
+  if (!root) {
+    return null
+  }
+  const leftResult = maxBST(root.left);
+  const rightResult = maxBST(root.right);
+  let max = root.value;
+  let min = root.value;
+  if (leftResult) {
+    max = Math.max(max, leftResult.max)
+    min = Math.min(min, leftResult.min)
+  }
+  if (rightResult) {
+    max = Math.max(max, rightResult.max);
+    min = Math.min(min, rightResult.min);
+  }
+  let head = null;
+  let size = 0;
+  if(leftResult) {
+    heade =leftResult.head;
+    size =leftResult.size;
+  }
+  if (rightResult && rightResult.size > size) {
+    head = rightResult.head;
+    size = rightResult.size;
+  }
+  let isBST = false;
+  if (
+    (!leftResult || leftResult.isBST) &&
+    (!rightResult || rightResult.isBST) &&
+    (
+      (!leftResult || leftResult.max < root.value) &&
+      (!rightResult || rightResult.min > root.value)
+    )
+  ) {
+    isBST = true;
+    head = root;
+    const leftsize = leftResult ? leftResult.size : 0;
+    const rightsize = rightResult?rightResult.size : 0;
+    size = leftsize + 1 + rightsize;
+  }
+  return {
+    head,
+    size,
+    isBST,
+    min,
+    max
+  }
+}
 /**
  * 一个帖子最高分数定义为用户所有打分记录中，连续打分数据之和的最大值
  * 计算一个帖子曾经得到过的最高分数为多少
@@ -137,7 +185,7 @@ while(node) {
  * 最高分为11 + 4 + (-6) + 9 + 20 = 38
  * 
  * 思路：
- * 相当于寻找数组中累计和最大右最长的子数组
+ * 相当于寻找数组中累计和最大且最长的子数组
  * 假设该子数组位于i-j这一段
  * 那么可以推断
  * i < curr < j ,i ~ curr这段和肯定大于0
@@ -149,7 +197,18 @@ while(node) {
  * 如果当前currSum小于0，就置为0，说明之前的累加和小于0，从现在开始重新累加
  * 如果不小，就保持不动
  */
-
+const getMaxSum = arr => {
+  let currSum = 0;
+  let maxSum = 0;
+  for(let i = 0; i < arr.length; i++) {
+    currSum += arr[i];
+    maxSum = Math.max(maxSum, currSum);
+    if (currSum < 0) {
+      currSum = 0
+    }
+  }
+  return maxSum
+}
  /**
   * 给定一个整型矩阵，返回子矩阵中最大累计和
   * 
@@ -169,7 +228,43 @@ while(node) {
   * 多行则是相同col位置上累计和，再转成数组累计和
   * 每种情况算出累计和最大值后，从中找大小
   */
-
+  const addResult = (result, sumArr) => {
+    const length = sumArr.length;
+    for(let i = 0;i<length;i++) {
+      let init = sumArr[i];
+      result.push(init)
+      for (let j = i+1; j<length;j++) {
+        init +=sumArr[j];
+        result.push(init)
+      }
+    }
+    return result;
+  }
+  const getSum = (arr1, arr2) => {
+    const length = arr1.length;
+    const result = [];
+    for(let i = 0;i<length; i++) {
+      const sum = arr1[i] + arr2[i];
+      result.push(sum);
+    }
+    return result;
+  }
+   const getMaxMatrixSum = matrix => {
+     const height = matrix.length;
+     const width = matrix[0].length;
+     let result = [];
+     for(let i = 0; i< height;i++) {
+      const line = matrix[i];
+      let sumArr = line.slice();
+      result = addResult(result, sumArr);
+      for(let j = i+1; j< height; j++) {
+        const nextLine = matrix[j];
+        sumArr = getSum(sumArr,nextLine);
+        result = addResult(result, sumArr);
+      }
+     }
+     return result.sort((a,b) => b-a)[0]
+   }
   /*********************************************************** */
 
   /**
@@ -197,6 +292,24 @@ while(node) {
    * 
    * 
    */
+  let needLamb = road => {
+    const count = 0;
+    for(let i = 0; i< road.length; i++) {
+      if(road[i] === '.') {
+        count++;
+        const next = i + 1;
+        if (next === road.length) {
+          break
+        }
+        if (road[next] === '.') {
+          i = i+2;
+        } else {
+          i = i + 1
+        }
+      }
+    }
+    return count;
+  }
 
    /**
     * 已知一个二叉树的中序和先序遍历，求后序遍历顺序，二叉树没有重复的值
@@ -220,6 +333,21 @@ while(node) {
     * 最后进行拼接
     * 
     */
+
+   const getEndSort = (preSort, midSort) => {
+    if(preSort.length === 1) {
+      return preSort;
+    }
+    const last = preSort[0];
+    const poi = midSort.findIndex(e=> e === last);
+    const midLeft = midSort.slice(0,poi);
+    const minRight = midSort.slice(poi+1);
+    const preLeft = preSort.slice(1,poi+1);
+    const preRight = preSort.slice(poi+1)
+    const endLeft = getEndSort(preLeft, midLeft);
+    const endRight = getEndSort(preRight, minRight);
+    return [...endLeft, ...endRight, last]
+  }
 
   /**
    * 将数字转化成中英文表达
@@ -250,6 +378,16 @@ while(node) {
    * 假如当前元素位于n位置，那么这个数能否被整除可以这样计算
    * (n*(n+1)/2)%3
    */
+  const specialCase = (i,r) => {
+    let count = 0;
+    for(let n = i; n<r +1; n++) {
+      const can = (n*(n+1)/2)%3;
+      if (!can) {
+        count++
+      }
+    }
+    return count;
+  }
 
   /************************************************* */
 
@@ -262,6 +400,26 @@ while(node) {
    * 思路：
    * 尽可能的让i位置上的数据等于i+1,那么i位置上不等于i+1的数据就是没有出现过的数据
    */
+  const findUnShowNumber = arr => {
+    for(let i = 0; i < arr.length; i++) {
+      while(arr[i] != i+1) {
+        let pos = arr[i] -1;
+        let temp = arr[pos];
+        if(temp === pos + 1) {
+          break;
+        }
+        arr[pos] = arr[i];
+        arr[i] = temp;
+      }
+    }
+    let count = 0;
+    for(let i = 0; i < arr.length; i++) {
+      if (arr[i] != i+1) {
+        count++
+      }
+    }
+    return count
+  }
 
   /**
    * 现有一土豪想给主播冲人气从start刚好到达end,
@@ -281,6 +439,54 @@ while(node) {
    * 那么要限制一下增加到多少不再尝试
    * 
    */
+  /**
+   * 
+   * @param {之前用了多少C币} preMoney 
+   * @param {当前人气值} curr 
+   * @param {目标人气值} aim 
+   * @param {增加2人气需要C币数量} add 
+   * @param {翻倍人气需要C币数量} double 
+   * @param {私聊花费C币数量} del 
+   * @param {人气最高限制} limitAim 
+   * @param {C币最多使用限制} limitCoin 
+   */
+  const process = (
+    preMoney, curr, aim, add, double, del, limitAim, limitCoin
+  ) => {
+    if(
+      curr > limitAim ||
+      preMoney > limitCoin ||
+      curr < 0
+    ) {
+      return Number.MAX_VALUE;
+    }
+    if(curr === preMoney) {
+      return preMoney
+    }
+    let min = Number.MAX_VALUE;
+    const p1 = process(preMoney+add, curr + 2, aim,  double, del, limitAim, limitCoin);
+    if (p1 != Number.MAX_VALUE) {
+      min = Math.min(p1, min);
+    }
+
+    const p2 = process(preMoney+double, curr * 2, aim,  double, del, limitAim, limitCoin);
+    if (p2 != Number.MAX_VALUE) {
+      min = Math.min(p2, min);
+    }
+
+    const p3 = process(preMoney+del, curr - 2, aim,  double, del, limitAim, limitCoin);
+    if (p3 != Number.MAX_VALUE) {
+      min = Math.min(p3, min);
+    }
+    return min;
+  }
+  const needC = (start, end, add, double, del) => {
+    if(end - start < 0) {
+      return -1
+    }
+
+    return process(preMoney, start, end, add, double, del, end*2, ((end-start)/2)*add);
+  }
 
 
    /***
@@ -342,21 +548,31 @@ while(node) {
      * 
      */
 
-     /**
-      * 在一个字符串中找到没有重复字符子串中最长的长度
-      * 
-      * 例如
-      * abcabccbb 最长子串是abc,长度是3
-      * 
-      * 思路：
-      * 子串要连续
-      * 遍历每个字符，当前字符位置是i,找
-      * 到0 - i-1范围内离i最近的和i位置字符相同的字符位置
-      * 而二者之间的距离就是不重复子串的长度
-      * 每个字符都得到后找最大的长度
-      * 优化：利用i-1位置长度，看位置i字符是否在该范围内
-      */
-
+/**
+* 在一个字符串中找到没有重复字符子串中最长的长度
+* 
+* 例如
+* abcabccbb 最长子串是abc,长度是3
+* 
+* 思路：
+* 子串要连续
+* 遍历每个字符，当前字符位置是i,找
+* 到0 - i-1范围内离i最近的和i位置字符相同的字符位置
+* 而二者之间的距离就是不重复子串的长度
+* 每个字符都得到后找最大的长度
+* 注意：利用i-1位置长度，看位置i字符是否在该范围内
+*/
+const findMaxNoRepeatLength = str => {
+  const result = [1];
+  for(let i = 1; i< str.length; i++) {
+    const temp = str.slice(0, i).split('');
+    const pos = temp.findLastIndex(e => e === str[i]);
+    let length = i - pos;
+    length = length > result[i-1] ? result[i-1] + 1 : length;
+    result.push(length);
+  }
+  return result.sort((a, b) => b-a)[0]
+}
 /**
  * 给定两个字符str1和str2,
  * 再给定三个整数，ic,dc,rc、
@@ -380,7 +596,48 @@ while(node) {
  * [a,b,c,...z,ab,ac,ad,...az,bc,bd...bz,...abc,....bcd,...xyz...]
  * 随便输入一个升序组合，求位于该数组的位置
  */
-
-/**
- * 
- */
+const base = 'abcdefghijklmnopqrstuvwxyz'.split('');
+// 以base[charpos]开头，长度为length的字符串有多少个
+const renderCustome = (charPos, length) => {
+  if(length === 1) {
+    return 1;
+  }
+  let count = 0;
+  for(let i = charPos+1; i< 26; i++) {
+    count += renderCustome(i, length - 1);
+  }
+  return count;
+}
+// 长度为length的字符串有多少个
+const render = length => {
+  let count = 0;
+  for(let j = 1; j<=26;j++) {
+    count += renderCustome(j-1, length)
+  }
+  return count
+}
+ const findPos = str => {
+   const length = str.length;
+   const first = str[0];
+   let count = 0;
+   const firstPos = base.findIndex(e => e === first);
+   // 长度小于length的升序字符串有多少
+   for(let i = 1; i< length; i++) {
+     count += render(i);
+   }
+   //排在首字母前面的字母形成的长度为length的字符串有多少
+   for(let m = 0; m < firstPos; m++) {
+     count +=  renderCustome(m, length);
+   }
+   let pre = firstPos;
+   for(let j = 1; j<length; j++) {
+     const curr = str[j];
+     const currPos = base.findIndex(e=> e === curr);
+     // 升序，第二个字母肯定位于上一个字母的后面，所以 k = pre + 1
+     for(let k = pre + 1; k< currPos; k++) {
+      count += renderCustome(k, length - j);
+     }
+     pre = currPos;
+   }
+   return count;
+ }

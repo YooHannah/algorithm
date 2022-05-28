@@ -1,4 +1,5 @@
-const list = [1,2,3,4,5,6,7, null, 8, null, null, 9];
+// const list = [1,2,3,4,5,6,7, null, 8, null, null, 9];
+const list = [10,6,20,5,7,4,23,null, null, 12,15,null, null, 21,27];
 let i = 0; 
 const generateBinaryTree = (data, i) => { // 生成一颗二叉树
   if(i=== data.length) {
@@ -15,37 +16,6 @@ const generateBinaryTree = (data, i) => { // 生成一颗二叉树
   return node
 }
 const root = generateBinaryTree(list, i);
-console.log(root);
-const treeToLink = head => {
-  if (!head) {
-    return null
-  }
-  if (!head.left && !head.right) {
-    return {
-      head: head,
-      tail: head
-    }
-  }
-  const leftLink = treeToLink(head.left);
-  const rightLink = treeToLink(head.right);
-  if(leftLink) {
-    leftLink.tail.next = head;
-    head.last = leftLink.tail;
-  }
-  if(rightLink) {
-    rightLink.head.last = head;
-    head.next = rightLink.head;
-  }
-  return {
-    head: leftLink ? leftLink.head : head,
-    tail: rightLink ? rightLink.tail : head
-  }
-}
 
-let node = treeToLink(root).head;
-while(node) {
-  console.log(node.value);
-  node = node.next
-}
 
-console.log()
+console.log(findPos('bd'))
