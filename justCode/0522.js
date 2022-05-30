@@ -489,65 +489,185 @@ const getMaxSum = arr => {
   }
 
 
-   /***
-    * 现在输入一些数据，表示运营活动的相关情况
-    * 主播可以从任意活动开始，但是一定要将关联的后续活动参加完
-    * 
-    * 例如
-    * 
-    * 8 10
-    * 3 2000 0 1 1 0 0 0 0 0
-    * 3 4000 0 0 0 1 1 0 0 0
-    * 2 2500 0 0 0 1 0 0 0 0
-    * 1 1600 0 0 0 0 1 1 1 0
-    * 4 3800 0 0 0 0 0 0 0 1
-    * 2 2600 0 0 0 0 0 0 0 1
-    * 4 4000 0 0 0 0 0 0 0 1
-    * 3 3500 0 0 0 0 0 0 0 0
-    * 
-    * 第一行N和D，表示一共有N项活动，D表示活动周时长
-    * 0 < N <= 1000, 0 < D <= 10000
-    * 第1 ~ N + 1行描述每一个活动的信息
-    * 第一项表示参加活动需要时间
-    * 第二项表示将来可得报酬
-    * 之后的每一项表示和活动周内活动的关联关系
-    * 1表示有关联，0 表示没有关联
-    * 
-    * 例子中表示的活动从上到下标记为1 - 8
-    * 活动间关系如下
-    *       2  -       5
-    *    /      \    /    \
-    * 1            4 - 6  - 8
-    *    \      /    \    /
-    *       3          7
-    * 
-    * 互动由标记数字少的的指向数字大的
-    * 问一个主播从哪个活动开始直到完成最后一个活动，也就是活动8
-    * 能够获得最多报酬，且最少用时
-    * 
-    * 思路：
-    * 反正都要完成最后一个任务，那就从最后一个任务往回走开始计算
-    * 在每个活动结点维持一个天数-报酬Map结构
-    * 表示通过不同路径过来的情况下，累计活动天数可以拿到的报酬
-    * 全都遍历完后，计算每个结点下面Map表中找到天数最少报酬最多的一条数据
-    * 每个结点拿到后再做一次比较，找天数最少报酬最多的
-    * 
-    * 同级结点不在计算过程中仅保留天数少报酬多的情况是防止在遍历过程中出现
-    * 在当前路径累计报酬少，但是再往上面一个报酬多的情况，
-    * 因为移除报酬少的数据意味着不再继续一条路线的探索
-    */
+/***
+* 现在输入一些数据，表示运营活动的相关情况
+* 主播可以从任意活动开始，但是一定要将关联的后续活动参加完
+* 
+* 例如
+* 
+* 8 10
+* 3 2000 0 1 1 0 0 0 0 0
+* 3 4000 0 0 0 1 1 0 0 0
+* 2 2500 0 0 0 1 0 0 0 0
+* 1 1600 0 0 0 0 1 1 1 0
+* 4 3800 0 0 0 0 0 0 0 1
+* 2 2600 0 0 0 0 0 0 0 1
+* 4 4000 0 0 0 0 0 0 0 1
+* 3 3500 0 0 0 0 0 0 0 0
+* 
+* 第一行N和D，表示一共有N项活动，D表示活动周时长
+* 0 < N <= 1000, 0 < D <= 10000
+* 第1 ~ N + 1行描述每一个活动的信息
+* 第一项表示参加活动需要时间
+* 第二项表示将来可得报酬
+* 之后的每一项表示和活动周内活动的关联关系
+* 1表示有关联，0 表示没有关联
+* 
+* 例子中表示的活动从上到下标记为1 - 8
+* 活动间关系如下
+*       2  -       5
+*    /      \    /    \
+* 1            4 - 6  - 8
+*    \      /    \    /
+*       3          7
+* 
+* 互动由标记数字少的的指向数字大的
+* 问一个主播从哪个活动开始直到完成最后一个活动，也就是活动8
+* 能够获得最多报酬，且最少用时
+* 
+* 思路：
+* 反正都要完成最后一个任务，那就从最后一个任务往回走开始计算
+* 在每个活动结点维持一个天数-报酬Map结构
+* 表示通过不同路径过来的情况下，累计活动天数可以拿到的报酬
+* 全都遍历完后，计算每个结点下面Map表中找到天数最少报酬最多的一条数据
+* 每个结点拿到后再做一次比较，找天数最少报酬最多的
+* 
+* 同级结点不在计算过程中仅保留天数少报酬多的情况是防止在遍历过程中出现
+* 在当前路径累计报酬少，但是再往上面一个报酬多的情况，
+* 因为移除报酬少的数据意味着不再继续一条路线的探索
+*/
 
-    /**
-     * 给定一个只由数字0和1，逻辑符号 & (与) | (或) 和 ^ (异或) 五种字符组成的字符串express
-     * 再给定一个bool类型期待值desired，返回express能有多少种组合方式可以达到desired的结果
-     * 举例：
-     * express = "1^0|0|1".desired = false
-     * 只有"1^（（0|0）|1）" 和 "1^（0|（0|1））" 两种组合可以得到false,返回2
-     * express = "1".desired = false
-     * 无组合，返回0
-     * 
-     */
 
+
+/**
+ * 给定一个只由数字0和1，逻辑符号 & (与) | (或) 和 ^ (异或) 五种字符组成的字符串express
+ * 再给定一个bool类型期待值desired，返回express能有多少种组合方式可以达到desired的结果
+ * 举例：
+ * express = "1^0|0|1".desired = false
+ * 只有"1^（（0|0）|1）" 和 "1^（0|（0|1））" 两种组合可以得到false,返回2
+ * express = "1".desired = false
+ * 无组合，返回0
+ * 
+ */
+ const invalid = list => {
+   const length = list.length;
+  if(!(length & 1)) {// 字符数量是奇数
+    return true;
+  }
+  // 该是数字的位置应该是数字
+  for(let i = 0; i<length; i = i+2) {
+    if (!['1', '0'].includes(list[i])) {
+      return true;
+    }
+  }
+  // 该是符号的位置应该是符号
+  for(i = 1; i<length; i = i+2) {
+    if (!['&', '|', '^'].includes(list[i])) {
+      return true;
+    }
+  }
+  return false;
+ } 
+ const process = (list, desired, L, R) => {
+   if( L === R) {
+     const char = list[L];
+     let result = false;
+     if(char === '1') {
+      result = desired ? 1: 0;
+     }
+     if(char === '0') {
+      result = desired ? 0: 1;
+     }
+     return result;
+   }
+   let count = 0;
+   for(let i = L+1; i < R; i+=2) {
+    let sign = list[i];
+    if (sign === '*') {
+      if(desired) {
+        count += process(list, desired, L, i - 1) * process(list,desired, i + 1, R ); 
+      } else {
+        count += process(list, true, L, i - 1) * process(list,false, i + 1, R );
+        count += process(list, false, L, i - 1) * process(list,true, i + 1, R ); 
+        count += process(list, false, L, i - 1) * process(list,false, i + 1, R );   
+      }
+    }
+    if(sign === '|') {
+      if(desired) {
+        count += process(list, true, L, i - 1) * process(list,false, i + 1, R );
+        count += process(list, false, L, i - 1) * process(list,true, i + 1, R ); 
+        count += process(list, true, L, i - 1) * process(list,true, i + 1, R );  
+      } else {
+        count += process(list, false, L, i - 1) * process(list,false, i + 1, R );
+      }
+    }
+    if(sign === '^') {
+      if(desired) {
+        count += process(list, true, L, i - 1) * process(list,false, i + 1, R );
+        count += process(list, false, L, i - 1) * process(list,true, i + 1, R ); 
+      } else {
+        count += process(list, true, L, i - 1) * process(list,true, i + 1, R );
+        count += process(list, false, L, i - 1) * process(list,false, i + 1, R ); 
+      }
+    }
+   }
+   return count;
+ }
+ const methods = (express, desired) => {
+   if(!express) {
+    return 0;
+   }
+   const list = express.split('');
+   if (invalid(list)) {
+    return 0;
+   }
+   return process(list, desired, 0, list.length -1)
+ }
+
+// 优化
+
+const dpLive = (express, desired) => {
+  const list = express.split('');
+  const length = list.length;
+  const tMap = new Array(length).fill(null).map(e => new Array(length).fill(0));
+  const fMap = new Array(length).fill(null).map(e => new Array(length).fill(0));
+  for(let i = 0; i< length; i+=2) {
+    tMap[i][i] = list[i] === '1' ? 1:0;
+    fMap[i][i] = list[i] === '1' ? 0:1;
+  }
+  for( let row = length - 3; row >= 0; row -=2) {
+    for(let col = row + 2; col < length; col +=2) {
+      for(let i = row + 1; i<col;i +=2) {
+        const char = list[i];
+        if (char === '&') {
+          tMap[row][col] += tMap[row][i -1] * tMap[i+1][col];
+        }
+        if (char === '|') {
+          tMap[row][col] += tMap[row][i -1] * fMap[i+1][col];
+          tMap[row][col] += fMap[row][i -1] * tMap[i+1][col];
+          tMap[row][col] += tMap[row][i -1] * tMap[i+1][col];
+        }
+        if (char === '^') {
+          tMap[row][col] += tMap[row][i -1] * fMap[i+1][col];
+          tMap[row][col] += fMap[row][i -1] * tMap[i+1][col];
+        }
+        if (char === '&') {
+          fMap[row][col] += fMap[row][i -1] * tMap[i+1][col];
+          fMap[row][col] += tMap[row][i -1] * fMap[i+1][col];
+          fMap[row][col] += fMap[row][i -1] * fMap[i+1][col];
+        }
+        if (char === '|') {
+          fMap[row][col] += fMap[row][i -1] * fMap[i+1][col];
+        }
+        if (char === '^') {
+          fMap[row][col] += tMap[row][i -1] * tMap[i+1][col];
+          fMap[row][col] += fMap[row][i -1] * fMap[i+1][col];
+        }
+      }
+    }
+  }
+  return desired ? tMap[0][length-1] : fMap[0][length-1];
+}
 /**
 * 在一个字符串中找到没有重复字符子串中最长的长度
 * 
@@ -579,17 +699,94 @@ const findMaxNoRepeatLength = str => {
  * 分别代表插入，删除，替换一个字符的代价
  * 返回将str1转换成str2的最小代价
  * 
+ * 思路：
+ * 直接用动态规划思想
+ * 计算上空串，并且将空串作为str1和str2的第一个字符。
+ * 那么dp【i】【j】就代表从str1【0…i】->（转变为）str2【0…j】需要的花费
+ * 这个花费来自于三个路径
+ * 第一个路径：由插入得到。str1【0…i】先编辑成str2【0…j-1】，再由str2【0…j-1】插入到str2【0…j】
+ * 即 dp【i】【j-1 】+ ic
+ * 第二个路径，由删除得到。str1【0…i】先编辑成str1【0…i-1】，再由str1【0…i-1】转变为str2【0…j】
+ * 即dp【i-1】【j】+dc
+ * 第三个路径，由替换得到。
+ * 而替换又分为两种情况：
+ * 第一种为当前字符串匹配的情况：那么就等于dp【i-1】【j-1】
+ * 第二种为当前字符串不匹配的情况：那么久等于dp【i-1】【j-1】+rc
+ * 那么，最后dp【i】【j】的值为这四种情况中的最小值。
  */
+const minCount1 = (str1, str2, ic,dc,rc) => {
+  const length1 = str1.length;
+  const length2 = str2.length;
+  let dp = new Array(length1+1).fill(null).map(e => new Array(length2+1).fill(0));
+  // 长度为i 的str1 变成长度为0的str2 需要的花费，只能删除操作
+  for(let i = 1; i< length1 + 1; i++) {
+    dp[i][0] = i * dc;
+  }
+  // 长度为0的str1变成长度为j的str2 需要的花费，只能插入操作
+  for(let j = 1; j< length2 + 1; j++) {
+    dp[0][j] = j * ic;
+  }
+  // 长度为i的str1变成长度为j的str2需要的花费
+  for (i = 1; i<length1+1; i++) {
+    for( j = 1; j< length2 +1; j++) {
+      if(str1[i-1] === str2[j-1]) {
+        dp[i][j] = dp[i-1][j-1];
+      } else {
+        dp[i][j] = dp[i-1][j-1] + rc;
+      }
+      dp[i][j] = Math.min(dp[i][j], dp[i-1][j] + dc);
+      dp[i][j] = Math.min(dp[i][j], dp[i][j - 1] + ic);
+    }
+  }
+  return dp[length1][length2]
+}
+
 
 /**
  * 给定一个全是小写字母的字符串str
- * 删除多余字符，是的每个字符只保留一个
+ * 删除多余字符，使得每个字符只保留一个
  * 并让最终结果字符串的字典序最小
  * 例如
  * str = ‘acbc’,删除掉第一个c,得到‘abc’是所有结果字符串中最小的
  * str = 'dbcacbca',删除第一个b和c,第二个c和a,得到'dabc'
  * 是所有结果字符串中字典序最小的
+ * 
+ * 思路：
+ * 优先保证每个字符都在，
+ * 同时记录当前字符串中字典序中排列靠前的字符的位置pos
+ * 每次找到一个只有一个字符的时候
+ * 从pos开始切割字符串继续处理剩下字符
  */
+
+const remove = str => {
+  if (str.length === 1) {
+    return str;
+  }
+  const list = str.split('');
+  const count = {};
+  for(let i = 0;i<list.length; i++) {
+    const char = list[i];
+    if (!count[char]) {
+      count[char] = 0;
+    }
+    count[char]++
+  }
+  let minACSIndex = 0;
+  for (let j = 0; j < list.length; j++) {
+    const currMin = list[minACSIndex].charCodeAt();
+    const curr = list[j].charCodeAt();
+    minACSIndex = currMin > curr ? j : minACSIndex;
+   if (--count[list[j]] === 0) {
+     break
+   } 
+  }
+  const start = list[minACSIndex];
+  const subStr = list.slice(minACSIndex + 1).filter(e => e != start).join('');
+  return start + remove(subStr);
+}
+
+
+
 
 /**
  * 对26个字母进行升序排列组合最终达到的长度，
