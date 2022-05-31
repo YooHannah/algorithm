@@ -360,12 +360,58 @@ const getMaxSum = arr => {
   /**
    * 求完全二叉树节点个数
    */
-
+const mostLeftLevel = (node, level) => {
+  while(node) {
+    level++;
+    node = node.left;
+  }
+  return level - 1;
+}
+const bs = (node, level, h) => {
+  if (level === h) {
+    return 1;
+  }
+  const rightLevel = mostLeftLevel(node.right, level + 1)
+  if (rightLevel === h) {
+    return (1<< (h-level)) + bs(node.right,level +1, h);
+  } else {
+    return (1<< (h-level-1)) + bs(node.left,level +1, h);
+  }
+}
+const nodeNum = head => {
+  if(!head) {
+    return 0;
+  }
+  return bs(head, 1, mostLeftLevel(head, 1))
+}
   
-   /**
-    * 求最长递增子序列
-    * 
-    */
+/**
+* 求最长递增子序列
+* 
+* 思路:
+* 子序列可以不连续
+*
+* 方法1
+* 申请一个相同长度的数组dp
+* 数组dp中每个位置存放原序列arr中相同位置为结尾的最长子序列长度，
+* 其中值最大的就是最长的长度
+* 如何形成dp?
+* 假如当前位置i,找到0 ~ i-1之间小于arr[i]的数的位置
+* 对应的找到dp里面的值
+* 看dp位置上谁的值最大，用哪个加1,就是dp[i] 位置上的值
+* 
+* 方法2s
+* 准备一个数组ends
+* ends 上的每个位置的值，表示当前位置i+1长度的子序列，最小的结尾值是多少
+* 试图构造出单调性，遍历完所有的值，ends长度就是最大长度
+* 如何形成ends?
+* 每次遍历到一个arr的值arr[i]，二分查找的去看arr[i]在ends中所在的位置
+* 如果arr[i]夹在ends[m]和ends[m+1]之间，
+* 说明当以arr[i] 结尾的最长子序列应该包含ends[m]
+* 所以arr[i]对应的最长子序列长度为m+1, 此时要把原来ends的m+1位置对应的值改成arr[i]
+* 因为arr[i] < ends[m+1],长度为m+2的子序列中结尾值最小的变成arr[i]
+*/ 
+
 
   /**
    * 现在有一这样规律的数组
