@@ -356,10 +356,175 @@ const getMaxSum = arr => {
    * 117 =>一百一十七
    * 21,230,123,456 => 21 Billion 230Million 123 Thousand 456
    */
+// 转英文
+const numTo19 = num => {
+  if(num < 1 || num > 19) {
+    return ''
+  }
+  const names = [
+    'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 
+    'Eleven', 'Tweleve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
+    'Eighteen', 'Nineteen'
+  ];
+  return names[num];
+}
+const numTo99 = num => {
+  if (num < 1 || num > 99) {
+    return '';
+  }
+  if(num < 20) {
+    return numTo19(num);
+  }
+  const high = Math.floor(num / 10);
+  const tyName = [
+    "Twenty", 'Thirsty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
+  ]
+  return tyName[hight - 2] + numTo99(num % 10);
+}
+const numTo999 = num => {
+  if (num < 1 || num > 999) {
+    return '';
+  }
+  if(num < 100) {
+    return numTo99(num);
+  }
+  const high = Math.floor(num / 100);
+  return numTo99(hight) + 'Hundred' + numTo99(num % 100);
+}
+const getNumberEngExp = num => {
+  if (!num) {
+    return 'Zero';
+  }
+  let res = '';
+  if(num < 0) {
+    res = 'Negative, ';
+  }
+  if( num === Number.MIN_SAFE_INTEGER) {
+    res += 'Two Billion, ';
+    num %= -2000000000
+  }
+  num = Math.abs(num);
+  let high = 1000000000;
+  let hightIndex = 0;
+  const names = ['Billion', 'Millon', 'Thousand', ''];
+  while(num != 0) {
+    const cur = Math.floor(num / high);
+    num %=high;
+    if(cur) {
+      res += numTo999(cur);
+      res +=names[hightIndex] + (num == 0 ? ' ' : ',');
+    }
+    high = Math.floor(high/1000);
+    hightIndex++;
+  }
+  return res;
+}
+// 转中文
+const numTo9 = num => {
+  if(num < 1 || num > 9) {
+    return ''
+  }
+  const names = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  return names[num];
+}
+const numTo99 = (num, hasBai) => {
+  if (num < 1 || num > 99) {
+    return '';
+  }
+  if(num < 10) {
+    return numTo9(num);
+  }
+  const shi = Math.floor(num / 10);
+  if (shi === 1 && !hasBai) {
+    return `十${numTo9(num % 10)}`;
+  } else {
+    return `${numTo9(shi)}十${numTo9(num % 10)}`;
+  }
+}
+const numTo999 = num => {
+  if (num < 1 || num > 999) {
+    return '';
+  }
+  if(num < 100) {
+    return numTo99(num,false);
+  }
+  let res = `${numTo9(Math.floor(num / 100))}百`;
+  const rest = num % 100;
+  if (!rest) {
+    return res;
+  } else if(rest >= 10) {
+    res += numTo99(rest, true);
+  } else {
+    res +=`零${num1To9(rest)}`
+  }
+  return res;
+}
+const numTo9999 = num => {
+  if (num < 1 || num > 9999) {
+    return '';
+  }
+  if(num < 1000) {
+    return numTo999(num);
+  }
+  let res = `${numTo9(Math.floor(num / 1000))}千`;
+  const rest = num % 1000;
+  if (!rest) {
+    return res;
+  } else if(rest >= 100) {
+    res += numTo999(rest);
+  } else {
+    res +=`零${num1To99(rest, false)}`
+  }
+  return res;
+}
+const numTo99999999 = num => {
+  if (num < 1 || num > 99999999) {
+    return '';
+  }
+  const wan = Math.floor(num / 10000);
+  const rest = num % 10000;
+  if(!wan) {
+    return numTo9999(rest);
+  }
+  let res = `${numTo9(wan)}万`;
+  const rest = num % 1000;
+  if (!rest) {
+    return res;
+  } else if(rest >= 1000) {
+    res += numTo9999(rest);
+  } else {
+    res +=`零${numTo999(rest)}`
+  }
+  return res;
+}
 
-  /**
-   * 求完全二叉树节点个数
-   */
+const getNumberChiExp = num => {
+  if (!num) {
+    return '零';
+  }
+  let res = '';
+  if(num < 0) {
+    res = '负';
+  }
+  num = Math.abs(num);
+  const yi = Math.floor(num / 100000000);
+  const rest = num % 100000000;
+  if(!yi) {
+    return `${res}${numTo99999999(rest)}`;
+  }
+  res += `${numTo9999(yi)}亿`;
+  if (!rest) {
+    return res;
+  } else if(rest >= 10000000) {
+    res += numTo99999999(rest);
+  } else {
+    res +=`零${num99999999(rest)}`
+  }
+  return res;
+}
+/**
+ * 求完全二叉树节点个数
+ */
 const mostLeftLevel = (node, level) => {
   while(node) {
     level++;
