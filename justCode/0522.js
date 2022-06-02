@@ -366,7 +366,7 @@ const numTo19 = num => {
     'Eleven', 'Tweleve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
     'Eighteen', 'Nineteen'
   ];
-  return names[num];
+  return names[num - 1];
 }
 const numTo99 = num => {
   if (num < 1 || num > 99) {
@@ -379,7 +379,7 @@ const numTo99 = num => {
   const tyName = [
     "Twenty", 'Thirsty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
   ]
-  return tyName[hight - 2] + numTo99(num % 10);
+  return `${tyName[high - 2]} ${numTo99(num % 10)}`;
 }
 const numTo999 = num => {
   if (num < 1 || num > 999) {
@@ -389,7 +389,7 @@ const numTo999 = num => {
     return numTo99(num);
   }
   const high = Math.floor(num / 100);
-  return numTo99(hight) + 'Hundred' + numTo99(num % 100);
+  return `${numTo99(high)} Hundred ${numTo99(num % 100)}`;
 }
 const getNumberEngExp = num => {
   if (!num) {
@@ -412,7 +412,7 @@ const getNumberEngExp = num => {
     num %=high;
     if(cur) {
       res += numTo999(cur);
-      res +=names[hightIndex] + (num == 0 ? ' ' : ',');
+      res +=' ' + names[hightIndex] + (num == 0 ? ' ' : ', ');
     }
     high = Math.floor(high/1000);
     hightIndex++;
@@ -425,7 +425,7 @@ const numTo9 = num => {
     return ''
   }
   const names = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
-  return names[num];
+  return names[num-1];
 }
 const numTo99 = (num, hasBai) => {
   if (num < 1 || num > 99) {
@@ -455,7 +455,7 @@ const numTo999 = num => {
   } else if(rest >= 10) {
     res += numTo99(rest, true);
   } else {
-    res +=`零${num1To9(rest)}`
+    res +=`零${numTo9(rest)}`
   }
   return res;
 }
@@ -487,7 +487,6 @@ const numTo99999999 = num => {
     return numTo9999(rest);
   }
   let res = `${numTo9(wan)}万`;
-  const rest = num % 1000;
   if (!rest) {
     return res;
   } else if(rest >= 1000) {
@@ -748,6 +747,58 @@ const nodeNum = head => {
 * 因为移除报酬少的数据意味着不再继续一条路线的探索
 */
 
+const findEfficiencyPay = (activityCount, days, matrix) => {
+  const moneyMap = {};
+  for(let i = activityCount - 1; i >= 0; i--) {
+    const line = matrix[i];
+    const day = line[0];
+    const money = line[1];
+    const nodeMap = [];
+    for(let j = 2; j < activityCount + 2; j++) {
+      const node = line[j];
+      if(node) {
+        console.log(i,j)
+        const lastline = moneyMap[j-2];
+        lastline.forEach(path => {
+          nodeMap.push({
+            day: day + path.day,
+            money: money + path.money,
+            path: `${i}->${path.path}`
+          })
+        })
+      }
+    }
+    if (!nodeMap.length) {
+      nodeMap.push({
+        day,
+        money,
+        path: i
+      })
+    }
+    moneyMap[i] = nodeMap;
+  }
+  console.log(moneyMap, days);
+  const nodeList = Object.values(moneyMap).map(list => {
+    const sortedList = list.filter(e=> e.day <= days).sort((a,b)=> (b.money/b.day) - (a.money/a.day));
+    return sortedList[0]
+  })
+  const path = nodeList.sort((a,b)=> (b.money/b.day) - (a.money/a.day))[0];
+  return path;
+}
+console.log(findEfficiencyPay(
+  8, 10,
+  [
+    [3, 2000, 0, 1, 1, 0, 0, 0, 0, 0],
+    [3, 4000, 0, 0, 0, 1, 1, 0, 0, 0],
+    [2, 2500, 0, 0, 0, 1, 0, 0, 0, 0],
+    [1, 1600, 0, 0, 0, 0, 1, 1, 1, 0],
+    [4, 3800, 0, 0, 0, 0, 0, 0, 0, 1],
+    [2, 2600, 0, 0, 0, 0, 0, 0, 0, 1],
+    [4, 4000, 0, 0, 0, 0, 0, 0, 0, 1],
+    [3, 3500, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]
+))
+
 
 
 /**
@@ -995,9 +1046,6 @@ const remove = str => {
   const subStr = list.slice(minACSIndex + 1).filter(e => e != start).join('');
   return start + remove(subStr);
 }
-
-
-
 
 /**
  * 对26个字母进行升序排列组合最终达到的长度，
