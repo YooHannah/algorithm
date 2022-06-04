@@ -830,6 +830,53 @@ const dpWays = str => {
   return dp[0];
 }
 
+/**
+ * 给定两个字符str1和str2,
+ * 再给定三个整数，ic,dc,rc、
+ * 分别代表插入，删除，替换一个字符的代价
+ * 返回将str1转换成str2的最小代价
+ * 
+ * 思路：
+ * 直接用动态规划思想
+ * 计算上空串，并且将空串作为str1和str2的第一个字符。
+ * 那么dp【i】【j】就代表从str1【0…i】->（转变为）str2【0…j】需要的花费
+ * 这个花费来自于三个路径
+ * 第一个路径：由插入得到。str1【0…i】先编辑成str2【0…j-1】，再由str2【0…j-1】插入到str2【0…j】
+ * 即 dp【i】【j-1 】+ ic
+ * 第二个路径，由删除得到。str1【0…i】先编辑成str1【0…i-1】，再由str1【0…i-1】转变为str2【0…j】
+ * 即dp【i-1】【j】+dc
+ * 第三个路径，由替换得到。
+ * 而替换又分为两种情况：
+ * 第一种为当前字符串匹配的情况：那么就等于dp【i-1】【j-1】
+ * 第二种为当前字符串不匹配的情况：那么久等于dp【i-1】【j-1】+rc
+ * 那么，最后dp【i】【j】的值为这四种情况中的最小值。
+ */
+const minCount1 = (str1, str2, ic,dc,rc) => {
+  const length1 = str1.length;
+  const length2 = str2.length;
+  let dp = new Array(length1+1).fill(null).map(e => new Array(length2+1).fill(0));
+  // 长度为i 的str1 变成长度为0的str2 需要的花费，只能删除操作
+  for(let i = 1; i< length1 + 1; i++) {
+    dp[i][0] = i * dc;
+  }
+  // 长度为0的str1变成长度为j的str2 需要的花费，只能插入操作
+  for(let j = 1; j< length2 + 1; j++) {
+    dp[0][j] = j * ic;
+  }
+  // 长度为i的str1变成长度为j的str2需要的花费
+  for (i = 1; i<length1+1; i++) {
+    for( j = 1; j< length2 +1; j++) {
+      if(str1[i-1] === str2[j-1]) {
+        dp[i][j] = dp[i-1][j-1];
+      } else {
+        dp[i][j] = dp[i-1][j-1] + rc;
+      }
+      dp[i][j] = Math.min(dp[i][j], dp[i-1][j] + dc);
+      dp[i][j] = Math.min(dp[i][j], dp[i][j - 1] + ic);
+    }
+  }
+  return dp[length1][length2]
+}
 
 /**
  * 动态规划的空间压缩技巧

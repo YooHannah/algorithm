@@ -222,3 +222,137 @@ const getMoneyjob = (jobList, arr) => {
   })
   return res;
 }
+
+/**
+ * 一个帖子最高分数定义为用户所有打分记录中，连续打分数据之和的最大值
+ * 计算一个帖子曾经得到过的最高分数为多少
+ * 例如，打分记录为：[1,1,-1,-10,11,4,-6,9,20,-10,-2]
+ * 最高分为11 + 4 + (-6) + 9 + 20 = 38
+ * 
+ * 思路：
+ * 相当于寻找数组中累计和最大且最长的子数组
+ * 假设该子数组位于i-j这一段
+ * 那么可以推断
+ * i < curr < j ,i ~ curr这段和肯定大于0
+ * curr < i -1, curr ~ i-1 这段和肯定小于0
+ * 
+ * 那么定义两个变量currSum 和maxSum
+ * currSum是持续累加和
+ * 如果maxSum小于currSum就把maxSum = currSum
+ * 如果当前currSum小于0，就置为0，说明之前的累加和小于0，从现在开始重新累加
+ * 如果不小，就保持不动
+ */
+const getMaxSum = arr => {
+  let currSum = 0;
+  let maxSum = 0;
+  for(let i = 0; i < arr.length; i++) {
+    currSum += arr[i];
+    maxSum = Math.max(maxSum, currSum);
+    if (currSum < 0) {
+      currSum = 0
+    }
+  }
+  return maxSum
+}
+
+/**
+* 求最长递增子序列
+* 
+* 思路:
+* 子序列可以不连续
+*
+* 方法1
+* 申请一个相同长度的数组dp
+* 数组dp中每个位置存放原序列arr中相同位置为结尾的最长子序列长度，
+* 其中值最大的就是最长的长度
+* 如何形成dp?
+* 假如当前位置i,找到0 ~ i-1之间小于arr[i]的数的位置
+* 对应的找到dp里面的值
+* 看dp位置上谁的值最大，用哪个加1,就是dp[i] 位置上的值
+* 
+* 方法2s
+* 准备一个数组ends
+* ends 上的每个位置的值，表示当前位置i+1长度的子序列，最小的结尾值是多少
+* 试图构造出单调性，遍历完所有的值，ends长度就是最大长度
+* 如何形成ends?
+* 每次遍历到一个arr的值arr[i]，二分查找的去看arr[i]在ends中所在的位置
+* 如果arr[i]夹在ends[m]和ends[m+1]之间，
+* 说明当以arr[i] 结尾的最长子序列应该包含ends[m]
+* 所以arr[i]对应的最长子序列长度为m+1, 此时要把原来ends的m+1位置对应的值改成arr[i]
+* 因为arr[i] < ends[m+1],长度为m+2的子序列中结尾值最小的变成arr[i]
+*/ 
+
+const maxlist1 = arr => {
+  const { length } = arr;
+  const dp = [1];
+  let maxLength = 1;
+  let maxPos = 0;
+  for(let i = 1; i< length; i++) {
+    const temp = [];
+    for(let j = 0; j<i; j++) {
+      if(arr[i] > arr[j]) {
+        temp.push(dp[j])
+      }
+    }
+    const max = temp.sort((a, b) => b-a)[0];
+    dp[i] = temp.length ? max + 1 : 1;
+    if(maxLength < dp[i]) {
+      maxPos = i;
+      maxLength = dp[i]
+    } 
+  }
+  let childArr = [];
+  while(maxPos >=0){
+    childArr.push(arr[maxPos]);
+    const newLength = --maxLength;
+    maxPos = dp.findIndex(e=> e === newLength);
+  }
+  return childArr.reverse();
+}
+
+const maxlist2 = arr => {
+  const { length } = arr;
+  const ends = [arr[0]];
+  const dp = [1];
+  for( let i = 1; i<length;i++) {
+    const curr = arr[i];
+    const pos1 = ends.findIndex(((e, index) => e < curr && ends[index + 1] > curr));
+    if(pos1 === -1) {
+      if (curr > ends[ends.length -1]) {
+        ends.push(curr);
+        dp[i] = ends.length;
+      } else {
+        let k = ends.length - 1;
+        while(k) {
+          if(ends[k] > curr) {
+            k--
+          } else {
+            break;
+          }
+        }
+        if(!k && ends[0] > curr) {
+          ends[0] = curr;
+          console.log('fire', i)
+          dp[i] = 1;
+        } else {
+          ends[i+1] = curr;
+          dp[i] = i+2;
+        }
+      }
+    } else {
+      ends[pos1 + 1] = curr;
+      dp[i] = pos1+2;
+    }
+  }
+
+  const value = ends[ends.length -1];
+  let maxPos = arr.findIndex(e => e === value);
+  let maxLength = ends.length;
+  let childArr = [];
+  while(maxPos >=0){
+    childArr.push(arr[maxPos]);
+    const newLength = --maxLength;
+    maxPos = dp.findIndex(e=> e === newLength);
+  }
+  return childArr.reverse();
+}

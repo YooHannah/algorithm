@@ -187,6 +187,45 @@ const frontBinaryTree = (head) => {
   }
 }
 
+   /**
+    * 已知一个二叉树的中序和先序遍历，求后序遍历顺序，二叉树没有重复的值
+    * 
+    *
+    * 例如 
+    * pre = [1,2,4,5,3,6,7]
+    * in = [4,2,5,1,6,3,7]
+    * 返回
+    * [4.5,2,6,7,3,1]
+    * 
+    * 思路：
+    * 根据pre[0]可以知道后序遍历的最后一个值
+    * 根据pre[0]在in中的位置划分出左子树元素集合leftInList和右子树元素rightInList
+    * 根据二者长度，在in中截出左右子树先序的结果leftPreList和rightPreList
+    * 
+    * 使用上述方法
+    * 然后根据leftInList 和leftPreList 得出左树后序顺序
+    * rightInList和rightPreList得出右树后序顺序
+    * 
+    * 最后进行拼接
+    * 
+    */
+
+   const getEndSort = (preSort, midSort) => {
+    if(preSort.length === 1) {
+      return preSort;
+    }
+    const last = preSort[0];
+    const poi = midSort.findIndex(e=> e === last);
+    const midLeft = midSort.slice(0,poi);
+    const minRight = midSort.slice(poi+1);
+    const preLeft = preSort.slice(1,poi+1);
+    const preRight = preSort.slice(poi+1)
+    const endLeft = getEndSort(preLeft, midLeft);
+    const endRight = getEndSort(preRight, minRight);
+    return [...endLeft, ...endRight, last]
+  }
+
+
 /**
  * 【Morris 遍历】
  * 一种遍历二叉树的方式，并且时间复杂度O(N), 额外空间复杂度O(1)
@@ -550,6 +589,115 @@ const checkBST1 = (head) => {
    }
    return true;
  }
+
+/**
+ * 双向链表结构如果把last认为是left,next是right的话，可以看做是和二叉树一样的结构
+ * 给定一个搜索二叉树的头结点head, 请转化成一条有序的双向链表，并返回双向链表的头结点
+ * 
+ * 思路：
+ * 使用二叉树经典递归套路
+ * 拿到左右子树的转化结果
+ * 然后将左树next指向父节点，父节点last指向左树
+ * 父节点next指向右树，右树last指向父节点
+ */
+const treeToLink = head => {
+  if (!head) {
+    return null
+  }
+  if (!head.left && !head.right) {
+    return {
+      head: head,
+      tail: head
+    }
+  }
+  const leftLink = treeToLink(head.left);
+  const rightLink = treeToLink(head.right);
+  if(leftLink) {
+    leftLink.tail.next = head;
+    head.last = leftLink.tail;
+  }
+  if(rightLink) {
+    rightLink.head.last = head;
+    head.next = rightLink.head;
+  }
+  return {
+    head: leftLink ? leftLink.head : head,
+    tail: rightLink ? rightLink.tail : head
+  }
+}
+
+let node = treeToLink(root).head;
+while(node) {
+  console.log(node.value);
+  node = node.next
+}
+
+/**
+ * 找到一颗二叉树中最大的搜索二叉子树，返回最大搜索二叉子树的节点个数和头结点
+ * 
+ * 思路：
+ * 同样递归套路
+ * 根据左右子树返回结果
+ * 返回结果包含是否是搜索树，最大搜索树头结点head和结点个数size，节点最大最小值
+ * 判断是否能跟父节点形成搜索树
+ * 同时更新返回结果
+ * 
+ * 如果左右子树都不是null
+ * 则拿二者中size较大的更新head和size
+ * 
+ * 如果二者中有null或者是可以形成搜索树的情况
+ * 则判断是都能跟父node形成搜素树，如果能，更新返回值
+ * 
+ */
+const maxBST = root => {
+  if (!root) {
+    return null
+  }
+  const leftResult = maxBST(root.left);
+  const rightResult = maxBST(root.right);
+  let max = root.value;
+  let min = root.value;
+  if (leftResult) {
+    max = Math.max(max, leftResult.max)
+    min = Math.min(min, leftResult.min)
+  }
+  if (rightResult) {
+    max = Math.max(max, rightResult.max);
+    min = Math.min(min, rightResult.min);
+  }
+  let head = null;
+  let size = 0;
+  if(leftResult) {
+    heade =leftResult.head;
+    size =leftResult.size;
+  }
+  if (rightResult && rightResult.size > size) {
+    head = rightResult.head;
+    size = rightResult.size;
+  }
+  let isBST = false;
+  if (
+    (!leftResult || leftResult.isBST) &&
+    (!rightResult || rightResult.isBST) &&
+    (
+      (!leftResult || leftResult.max < root.value) &&
+      (!rightResult || rightResult.min > root.value)
+    )
+  ) {
+    isBST = true;
+    head = root;
+    const leftsize = leftResult ? leftResult.size : 0;
+    const rightsize = rightResult?rightResult.size : 0;
+    size = leftsize + 1 + rightsize;
+  }
+  return {
+    head,
+    size,
+    isBST,
+    min,
+    max
+  }
+}
 /***
  * 
  * 完全二叉树：宽度优先遍历的结果是连续的，没有中断的
@@ -580,6 +728,35 @@ const isCBT = (head) => {
     }
   }
   return true;
+}
+
+
+/**
+ * 求完全二叉树节点个数
+ */
+const mostLeftLevel = (node, level) => {
+  while(node) {
+    level++;
+    node = node.left;
+  }
+  return level - 1;
+}
+const bs = (node, level, h) => {
+  if (level === h) {
+    return 1;
+  }
+  const rightLevel = mostLeftLevel(node.right, level + 1)
+  if (rightLevel === h) {
+    return (1<< (h-level)) + bs(node.right,level +1, h);
+  } else {
+    return (1<< (h-level-1)) + bs(node.left,level +1, h);
+  }
+}
+const nodeNum = head => {
+  if(!head) {
+    return 0;
+  }
+  return bs(head, 1, mostLeftLevel(head, 1))
 }
 
 /***
@@ -936,6 +1113,79 @@ for(let i = 0; i<arr.length; i++) {
   tree.insert(arr[i]);
 }
 console.log(tree);
+
+/**
+ * 给你一个字符串数组，每个字符串代表一种目录结构,每一层用\分割
+ * 请将所有目录按以下规则打印出来
+ * 子目录直接列在父目录下面
+ * 并比父目录向右进两格
+ * 同一级的需要按字母顺序排列，不能乱
+ * 例如： ['b\cst', 'd\\', 'a\d\e', 'a\b\e']
+ * 打印结果
+ * a
+ *   b
+ *     c
+ *   d
+ *     e
+ * b
+ *   cst
+ * d
+ * 
+ * 思路：
+ * 使用前缀树
+ * 构建树的时候，将路径指向的结点也标识成path上的名称
+ * 并在父节点存储map结构，用于判断是否已经有该path,用于按顺序打印
+ * 然后深度优先遍历
+ * 每多一层，多加俩空格
+ * 
+ */
+class Node {
+  constructor(value) {
+    this.value = value;
+    this.next = {};
+  }
+}
+const generatePreTree = (arr, parent) => {
+  const allStrList = arr.map(str => str.split('\\'));
+  const root = new Node(-1);
+  for(let i = 0; i < allStrList.length; i++) {
+    const currStr = allStrList[i];
+    let node = root;
+    for (let j = 0; j< currStr.length; j++) {
+      const path = currStr[j];
+      if(!node.next[path]) {
+        node.next[path] = new Node(path);
+      }
+      node = node.next[path];
+    }
+  }
+  return root
+}
+const generateSpace = level => {
+  let space = '';
+  for (let i = 0; i < level * 2; i++) {
+    space += ' ';
+  }
+  return space;
+}
+const printProcess = (node, level) => {
+  const list = Object.keys(node.next).sort((a,b) => b > a ? -1 : 1);
+  if (!list.length) {
+    return;
+  }
+  const space = generateSpace(level);
+  for(let i = 0; i<list.length; i++) {
+    const currNode = node.next[list[i]];
+    console.log(`${space}${currNode.value}`);
+    printProcess(currNode, level+1);
+  }
+}
+const printPath = arr => {
+  const root = generatePreTree(arr);
+  printProcess(root, 0)
+}
+printPath(['b\\cst', 'd\\', 'a\\d\\e', 'a\\b\\e']);
+
 
 /**
  * 树型dp套路

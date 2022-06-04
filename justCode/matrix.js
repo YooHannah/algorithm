@@ -236,3 +236,60 @@ const findMaxOne = (matrix) => {
     maxCount
   }
 }
+
+ /**
+  * 给定一个整型矩阵，返回子矩阵中最大累计和
+  * 
+  * 思路：
+  * 使用压缩矩阵成数组的思路
+  * 假如现在有一个8 * 9 矩阵
+  * 依次计算出
+  * 0 ~ 0
+  * 0 ~ 1  
+  * 0 ~ 2
+  * ...
+  * 2 ~ 8
+  * ...
+  * 8 ~ 8
+  * 这些行组成的矩阵的累计和
+  * 只有一行，累计和即为各位置上的原有数字，转成数组累计和
+  * 多行则是相同col位置上累计和，再转成数组累计和
+  * 每种情况算出累计和最大值后，从中找大小
+  */
+ const addResult = (result, sumArr) => {
+  const length = sumArr.length;
+  for(let i = 0;i<length;i++) {
+    let init = sumArr[i];
+    result.push(init)
+    for (let j = i+1; j<length;j++) {
+      init +=sumArr[j];
+      result.push(init)
+    }
+  }
+  return result;
+}
+const getSum = (arr1, arr2) => {
+  const length = arr1.length;
+  const result = [];
+  for(let i = 0;i<length; i++) {
+    const sum = arr1[i] + arr2[i];
+    result.push(sum);
+  }
+  return result;
+}
+ const getMaxMatrixSum = matrix => {
+   const height = matrix.length;
+   const width = matrix[0].length;
+   let result = [];
+   for(let i = 0; i< height;i++) {
+    const line = matrix[i];
+    let sumArr = line.slice();
+    result = addResult(result, sumArr);
+    for(let j = i+1; j< height; j++) {
+      const nextLine = matrix[j];
+      sumArr = getSum(sumArr,nextLine);
+      result = addResult(result, sumArr);
+    }
+   }
+   return result.sort((a,b) => b-a)[0]
+ }
