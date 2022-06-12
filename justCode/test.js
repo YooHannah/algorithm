@@ -20,4 +20,4 @@ const root = generateBinaryTree(list, i);
 
 
 
-console.log(maxlist2([3,6,2,1,7,9,4, 10,12,15]))
+console.log(calculate('3*(4+2*(5-7)-34)+4', 0));

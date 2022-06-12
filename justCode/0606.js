@@ -193,8 +193,62 @@
   * 由arr中字符组成的字符串与数字形成这样的关系
   * a,b,...z,aa,ab,...az,ba,bb,...zz,aaa,...zzz,aaaa,...
   * 1,2,...26,27,28,...52,53,54,...702,703,...18278,18279,...
-  * 求给定数组与数字的互转函数
+  * 求给定数组形成的字符串与数字的互转函数
+  * 
+  * 思路：
+  * 使用伪x进制思想
+  * 原来arr数组有多少字符使用几进制
+  * 先把原数字转换成伪进制
+  * 伪进制上每一位数字是几，代表取arr上哪个位置字符
+  * 再转换成字符
+  * 
+  * 伪X进制思想：
+  * 以伪7进制为例
+  * 每一位上只能是1-7这个几个数字，每一位所带的幂次方跟二进制相同
+  * 例如
+  * 伪7进制的数673 转10进制的转换过程为：
+  * 6 * 7^2 + 7 * 7 ^ 1 + 3 * 7 ^ 0
   */
+
+ const generateTransformTool = arr => {
+  const length = arr.length;
+  const numToString = num => {
+    if (num <= length) {
+      return arr[num-1];
+    }
+    const list = [];
+    num = num;
+    let power = 0;
+    while(num) {
+      const nextlevel = Math.pow(length, power);
+      if(num >= nextlevel) {
+        list.push(1);
+        num = num - nextlevel;
+        power++
+      } else {
+        power--;
+        const basic = Math.pow(length, power);
+        const count = Math.floor(num / basic);
+        list[power] += count;
+        num = num - count*basic;
+      }
+    }
+    return list.reverse().map(e => arr[e-1]).join('');
+  }
+
+  const stringToNum = str => {
+    const list = str.split('').map(e => 1 + arr.findIndex(char => char === e)).reverse();
+    let sum = 0;
+    list.forEach((val, index) => {
+      sum+=val * Math.pow(length, index);
+    })
+    return sum;
+  }
+  return {
+    numToString,
+    stringToNum
+  }
+}
 
 /**
  * 现有一二维数组matrix,均为整数，正负都有，
@@ -210,13 +264,164 @@
  * 2 -1 0
  * 0 5 -2
  * 最右路径是从最左侧3开始，3->-4(这里使用转换相反数) -> 10 ===> 返回17
+ * 
+ * 思路：
+ * 尝试所有可能性
+ * 找最大值
+ * 
  */
+const f = (matrix, row, col) => {
+  const val = matrix[row][col];
+  if (!col) {
+    return {
+      yes: -val,
+      no: val
+    }
+  }
+  let preNo = -1;
+  let preYes = -1;
+  if(row) {
+    // 从左上角来到当前格子
+    const {yes, no} = f(matrix, row-1, col-1);
+    if(yes >=0) {
+      preYes = yes;
+    }
+    if(no >=0) {
+      preNo = no
+    }
+  }
+   // 从左侧来到当前格子
+  const {yes,no} = f(matrix, row, col-1);
+  if(yes >=0) {
+    preYes = Math.max(yes, preYes);
+  }
+  if(no >=0) {
+    preNo = Math.max(no, preNo)
+  }
+   // 从左下角来到当前格子
+  if(row < matrix.length -1) {
+    const {yes,no} = f(matrix, row+1, col-1);
+    if(yes >=0) {
+      preYes = Math.max(yes, preYes);
+    }
+    if(no >=0) {
+      preNo = Math.max(no, preNo)
+    }
+  }
+  let y = -1;
+  let n = -1;
+  if (preNo >=0) {
+    y = preNo + (-val);
+    n = preNo + val;
+  }
+
+  if(preYes) {
+    y = Math.max(preYes + val, y);
+  }
+  return {
+    yes: y,
+    no: n
+  }
+}
+const getMaxLife = matrix => {
+  const rowLength = matrix.length;
+  const colLength = matrix[0].length;
+  let life = Number.MIN_VALUE;
+  for(let i = 0; i<rowLength; i++) {
+    for(let j = 0; j<colLength;j++) {
+      const cur = f(matrix, i,j);
+      life = Math.max(life, cur.yes, cur.no);
+    }
+  }
+  return life;
+}
 
 /**
  * 给定一个计算式的字符串，返回计算式计算结果
  * 例如str = '48*(70-65)+8*1', 返回-1816
  * 
+ * 思路：
+ * 将数据和符号依次进栈
+ * 如果栈顶是乘除号，从栈中pop出符号和数字，跟当前数字计算后再入栈
+ * 如果是左括号，记录下当前位置，从当前位置往后计算，步骤同上
+ * 直到遇到右括号，将所有值从栈中pop出，计算结果再返回继续计算
+ * 
  */
+const highCalculate = (num, stack) => {
+  if(num) {
+    const currLast = stack.pop();
+    if(currLast == '*') {
+      const preNum = stack.pop(); 
+      stack.push(Number(num) * preNum);
+    } else if(currLast == '/') {
+      const preNum = stack.pop(); 
+      stack.push(Number(num) / preNum);
+    } else if(currLast) {
+      stack.push(currLast);
+      stack.push(Number(num));
+    } else {
+      stack.push(Number(num));
+    }
+  }
+}
+const calculate = (str, pos) => {
+  const list = str.split('');
+  const stack = [];
+  let num = '';
+  let i = -1;
+  for(i= pos; i< list.length; i++) {
+    const char = list[i];
+    if(Number(char)) {
+      num = `${num}${char}`;
+      if ( i === list.length -1) {
+        stack.push(Number(num));
+      }
+    } else {
+      highCalculate(num, stack);
+      if(char === '(') {
+        const {result, currPos} = calculate(str, i+1);
+        highCalculate(result, stack); // 括号前面可能是乘除
+        i = currPos;
+      } else if(char === ')') {
+        break;
+      } else {
+        stack.push(char);
+        num = '';
+      }
+    }
+  }
+  let count = stack[0];
+  for(let m = 1; m < stack.length; m +=2) {
+    const operator = stack[m] == '+';
+    const next = stack[m+1];
+    count = operator ? count +  next : count - next; 
+  }
+  return {
+    result: count,
+    currPos: i
+  }
+}
+
+ /**
+  * 给定一数组，数组中值代表人的体重
+  * 给定一艘船的载重limit
+  * 现在按如下规则坐船
+  * 1. 每条船最多俩人
+  * 2. 两人体重和不能超过船的载重
+  * 问至少需要多少船
+  * 
+  * 思路：
+  * 先将所有人体重由大到小排序，找到中位数，
+  * 然后看中位数两侧数据加和是否小于等于limit
+  * 满足的话船数加1
+  * 不满足的话，
+  * 如果大于limit,中位数左侧数据移动，
+  * 最终如果小于中位数的数据剩下m个
+  * 大于中位数的数据剩下n个
+  * 需要船数 = 满足两人一条船的情况 + m /2 + n
+  * 
+  * 
+  */
 
 /**
  * 给定两字符串str1和str2,求两个字符串的最长公共子串
@@ -228,18 +433,8 @@
  * 动态规划空间压缩应用
  */
 
- /**0610 */
 
 
- /**
-  * 给定一数组，数组中值代表人的体重
-  * 给定一艘船的载重limit
-  * 现在按如下规则坐船
-  * 1. 每条船最多俩人
-  * 2. 两人体重和不能超过船的载重
-  * 问至少需要多少船
-  * 
-  */
 
 /**
  * 给定一个字符串str,求最长回文子序列，注意区分子序列和子串的不同
