@@ -17,36 +17,254 @@
  * 从桶之间找最大值
  */
 
+const findMaxMin = arr => {
+  let max = Number.MIN_SAFE_INTEGER;
+  let min = Number.MAX_VALUE;
+  arr.forEach(e=> {
+    max = Math.max(e, max);
+    min = Math.min(e, min);
+  })
+  return [max, min];
+}
+const findMaxDistance = arr => {
+  const [max, min] = findMaxMin(arr);
+  const length = max - min + 1;
+  const space = Math.floor(length / 10);
+  const bottle = [];
+  for(let i = 1; i < 11; i++) {
+    bottle[i-1] = [];
+  }
+  const firstEnd = min + space - 1;
+  for(let j = 0; j< arr.length; j++) {
+    const curr = arr[j];
+    let bottleMaxValue = firstEnd;
+    let pos = 0;
+    while(bottleMaxValue < curr) {
+      bottleMaxValue += space;
+      pos++;
+    }
+    bottle[pos].push(curr);
+  }
+  const validBottle = bottle.filter(item => item.length);
+  const maxMin = validBottle.map(list => findMaxMin(list))
+  const diffValue = [];
+  for(let m = 0; m < maxMin.length; m++) {
+    const [max, min] = maxMin[m];
+    diffValue.push(max - min);
+    if (m < maxMin.length -1) {
+      const [nextMax, nextMIn] = maxMin[m + 1];
+      diffValue.push(nextMIn - max);
+    }
+  }
+  return findMaxMin(diffValue)[0];
+}
 /**
  * 给出n个数字，问最多有多少不重叠的非空区间，使得每个区间内数字的xor都等于0
  * 
+ * 思路：
+ * 假设答案法
+ * 准备一个容器dp，每个位置存放从0到当前位置i的符合要求的空间个数
+ * 即，dp[i] 是0-i范围内不重叠区间，且每个区间xor等于0的区间个数
+ * 同时准备一个映射表map，
+ * key表示遍历过程中xor出现的结果，
+ * value 表示这个结果最近出现的位置
+ * 先初始化一个数组{0： -1}，表示一开异或和结果是0的位置在-1，还没开始遍历数组
+ * 准备一个变量eor，存放遍历到当前值和之前所有值的异或结果
+ * 当遍历到i的时候
+ * 如果0-i有最优划分，i肯定位于划分的空间的最后一个
  * 
+ * 假如i所在的空间异或和不是0，
+ * 说明i所在的空间不会计入dp[i]的个数，
+ * 此时dp[i] 的值，跟是否有i位置的值无关，那么dp[i] = dp[i-1]
+ * 
+ * 假如i所在空间异或和是0，那么空间开始的位置到i位置异或和为0
+ * 空间开始的位置应该是上一次出现相同xor位置的下一个位置
+ * 从map表中找到上一次出现xor所在的位置pre，
+ * 也就是说0-pre异或和是xor， 0-i异或和也是xor
+ * 那么pre+1到i的异或和只能是0
+ * 符合要求的区间增加1
+ * dp[i] = dp[pre] + 1,
+ * 
+ * 比较两种可能性的大小取最大值，就是dp[i]最终的值
+ * 遍历到最后一个值，dp[arr.length -1] 就是答案
  */
 
-/**
- * 现有n1  + n2 种面值的硬币，
- * 其中n1种为普通币，可以取任意枚，
- * n2种为纪念币，每种最多只能取一枚
- * 每种硬币有一个面值，问能用多少种方法拼出m的面值？
- * 
- * 思路：
- * 预处理一下，先算出只用n1 类型的硬币和只用n2类型硬币，拼出0-m面值的方法数
- * 再用n1 硬币 拼出x面额，有a种方法，
- * 剩下m-x面额用n2硬币拼出有b种方法
- * 所有情况a*b累计和就是最终方法数
- */
+const finsMaxXorSpace = arr => {
+  let xor = 0;
+  let dp = [];
+  let map = { 0: -1 };
+  for(let i = 0; i<arr.length; i++) {
+    xor ^= arr[i];
+    // 最优解有i位置数据
+    if(map[xor]) { // 可以从前面的位置中找一个位置到i异或和为0
+      const pre = map[xor];
+      dp[i] = pre === -1 ? 1 : dp[pre] +1;
+    } else { // 找不到，空间个数为0
+      dp[i] = 0;
+    }
+    if (i > 0) { // dp[i-1] 0-i范围内，满足的空间没有i位置数据
+      dp[i] = Math.max(dp[i-1], dp[i])
+    } 
+    map[xor] = i;
+  }
+  return dp[dp.length -1]
+}
 
 /**
  * 
  * 给定两个有序数组A和B，长度分别是m和n
- * 求A和B中最大的K歌数字
+ * 求A和B中最大的第K个数字
  * 要求使用尽量少的比较次数
  * 
  * 思路：
- * 利用一个数组中位数位置，比较大小，算出右边数字个数
- * 和另一个数组大于该中位数的数字个数
- * 加一起是否等于K  
+ * 
+ * 算法原型： 
+ * 求两个长度相同的排序好的数组合并和后的上中位数
+ * 原理：子数组的上中位数就是整个数组的上中位数
+ * 
+ * 上中位数的概念 : 长度为偶数的数组中，中位数有两个，位置靠前的那个叫上中位数、
+ * 例如： 1,2,3,4,5,6,7,8,上中位数是4
+ * 
+ * 假如两个长度一样的数组arr1和arr2长度是偶数m
+ * 可以先找到各自的上中位数m1,m2
+ * 假如m1 === m2,那么合并后上中位数就是m1
+ * 假如m1 > m2,
+ * 说明arr1的[m/2 ... m-1]和arr2的[0 ...m/2-1]的两段内不可能存在上中位数
+ * 继续递归arr1的[0 ...m/2-1] 和arr2 的[m/2 ... m-1]] 这两段找这两段的中位数
+ * 这两段的中位数就是整体合并后中位数
+ * 例如m = 4
+ * arr1[1] > arr2[1]
+ * a1 = [arr1[0], arr1[1]], a2 = [arr2[2], arr2[3]]
+ *
+ * 如果a1[0] == a2[0] ,此时进行递归的a1和a2的上中位数就是a1[0],也就是 arr1[0] 或者arr2[2]
+ * 最后排序是arr2[1] < arr1[0] == arr2[2]
+ * 原来arr2[2]前面会有arr1[0],arr2[0-1],arr2[2]此时成为合并后大数组上中位数
+ * 大数组中位数也是arr2[1]
+ * 
+ * 如果a1[0] > a2[0],继续递归[a1[0]], [a2[1]]的上中位数
+ * 二者谁小谁是中位数，一样大的话就是任意一个值，
+ * 返回的结果放在a1和a2的结果中
+ * 就是
+ * a1[0] <= a2[1] =====> a2[0] < a1[0] <= a2[1], a1[1] 或者
+ * a1[0] >= a2[1] =====> a2[0] < a2[1] <= a1[0] < a1[1]
+ * 对应到arr1和arr2
+ * 这样上中位就是arr2[3] 或者arr1[0]，往回推
+ * arr1和arr2合并后的上中位数就是arr2[3] 或者arr1[0]
+ * 
+ * 但如果是长度一样的奇数长度的数组arr1和arr2,长度为m
+ * 得到中位数pos= (m-1)/2,m1和m2
+ * 如果m1 === m2,同样上中位数就是m1或者m2这个数
+ * 如果m1 > m2,此时arr1[0...pos-1] 和arr2[pos, m-1]的长度不一致
+ * 需要手动判断一下arr2[pos]的情况
+ * 如果arr2[pos] >= arr1[pos-1]
+ * 那么就会形成arr1[0...pos-1], arr2[0...pos-1] < arr2[pos] <arr1[pos]
+ * arr2[pos]就是最后的上中位数
+ * 但是如果arr2[pos] < arr1[pos-1]，就可以去掉arr2[pos]这个位置的数
+ * 让arr1[0...pos-1]和arr2[pos+1, m2-1] 继续递归起来
+ * 
+ * 回到本题目中
+ * 求最大的第k个数，通过排除掉不可能是第k个数的情况，在剩下的数据里面找中位数就是第K个数
+ * 问题是m和n的长度可能不一致
+ * 这时需要根据k值和m,n m+n的大小关系进行不同的处理，
+ * 成为相同长度的数组，使用上面求中位数的递归过程
+ * 假如m<n
+ * 
+ * 1. 如果 1<k<m， 那么找arr1[0...k-1] 和arr2[0,k-1]的上中位数即可
+ * 
+ * 2. 如果 m<k<n, 
+ * arr1上面所有数都有可能是第k个数
+ * arr2上面arr2[0...k-m-2] 和arr2[k...n-1]两段不可能是第k个值
+ * 现在需要从arr1 上和arr2[k-m-1,...k-1]范围上找上中位数
+ * arr1长长度为m, arr2这段长度为k-1 - (k-m-1)+1 = m+1
+ * 比arr1多一个，单独摘出来arr[k-m-1]和arr[m-1] 比较
+ * 如果arr[k-m-1] >=arr[m-1那他就是第K个值
+ * 如果arr[k-m-1] <arr[m-1] 那就按把它划入不可能范围
+ * 从arr1 和arr[k-m, ...k-1] 里面找上中位数
+ * (k-m -1) - 0 +1 + m = k
+ * 3. 如果 n<k < m+n
+ * arr1上[0...k-n-2]上的值，不可能是第K个值
+ * arr2上[0...k-m-2]上的值，不可能是第K个值
+ * 剩下的arr1[k-n-1...m-1]上的值，和arr2[k-m-1,...n-1]的值中求上中位数
+ * 现在剪掉k-n-2 -0 + 1 + k-m-2-0+1=2k -m -n -2 = part1
+ * 剩下，m + n - part1 = 2(m+n+1-k) 上中位数位置在m+n-k = part2
+ * part1 + part2 + 1 = k-1， 只能找到第k-1个数
+ * 通过判断arr1[k-n+1] 和arr2[k-m+1]是否是第K个值情况往part1里面增加一个数
+ * 如果arr1[k-n+1] >= arr2[n-1],那么把arr1[k-n+1] 就是第K个数
+ * 如果arr1[k-m+1] >= arr2[m-1],那么把arr1[k-m+1] 就是第K个数
+ * 如果arr1[k-n+1]<arr2[n-1],那么把arr1[k-n+1] 划入到part1
+ * 如果arr2[k-m+1]<arr1[m-1],划到part1，
+ * 参与接下来的找上中位数过程
+ * part1 + 2 + m+n-k= k
  */
+const  getUpMedium = (arr1, arr2) => {
+  const length = arr1.length;
+  const odd = !(length % 2);
+  if (length === 1) {
+    return Math.min(arr1[0], arr2[0]);
+  }
+  if (odd) {
+    const pos = length / 2 - 1;
+    if (arr1[pos] === arr2[pos]) {
+      return arr1[pos];
+    } else if (arr1[pos] > arr2[pos]) {
+      return getUpMedium(arr1.slice(0,pos+1), arr2.slice(pos+1))
+    } else {
+      return getUpMedium(arr2.slice(0,pos+1), arr1.slice(pos+1))
+    }
+  } else {
+    const pos = (length - 1)/2;
+    if (arr1[pos] === arr2[pos]) {
+      return arr1[pos];
+    } else if(arr1[pos] > arr2[pos]) {
+      if (arr2[pos] >= arr1[pos-1]) {
+        return arr2[pos];
+      } else {
+        return getUpMedium(arr1.slice(0,pos), arr2(pos+1))
+      }
+    } else {
+      if (arr1[pos] >= arr2[pos-1]) {
+        return arr1[pos];
+      } else {
+        return getUpMedium(arr1.slice(pos+1), arr2.slice(0,pos))
+      }
+    }
+  }
+}
+const findKthNum = (list1, list2, k) => {
+  const length1 = list1.length;
+  const length2 = list2.length;
+  const arr1 = length1 < length2 ? list1 : list2;
+  const arr2 = length1 < length2 ? list2 : list1;
+  const m = arr1.length;
+  const n = arr2.length;
+  let upMedium = -1;
+  if (1<=k && k<=m) {
+    upMedium = getUpMedium(arr1.slice(0,k),arr2.slice(0,k));
+  } else if(m<k && k<n) {
+    const start = k-m-1;
+    const end = k-1;
+    const flag = arr2[start];
+    if (flag > arr1[m-1]) {
+      upMedium = flag;
+    } else {
+      upMedium = getUpMedium(arr1, arr2.slice(k-m,k));
+    }
+  } else if(n<=k && k <= m+n){
+    const start1 = k-n - 1;
+    const end1 = m-1;
+    const start2 = k-m - 1;
+    const end2 = n-1;
+    if (arr1[start1] > arr2[end2]) {
+      upMedium = arr1[start1]
+    } else if (arr2[start2] > arr1[end1]) {
+      upMedium = arr2[start2]
+    } else {
+      upMedium = getUpMedium(arr1.slice(start1+1), arr2.slice(start2+1))
+    }
+  }
+  console.log('upMedium', upMedium);
+}
+
 
 /******************** 0607 ****************/ 
 /**
@@ -69,6 +287,9 @@
  * 以此多轮淘汰后，剩一个人，
  * 返回该人的原始编号
  * 
+ * 方法论： 动态规划里面的斜率优化
+ * 思路： 
+ * 
  */
 
 /****** 0608 ******/
@@ -86,7 +307,7 @@
  *  [1,7,4],
  *  [4,6,7],
  *  [3,6,5],
- *  [10,13,12],
+ *  [10,13,2],
  *  [9,11,3],
  *  [12,14,4],
  *  [10,12,5]
@@ -122,7 +343,7 @@
  *  <3: 8>
  *  <4: 8>
  *  <6: 5>
- *  <7: 0>
+ *  <7: 10>
  * 
  * }
  * 那么最终返回的结果就是
@@ -130,11 +351,68 @@
  * [1,2,4],
  * [2,4,8],
  * [4,6,5],
- * [6,7,5],
+ * [6,7,10],
  * ]
  * 
  * 其实map2存放的是当前坐标所处的最大高度
  */
+
+const getBuildingLine = matrix => {
+  const list = matrix.map(item => {
+    const [left, right, height] = item;
+    return [
+      [left,'up', height],
+      [right, 'down', height]
+    ]
+  })
+  .reduce((curr,prev) => [...curr, ...prev], [])
+  .sort((a,b) => {
+    const [pos1,flag1,height1] = a;
+    const [pos2,flag2,height2] = b;
+    if (pos1 === pos2) {
+      if (flag2 === 'up') {
+        return -1
+      } else {
+        return 1
+      }
+    } else {
+      return pos1 - pos2
+    }
+  });
+  const map1 = {};
+  const map2 = {};
+  let currMaxHeight = -1;
+  list.forEach(item => {
+    const [pos, flag, height] = item;
+    if (!map1[height]) {
+      map1[height] = 0;
+    }
+    if (flag === 'down') {
+      map1[height]--
+    } else {
+      map1[height]++;
+    }
+    const max = Object.keys(map1).filter(key=>map1[key]).sort((a,b)=> b-a )[0];
+    map2[pos]=max;
+  })
+ const lines = [];
+ const poslist = Object.keys(map2);
+ for(let i = 0; i< poslist.length;i++) {
+  const height = map2[poslist[i]];
+  if (!height ||  map1[height] > i) {
+    continue;
+  }
+  let j = -1;
+  for(j = i+1; j< poslist.length;j++) {
+    if (map2[poslist[j]] != height) {
+      break;
+    }
+  }
+  map1[height] = j;
+  lines.push([poslist[i],poslist[j],height]);
+ }
+ return lines
+}
 
 
 /**
@@ -464,6 +742,20 @@ const calculate = (str, pos) => {
 
 
  /***0611 */
+
+/**
+ * 现有n1  + n2 种面值的硬币，
+ * 其中n1种为普通币，可以取任意枚，
+ * n2种为纪念币，每种最多只能取一枚
+ * 每种硬币有一个面值，问能用多少种方法拼出m的面值？
+ * 
+ * 思路：
+ * 预处理一下，先算出只用n1 类型的硬币和只用n2类型硬币，拼出0-m面值的方法数
+ * 再用n1 硬币 拼出x面额，有a种方法，
+ * 剩下m-x面额用n2硬币拼出有b种方法
+ * 所有情况a*b累计和就是最终方法数
+ */
+
 
  /**
   * 动态规划状态依赖技巧

@@ -18,62 +18,72 @@ const generateBinaryTree = (data, i) => { // 生成一颗二叉树
 }
 // const root = generateBinaryTree(list, i);
 
-const rotate = (arr, left, mid, half) => {
-  const leftPart = arr.slice(left + half, mid +1); //中点左边需要换的一段
-  const rightPart = arr.slice(mid+1, mid + half + 1);// 中点右边需要换的一段
-  const newPart = [...leftPart.reverse(), ...rightPart.reverse()].reverse()
-  arr.splice(left + half, newPart.length, ...newPart);
- }
- const getFinalPos = (pos, len) => {
-   const half = Math.floor(len/2);
-   if (pos <= half) {
-    return 2 * pos
-   } else {
-     return 2 * (pos - half) -1;
-   }
-
-   // return (2 * i) % (len + 1); // 上面逻辑优化
- }
- const cycles = (arr, left,len, k) => {
-  const list = arr.slice(left, left + len);
-  for(let i = 0;i<k; i++) {
-    const pos = Math.pow(3,i);
-    let curr = getFinalPos(pos,len);
-    let originalValue = list[pos-1];
-    while(curr != pos) {
-      const temp = list[curr -1];
-      list[curr - 1] = originalValue;
-      originalValue = temp;
-      curr = getFinalPos(curr,len);
+const getBuildingLine = matrix => {
+  const list = matrix.map(item => {
+    const [left, right, height] = item;
+    return [
+      [left,'up', height],
+      [right, 'down', height]
+    ]
+  })
+  .reduce((curr,prev) => [...curr, ...prev], [])
+  .sort((a,b) => {
+    const [pos1,flag1,height1] = a;
+    const [pos2,flag2,height2] = b;
+    if (pos1 === pos2) {
+      if (flag2 === 'up') {
+        return -1
+      } else {
+        return 1
+      }
+    } else {
+      return pos1 - pos2
     }
-    list[pos -1] = originalValue;
+  });
+  const map1 = {};
+  const map2 = {};
+  let currMaxHeight = -1;
+  list.forEach(item => {
+    const [pos, flag, height] = item;
+    if (!map1[height]) {
+      map1[height] = 0;
+    }
+    if (flag === 'down') {
+      map1[height]--
+    } else {
+      map1[height]++;
+    }
+    const max = Object.keys(map1).filter(key=>map1[key]).sort((a,b)=> b-a )[0];
+    map2[pos]=max;
+  })
+ const lines = [];
+ const poslist = Object.keys(map2);
+ for(let i = 0; i< poslist.length;i++) {
+  const height = map2[poslist[i]];
+  if (!height ||  map1[height] > i) {
+    continue;
   }
-  arr.splice(left, len, ...list);
- }
- const shuffle = (arr, left,right) => {
-   while(right - left + 1) {
-    const length = right - left +1;
-    let base = 3;
-    let k = 1;
-    while(Math.pow(base,k) - 1 <= length) {
-      k++;
+  let j = -1;
+  for(j = i+1; j< poslist.length;j++) {
+    if (map2[poslist[j]] != height) {
+      break;
     }
-    k--;
-    base = Math.pow(base,k) - 1;
-    const mid = Math.floor((right+left)/2);
-    const half = base / 2;
-    rotate(arr, left, mid, half);
-    cycles(arr, left, base, k);
-    left = left + base;
-   }
+  }
+  map1[height] = j;
+  lines.push([poslist[i],poslist[j],height]);
  }
- const washCard = arr => {
-   const length = arr.length;
-   if (arr && length && !(length % 2)) {
-    shuffle(arr, 0, length -1);
-    return arr
-   }
- }
+ return lines
+}
 
-
-console.log(washCard([1,2,3,4,5,6,7,8,9,10,11,12]));
+console.log(getBuildingLine(
+   [
+      [2,5,6],
+      [1,7,4],
+      [4,6,7],
+      [3,6,5],
+      [10,13,2],
+      [9,11,3],
+      [12,14,4],
+      [10,12,5]
+     ]
+));
