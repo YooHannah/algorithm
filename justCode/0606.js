@@ -289,8 +289,83 @@ const findKthNum = (list1, list2, k) => {
  * 
  * 方法论： 动态规划里面的斜率优化
  * 思路： 
+ * 先实现约瑟夫杀人问题
+ * 依赖剃刀函数 y = x % i
+ * i是个固定值
+ * 图像会是这样
+ * |
+ * |
+ * |  /    /    /
+ * | /    /    /
+ * |/____/____/___________
+ * 
+ * 约瑟夫杀人问题每次数人的个数一致，假设为m
+ * 杀到最后一个人的时候那个人当前轮的编号固定是1，
+ * 如果有可以从最后一个人往前推原始编号的函数，那么一次往前推即可
+ * 
+ * y = f(len,x)
+ * i表示该轮人数，x表示下一轮即人数为len-1时，最后那个人的该轮编号
+ * y就是人数为len时最后一个人对应的结点编号
+ * m会在该函数中用于数数
+ * 
+ * 例如y = f(2, 1)
+ * y表示剩两个人时，最后那个人在这一轮里面的编号是几
+ * 
+ * 求该关系前，先看一下每一轮里面人的位置和数数编号的关系
+ * 人位置从1-n,人数为len,循环数
+ * 1-n 对应的编号关系就是1，2,3,...m,1,2,3,...m
+ * 类似于剃刀函数，参考剃刀函数
+ * 可以得到每个人位置=(当前轮的编号 - 1) % len + 1
+ * 比如1个人该轮数数编号是k,那他的位置就是（k-1）%n + 1
+ * 
+ * 在看一下杀完一次人之后，新老编号的对应关系
+ * 假设原来编号
+ * 1,2,3,4,5,6,7, 3号被杀，那么下一轮编号变成
+ * 5,6,-,1,2,3,4
+ * 即1对应5,2对应6,4对应1,5对应2,6对应3,7对应4
+ * 再联系剃刀函数
+ * 可以得到式子1：
+ * 老编号= （(新编号-1）+ 被杀被杀编号S（这里是3）) %len + 1
+ * len表示老编号对应轮的长度
+ * 
+ * 根据上面编号和位置关系
+ * 位置=(当前轮的编号 - 1) % n + 1
+ * 现在计算当前轮数到m对应的1-n中的位置
+ * 也就是是报数为m的那个人，也就是该轮要被杀的人
+ * 带进去算出来的结果就是这个人在1-n中的位置x
+ * 这个位置x就是老编号里面被杀人的位置，也就是s
+ * s = (m -1) %len + 1,
+ * 数到m就杀人
+ * 
+ * 代入式子1：
+ * 老编号 = (新编号 + （m-1）%len)%len + 1;，继续化简
+ * 老编号 = (新编号 + m-1)%len + 1;
+ * 
+ * 
+ * 回到本题，相当于每轮在数的m的值在变
  * 
  */
+
+ // 约瑟夫杀人长度为i个人，数到m就杀人，最终活下来的是几
+
+ const getLive = (i, m) => {
+   if(i === 1) {
+    return 1;
+   }
+   return (getLive(i-1, m) + m -1)%i + 1;
+ }
+
+ // 公司招聘
+ const nextIndex = (size, index) => index == size -1 ? 0 : index + 1;
+ const no = (n, arr, index) => {
+   if(n == 1) {
+     return 1
+   }
+   // 老 = （新 + m -1）% i + 1
+   return (no(n-1, arr, nextIndex(arr.length, index)) + arr[index] -1 ) % n + 1
+ }
+ // 0到n-1个人依次循环取用arr中数字杀n-1轮，返回的活的人编号
+ const getLive = (n, arr) => no(n, arr, 0)
 
 /****** 0608 ******/
 
@@ -419,7 +494,7 @@ const getBuildingLine = matrix => {
  * 给定一个均为正数无序的数组arr,求数组中所有子数组中相加和为 K 的最长子数组长度
  * 要求时间复杂度O(N),时间复杂度O(1)
  * 
- * 例arr = [1,2,1,1] k = 3 
+ * 例arr = [1,2,1,1,1] k = 3 
  * 返回 3
  * 
  * 思路：
@@ -438,6 +513,26 @@ const getBuildingLine = matrix => {
  * 
  */
 
+const findMaxPartSumK = (arr, k) => {
+  let L = 0;
+  let R = 0;
+  let sum = arr[0];
+  const box = [];
+  const length = arr.length;
+  while(L < length && R <length) {
+    if (sum < k) {
+     sum +=arr[++R];
+    } else if(sum === k) {
+     box.push(R-L+1);
+     sum +=arr[++R];
+    } else {
+     sum -=arr[L];
+     ++L;
+    }
+  }
+  return box.sort((a,b)=>b-a)[0]
+}
+
 /**
  * 给定一个正负0都包含的无序数组,
  * 求数组中所有子数组中相加和小于等于 K 的最长子数组长度
@@ -445,22 +540,84 @@ const getBuildingLine = matrix => {
  * 例如arr = [3,-2,-4,0,6],K =2;
  * 相加小于等于2的最长子数组为[3,-2,-4,0],长度为4故返回4
  * 
- * 例如
+ * 方法论：可能性舍弃
+ * 
+ * 思路
  * 先从后往前计算一下累计和，如果之前计算的大于0，不累加
  * arr2 =  [-3,-6,-4,0,6]
  * 对应计算的右边界为
  * arr3 = [2,2,2,3,4]
- * 把右边界一样的分成一组，计算累计和
- * [-3, 0, 6]
- * -3 + 0 = -3 <2,所以就是0-3位置上的数加起来小于2
+ * arr2就代表从当前位置往右累计能达到的最小累计和
+ * 现在对arr2进行处理，从0位置开始累计到其右边界位置的数如果满足条件
+ * 则继续往下扩到下一块的右边界，直到不符合条件，此时满足条件的右边界是k
+ * 此时记录最大长度
+ * 然后依次计算，起始位置i从1，2,3...k开始计算到k是否满足条件，满足往下扩，
+ * 不满足起始位置加1
+ * 这样相当于计算i到k这段是否有满足提交的能够继续往k之后的为扩
+ * 忽略掉i-k之间满足条件的长度，因为已经找到0-k这个大的长度
+ * 
  */
+const findMaxPartSumk = (arr, k) => {
+  const lastPos = arr.length -1;
+  const tempList = [arr[lastPos]];
+  const tempPosList = [lastPos];
+  for(let i = lastPos -1; i>=0; i--) {
+    const curr = arr[i];
+    const beforeSmall =  tempList[0] < 0;
+    const sum = beforeSmall ? tempList[0] + curr : curr;
+    tempList.unshift(sum)
+    const pos = beforeSmall ? tempPosList[0] : i;
+    tempPosList.unshift(pos)
+  }
+  let sum = 0;
+  let len = 0;
+  let end = 0;
+  // i是窗口最左位置，end是出口最右位置的下一个位置(终止位置)
+  for(let i = 0; i<arr.length; i++){
+    /**
+     * 从i开始往右扩的尝试
+     * 以右边界为跳跃距离，
+     * 这一块满足就尝试到下一块边界
+     */
+    while(end < arr.length && sum + tempList[end] <=k) {
+      sum += tempList[end];
+      end = tempPosList[end]+1
+    }
+     /**
+     * while 循环结束后
+     *  如果以i开头的情况下
+     *  累加和<=k的最长子数组是arr[i...end-1],看这个长度能不能更新len
+     *  如果以i开头情况下
+     *  累加和<=k的最长子数组比arr[i...end-1]短，更新都不会影响len代表的值
+     */
+    len = Math.max(len, end - i);
+    if (end > i) {
+      sum -=arr[i]
+    } else {
+      end = i+1
+    }
+  }
+  return len
+}
 
 /**
  * 给定一个非负数组，每个位置上代表有几枚铜板
  * a先手b后手，每次都可以拿任意数量铜板，但是不能不拿
  * 谁最先把铜板拿完谁赢，
  * 返回获胜者名字
+ * 
+ * 方法论： Nim 博弈论问题
+ * 思路：
+ * 数组所有数据异或和（所有数据无进位相加）为0，则后手肯定赢
+ * 否则先手赢
+ * 先手赢的操作就是每次拿完铜板，让后手面对的数组，异或和为0
+ * 
  */
+
+const getWinner = arr => {
+  const xor = arr.reduce((curr,prev)=> curr ^ prev, 0);
+  return xor ? '先手赢' : '后手赢'
+}
 
 
  /**0609 */
