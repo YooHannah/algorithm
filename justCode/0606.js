@@ -861,14 +861,144 @@ const calculate = (str, pos) => {
 /**
  * 给定两字符串str1和str2,求两个字符串的最长公共子串
  * 动态规划空间压缩应用
+ * 
+ * 思路：
+ * 子串必须连续
+ * 想想dp是一张str1.length * str2.length的表
+ * dp[i][j]表示str1以str1[i]结尾，str2以str2[j]结尾时，最长公共子串长度
+ * 整张表的最大值就是答案
+ * 
+ * 对于第一行第一列来说，str1[i]，str2[j]相等dp[i][j]就是1，不等dp[i][j]就是0
+ * 其他位置上不等dp[i][j]肯定是0
+ * 相等的位置上，等于左上角的值 + 1，dp[i-1][j-1]保障str1和str2都往前移一个的效果
+ * 因为dp[i][j] 位置上两个 字符相同，所以就看前面的字符相同的长度是多少
+ * 所以 dp[i][j] = dp[i-1][j-1] +1
+ *  这样整张表就可算出来，然后找最大值
+ * 
+ * 优化：
+ * 因为第一行的值可以确定，dp[0][str2.length -1], dp[0][str2.length -2]，...dp[0][0]
+ * 那么根据dp[i][j] = dp[i-1][j-1] +1
+ * 利用dp[0][str2.length -2]就可以算出dp[1][str2.length -1],
+ * 利用dp[0][str2.length -3]就可以算出dp[1][str2.length -2]， dp[2][str2.length -1]
+ * 以此类推，按从左上到右下方向的对角线可以一次计算出表中每个值
+ * 我们在计算过程中只要存折最大值即可，其他值不用存
+ * 所以就可以实现一个变量代替一张表的效果
+ * 
+ * 
+ * 
  */
+// 实现1
+ const getMaxChild = (str1, str2) => {
+   const len1 = str1.length;
+   const len2 = str2.length;
+   let maxLen = -1;
+   for (let i = len2 -1; i>=0; i--) {
+      let currentValue =  str1[0] === str2[i] ? 1 : 0;
+      maxLen = Math.max(maxLen, currentValue);
+      const count = len2 -1 -i;
+      for(let j = 1; j<=count && j<len1;j++){
+        currentValue = str1[j] === str2[i+j]  ? currentValue + 1 : 0;
+        maxLen = Math.max(maxLen, currentValue);
+      }
+   }
+
+   for (let m = 1; m<len1; m++) {
+    let currentValue =  str1[m] === str2[0] ? 1 : 0;
+    maxLen = Math.max(maxLen, currentValue);
+    const count = len1 -1 -m;
+    for(let n = 1; n<= count && n< len2; n++){
+      currentValue = str1[m+n] === str2[n]  ? currentValue + 1 : 0;
+      maxLen = Math.max(maxLen, currentValue);
+    }
+   }
+   return maxLen;
+ }
+
+// 实现2
+
+const getMaxChild = (str1, str2) => {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  let max = -1;
+  let row = 0;
+  let col = len2 - 1;
+  let end = 0;
+  while(row < len1) {
+    let i = row;
+    let j = col;
+    let len = 0;
+    while(i<len1 && j <len2) {
+      if (str1[i] === str2[j]) {
+        len++;
+      } else {
+        len = 0;
+      }
+      if(len > max) {
+        end = i;
+        max = len;
+      }
+      i++;
+      j++;
+    }
+    if (col > 0) {
+      col--
+    } else {
+      row++
+    }
+  }
+  console.log(end,max)
+  return str1.substring(end - max +1, end +1) // 返回最长子串
+}
 
  /**
  * 给定两字符串str1和str2,求两个字符串的最长公共子序列
  * 动态规划空间压缩应用
+ * 
+ * 思路：
+ * 公共子序列可以不连续
+ * dp[i][j]表示str1以str1[i]结尾，str2以str2[j]结尾时，最长公共子序列长度
+ * dp[i][j]的值来自一下四种可能性
+ * 子序列
+ * 1.既不以str1[i]也不以str2[j]，这种情况dp[i][j] = dp[i-1][j-1]
+ * 2.以str1[i]但不以str2[j]，这种情况dp[i][j] = dp[i][j-1]
+ * 3.不以str1[i]但以str2[j]，这种情况dp[i][j] = dp[i-1][j]
+ * 4.既以str1[i]也以str2[j]，即str1[i] == str2[j]，这种情况dp[i][j] = dp[i-1][j-1] + 1
+ * 
+ * 四种可能性最大值就是dp[i][j]的值
+ * 观察可发现每个格子会依赖自己左边，左上，和正上方的格子
+ * 
+ * 对于第一行第一列来说，str1[i]，str2[j]相等dp[i][j]就是1，不等dp[i][j]就是0
+ * 剩下的每个格子，从dp[1][1]开始就都可以算出值
+ * 在填表过成中可以寻找最大值
+ * 
  */
 
-
+const getMAXChildSorted = (str1, str2) => {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  const dp = (new Array(len1).fill(null)).map(e => (new Array(len2).fill(0)));
+  let row = 0;
+  let max = 0
+  while(row < len1) {
+    let col = 0
+    while(col<len2){
+      const same = str1[row] === str2[col];
+      if(col > 0 && row > 0) {
+        dp[row][col] = Math.max(
+          dp[row-1][col],
+          dp[row][col-1],
+          same ? dp[row-1][col-1] + 1 : dp[row-1][col-1]
+        )
+      } else {
+        dp[row][col] = Number(same);
+      }
+      max = Math.max(max, dp[row][col])
+      col++
+    }
+    row++
+  }
+  return max
+ }
 
 
 /**

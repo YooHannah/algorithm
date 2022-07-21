@@ -17,15 +17,32 @@ const generateBinaryTree = (data, i) => { // 生成一颗二叉树
   return node
 }
 // const root = generateBinaryTree(list, i);
-const nextIndex = (size, index) => index == size -1 ? 0 : index + 1;
- const no = (n, arr, index) => {
-   if(n == 1) {
-     return 1
-   }
-   // 老 = （新 + m -1）% i + 1
-   return (no(n-1, arr, nextIndex(arr.length, index)) + arr[index] -1 ) % n + 1
- }
- // 0到n-1个人依次循环取用arr中数字杀n-1轮，返回的活的人编号
- const getLive = (n, arr) => no(n, arr, 0)
 
-console.log(getLive(10, [2,3,4]))
+const getMAXChildSorted = (str1, str2) => {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  const dp = (new Array(len1).fill(null)).map(e => (new Array(len2).fill(0)));
+  let row = 0;
+  let max = 0
+  while(row < len1) {
+    let col = 0
+    while(col<len2){
+      const same = str1[row] === str2[col];
+      if(col > 0 && row > 0) {
+        dp[row][col] = Math.max(
+          dp[row-1][col],
+          dp[row][col-1],
+          same ? dp[row-1][col-1] + 1 : dp[row-1][col-1]
+        )
+      } else {
+        dp[row][col] = Number(same);
+      }
+      max = Math.max(max, dp[row][col])
+      col++
+    }
+    row++
+  }
+  return max
+ }
+
+console.log(getMAXChildSorted('jkl12345k6k9kooo', 'llo12345jd69e'))
