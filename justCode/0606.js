@@ -846,17 +846,53 @@ const calculate = (str, pos) => {
   * 问至少需要多少船
   * 
   * 思路：
-  * 先将所有人体重由大到小排序，找到中位数，
-  * 然后看中位数两侧数据加和是否小于等于limit
-  * 满足的话船数加1
-  * 不满足的话，
-  * 如果大于limit,中位数左侧数据移动，
-  * 最终如果小于中位数的数据剩下m个
-  * 大于中位数的数据剩下n个
-  * 需要船数 = 满足两人一条船的情况 + m /2 + n
+  * 小范围内做贪心
   * 
+  * 先将所有人体重由大到小排序 找到小于等于limt/2的数的最右位置pos
+  * 从pos和pos+1两个位置开始加和是否小于等于limit
+  * 满足的话船数加1， 指向pos+1位置的数右移，直到大于limit，记录经过的数据个数count
+  * 表示pos - count ...pos, pos+1,...pos+count +1,可以两两组合做一条船，需要count条
+  * 不满足的话，
+  * 如果大于limit,pos位置左移，直到找到符合相加小于等于limit的，记录经过的数据个数m,
+  * 这m个数表示无法跟pos+1以后的数据同乘一条船
+  * 再重复符合条件的步骤，累计count
+  * 
+  * 如果pos左移到0，还是满足不了pos+1以后的数据同乘一条船，那么剩下的pos+1以后的数据，
+  * 就得每个人自己乘一条船，假设剩下n
+  * 
+  * 需要船数 = 满足两人一条船的情况count + m /2 + n
   * 
   */
+
+ const needBoat = (arr, limit) => {
+  const list = arr.sort((a,b)=> a-b);
+  const len = list.length;
+  const mid =  limit/2;
+  let left = list.findLastIndex(e=> e <= mid);
+  console.log('dddd', list, mid, left)
+  let right = left + 1;
+  let count = 0;
+  let rightRest = 0;
+  let leftRest = 0;
+  while(left >= 0 && right<len) {
+    let rightMove = 0;
+    while(right<len && rightMove <left+1 && list[left] + list[right] <= limit) {
+      rightMove++;
+      right++
+    }
+    count +=rightMove;
+    left -= rightMove;
+    let leftMove = 0;
+    while(left>=0 && list[left] + list[right] > limit) {
+      leftMove++;
+      left--
+    }
+    leftRest +=leftMove;
+  }
+  leftRest = leftRest + left + 1;
+  rightRest = len - right;
+  return count + Math.ceil(leftRest/2) + rightRest
+}
 
 /**
  * 给定两字符串str1和str2,求两个字符串的最长公共子串
@@ -1000,32 +1036,233 @@ const getMAXChildSorted = (str1, str2) => {
   return max
  }
 
+// 在范围上尝试模型，进行可能性分析
 
 /**
  * 给定一个字符串str,求最长回文子序列，注意区分子序列和子串的不同
  * 
+ * 思路：
+ * 计算str[i,...j]范围内最长回文子序列
+ * dp[i][j] 就表示str[i,...j]范围内最长回文子序列
+ * dp[len-1][len-1]就是答案
+ * dp会是一个len * len 的二维表，且对角线右上有效，左下角无效
+ * 因为左下角i<j
+ * 
+ * basic场景
+ * dp[i][i] = 1;
+ * dp[i][i+1] = str[i] === str[i+1] ? 2: 1;
+ * 
+ * 其他dp[i][j] 最长回文子序列按可能性分析可能会有以下几种情况
+ * 
+ * 1. 以i开头，不以j结尾 dp[i][j] = dp[i][j-1]
+ * 2. 不以i开头，以j结尾 dp[i][j] = dp[i+1][j]
+ * 3. 不以i开头，不以j结尾 dp[i][j] = dp[i+1][j-1]
+ * 4. 以i开头，以j结尾, 说明str[i] === str[j], dp[i][j] = dp[i+1][j-1] + 2;
+ * 
+ * 以上四种情况取最大值
+ * 
+ * dp[i][j]依赖左，左下，下三个值，表从右下开始填
+ * 
  */
+
+const getMaxHuiWen = str => {
+  const len = str.length;
+  const dp = (new Array(len).fill(null)).map(e => (new Array(len).fill(0)));
+  for(let i = 0; i<len; i++) {
+    dp[i][i] = 1;
+    dp[i][i+1] = str[i] === str[i+1] ? 2: 1;
+  }
+  let row = len - 3;
+  let col = len - 1;
+  while(row >=0) {
+    while(col <= len -1) {
+      dp[row][col] = Math.max(
+        dp[row][col -1],
+        dp[row+1][col],
+        str[row] === str[col] ? dp[row+1][col-1] + 2 :  dp[row+1][col-1]
+      )
+      col++
+    }
+    row--;
+    col = row + 2;
+  }
+  console.log(dp)
+  return dp[0][len-1]
+}
+
 
 /**
  * 给定一个字符串，可以在str任意位置添加字符使原字符变成回文字符串
  * 求需要添加最少字符数时生成的回文字符串
  * 
+ * * 思路：
+ * 计算str[i,...j]范围内至少添加的个数
+ * dp[i][j] 就表示str[i,...j]范围内至少添加的个数
+ * dp[len-1][len-1]就是答案
+ * dp会是一个len * len 的二维表，且对角线右上有效，左下角无效
+ * 因为左下角i<j
+ * 
+ * basic场景
+ * dp[i][i] = 0;
+ * dp[i][i+1] = str[i] === str[i+1] ? 0: 1;
+ * 
+ * 其他dp[i][j] 至少添加的个数按可能性分析可能会有以下几种情况
+ * 
+ * 1. str[i] != str[j] ,先把[i,...j-1] 范围上整成回文，最后加1把str[j] 加在开头 
+ *    dp[i][j] = dp[i][j-1] + 1
+ * 2. str[i] != str[j] ,先把[i+1,...j] 范围上整成回文，最后加1把str[i] 加在结尾 
+ *    dp[i][j] = dp[i+1][j] + 1
+ * 3. str[i] == str[j] ,先把[i+1,...j-1] 范围上整成回文 
+ *    dp[i][j] = dp[i+1][j-1]
+ * 
+ * 以上情况取最小值
  * 
  */
-
-/**
- * 给定一个字符串str,返回把str全部切成回文子串的最小分割数
- * 例如：
- * aba 本身就是回文，不用切割返回0
- * acdcdcdad, 切两次变成3个回文子串， a , cdcdc, dad
- */
+const getMaxHuiWen = str => {
+  const len = str.length;
+  const dp = (new Array(len).fill(null)).map(e => (new Array(len).fill(0)));
+  for(let i = 0; i<len; i++) {
+    dp[i][i] = 0;
+    dp[i][i+1] = str[i] === str[i+1] ? 0 : 1;
+  }
+  let row = len - 3;
+  let col = len - 1;
+  while(row >=0) {
+    while(col <= len -1) {
+      dp[row][col] = Math.min(
+        dp[row][col -1] + 1,
+        dp[row+1][col] + 1,
+        str[row] === str[col] ? dp[row+1][col-1] : Number.MAX_VALUE
+      )
+      col++
+    }
+    row--;
+    col = row + 2;
+  }
+  console.log(dp)
+  return dp[0][len-1]
+}
 
 /**
  * 给定一个字符串str,通过去除字符串中的字符，使原字符串变成回文字符串
  * 请问有多少种不同的方案？
  * 如果移除的字符组成的序列不一样，归为不同的方案
  * 
+ * 思路：
+ * 范围内尝试
+ * dp[i][j] 表示str[i...j] 范围内去除的方案数dp[0][str.len-1]就是答案
+ * 
+ * 对于str[i..j] 形成的回文字符串可以从以下几种情况分析
+ * 
+ * 1. 不以i开头，不以j结尾
+ * 2. 不以i开头，以j结尾 
+ * 3. 以i开头，不以j结尾
+ * 4. 以i开头，以j结尾
+ * 
+ * 方案互斥数之和就是答案
+ * 
+ * dp[i][j -1] 包括1,3两种情况
+ * dp[i+1][j] 包括1，2 两种情况
+ * 
+ * dp[i][j -1] + dp[i+1][j] - dp[i+1][j-1] 就是1,2,3情况之和
+ * 
+ * 第四情况说明str[i] === str[j], 
+ * 把二者单独拿出来就可以组成一种方案
+ * 剩下就是 dp[i+1][j-1]
+ * 第四种情况的方案数就是dp[i+1][j-1] + 1
+ * 
+ * 加起来就是 dp[i][j -1] + dp[i+1][j] + 1
+ * 
+ * basic场景
+ * dp[i][i] = 1;
+ * dp[i][i+1] = str[i] === str[i+1] ? 3: 2;
+ * 
+ * 
  */
+
+const getChangeHuiWenWays = str => {
+  const len = str.length;
+  const dp = (new Array(len).fill(null)).map(e => (new Array(len).fill(0)));
+  for(let i = 0; i<len; i++) {
+    dp[i][i] = 1;
+    dp[i][i+1] = str[i] === str[i+1] ? 3 : 2;
+  }
+  let row = len - 3;
+  let col = len - 1;
+  while(row >=0) {
+    while(col <= len -1) {
+      dp[row][col] = str[row] === str[col] ? dp[row][col -1] + dp[row+1][col] + 1 : dp[row][col -1] + dp[row+1][col] - dp[row+1][col -1]
+      col++
+    }
+    row--;
+    col = row + 2;
+  }
+  return dp[0][len-1]
+}
+
+/**
+ * 给定一个字符串str,返回把str全部切成回文子串的最小分割数
+ * 例如：
+ * aba 本身就是回文，不用切割返回0
+ * acdcdcdad, 切两次变成3个回文子串， a , cdcdc, dad
+ * 
+ * 思路：
+ * 从左往右尝试，[i...len-1]找最小值
+ * 判断str[0,,,,i]是否是回文，
+ * 
+ * 是的话，把0-i当做分割的第一部分，
+ * 计算剩下的str[i+1, ..len-1] 最小分割数然后+1 
+ * 每轮结果跟当前最小值比较更新最小值
+ * 
+ * 不是的话，不参数比较，不符合切割要求
+ * 
+ * 优化，预处理字符串，获取0-i的字符串是否是回文字符串，
+ * 将判断过程转为查表过程
+ * 
+ * dp[i] 表示从i到len -1 的 最小分割数,切几刀
+ * 答案是dp[0]
+ * 
+ */
+
+const getRecord = str => {
+  const len = str.length;
+  const dp = (new Array(len).fill(null)).map(e => (new Array(len).fill(0)));
+  for(let i = 0; i<len; i++) {
+    dp[i][i] = true;
+    if(i<len -1) {
+      dp[i][i+1] = str[i] === str[i+1];
+    }
+  }
+  let row = len - 3;
+  let col = len - 1;
+  while(row >=0) {
+    while(col <= len -1) {
+      dp[row][col] = str[row] === str[col] && dp[row+1][col-1]
+      col++
+    }
+    row--;
+    col = row + 2;
+  }
+  return dp
+}
+const findMinCut = str => {
+  const len = str.length;
+  const record = getRecord(str);
+  const dp = new Array(len + 1).fill(0);
+  dp[len] = -1;
+  dp[len - 1] = 0;
+  dp[len - 2] = str[len - 1] === str[len-2] ? 0 : 1;
+  for(let i = len - 3; i>=0; i--) {
+    dp[i] = len - i;
+    for(let j = i;j<len;j++) {
+      if (record[i][j]) {
+        dp[i] = Math.min(dp[i], dp[j + 1] + 1);
+      }
+    }
+  }
+  console.log(dp)
+  return dp[0]
+}
 
 
  /***0611 */
@@ -1056,13 +1293,105 @@ const getMAXChildSorted = (str1, str2) => {
   * 
   */
 
+  // 方法一
+  /**
+   * pre, 裂开的前一个部分
+   * rest, 还剩多少值需要裂开，要求列出来的第一部分不能比pre小
+   * 返回裂开方法数
+   */
+  const process = (pre, rest) => {
+    if (rest === 0) {
+      return 1; // 之前裂开的方案，构成了1中方法
+    };
+
+    if (rest < pre) {
+      return 0
+    }
+    let ways = 0
+    for(let i = pre; i<rest; i++) {
+      ways +=process(i, rest - i);
+    }
+    return ways;
+  }
+  const ways1 = n => {
+    if(n<1) {
+      return 0;
+    }
+    return process(1, n);
+  }
+  
+  // 方法二
+  // 斜率优化: 当前格子值需要枚举行为时，自己附近几个格子的值能否代表枚举行为
+  const ways2 = n => {
+    if (n < 1) {
+      return n
+    }
+    const dp = (new Array(n + 1).fill(null)).map(e => (new Array(n + 1).fill(0)));
+    for(let pre = 1; pre<n+1;pre++) {
+      dp[pre][0] = 1; // 第一列，rest = 0; 算一种方法
+      dp[pre][pre] = 1; // 对角线上pre=== rest, 裂开方式就是当前rest他自己，1中方法
+    }
+    for(let pre = n - 1; pre>0; pre--) {
+      for(let rest = pre + 1; rest <= n; rest++) {
+        // 暴力递归转换后进行斜率优化
+        // dp[pre + 1][rest] 代表了除 dp[pre][rest - pre] 以外其他枚举值之和
+        dp[pre][rest] = dp[pre + 1][rest] + dp[pre][rest - pre]
+      }
+    }
+    return dp[1][n]
+  }
 /**
  * 给定一颗二叉树的头结点head
  * 已知所有节点都不一样，返回其中最大的且符合搜索二叉树条件的最大拓扑结构大小
  * 拓扑结构：不是子树，能连起来的结构都算
  * 
+ * 思路：
+ * 使用拓扑记录
+ * 先求每个子树最大拓扑结构大小，再转换成跟结点最大拓扑大小
+ * 再从所以记录中求最大值
+ * 
  */
 
+const modifyMap = (n, v, m, s) => {
+  if(!n || !m.has(n)) {
+    return 0
+  }
+  const r = m.get(n);
+  if ((s && n.value > v) || ((!s) && n.value < v)) {
+    m.delete(n);
+    return r.l+r.r + 1;
+  } else {
+    const minus = modifyMap(s ? n.right : n.left, v, m,s);
+    if(s) {
+      r.r = r.r - minus;
+    } else {
+      r.l = r.l - minus;
+    }
+    m.set(n,r);
+    return minus;
+  }
+}
+
+const posOrder = (h, map) => {
+  if(!h) {
+    return 0;
+  }
+  const ls = posOrder(h.left, map);
+  const rs = posOrder(h.right,map);
+  modifyMap(h.left,h.value,map,true);
+  modifyMap(h.right,h.value,map,false);
+  const lr = map.get(h.left);
+  const rr = map.get(h.right);
+  const lbst = lr ?lr.l + lr.r + 1:0;
+  const rbst = rr ? rr.l + rr.r + 1:0;
+  map.set(h, { l: lbst, r: rbst });
+  return Math.max(lbst + rbst + 1, Math.max(ls, rs))
+}
+
+const bstTopoSize = head => {
+  const map = new Map();
+  return posOrder(head,map)
+}
 /**
  * 给定一个长度为偶数的数组arr,长度记为2*N
  * 前N个为左部分，后N个为右部分
