@@ -16,47 +16,65 @@ const generateBinaryTree = (data, i) => { // 生成一颗二叉树
   } : null; 
   return node
 }
-const root = generateBinaryTree(list, i);
-console.log(root)
-const modifyMap = (n, v, m, s) => {
-  if(!n || !m.has(n)) {
-    return 0
+// const root = generateBinaryTree(list, i);
+// console.log(root)
+const isValid = (str, exp) => {
+  // 不能有匹配符
+  if (str.includes('*') || str.includes('.')) {
+    return false
   }
-  const r = m.get(n);
-  if ((s && n.value > v) || ((!s) && n.value < v)) {
-    m.delete(n);
-    return r.l+r.r + 1;
-  } else {
-    const minus = modifyMap(s ? n.right : n.left, v, m,s);
-    if(s) {
-      r.r = r.r - minus;
-    } else {
-      r.l = r.l - minus;
+  // 开头不能是*，连续两个不能是*
+  for(let i = 0; i<exp.length; i++) {
+    if (exp[i] === '*' && (!i || exp[i+1] === '*')) {
+      return false
     }
-    m.set(n,r);
-    return minus;
   }
+  return true
 }
-
-const posOrder = (h, map) => {
-  if(!h) {
-    return 0;
+const initDpMap = (s,e) => {
+  const slen = s.length;
+  const elen = e.length;
+  const dp = (new Array(slen + 1).fill(null)).map(e => (new Array(elen + 1).fill(0)));
+  dp[slen][elen] = true;
+  for(let j = elen - 2; j > -1; j= j-2) {
+    if (e[j] != '*' && e[j + 1] == '*') {
+      dp[slen][j] = true
+    } else {
+      break;
+    }
   }
-  const ls = posOrder(h.left, map);
-  const rs = posOrder(h.right,map);
-  modifyMap(h.left,h.value,map,true);
-  modifyMap(h.right,h.value,map,false);
-  const lr = map.get(h.left);
-  const rr = map.get(h.right);
-  const lbst = lr ?lr.l + lr.r + 1:0;
-  const rbst = rr ? rr.l + rr.r + 1:0;
-  map.set(h, { l: lbst, r: rbst });
-  return Math.max(lbst + rbst + 1, Math.max(ls, rs))
+  if (slen > 0 && elen > 0) {
+    if (e[elen -1] === '.' || s[slen - 1] === e[elen - 1]) {
+      dp[slen -1][elen -1] = true;
+    }
+  }
+  return dp
 }
 
-const bstTopoSize = head => {
-  const map = new Map();
-  return posOrder(head,map)
+const isMatchDpWay = (str, exp) => {
+  if (!str || !exp || !isValid(str, exp)) {
+    return false;
+  }
+  const dp = initDpMap(str,exp);
+  for(let i = str.length -1; i > -1; i--) {
+    for(let j = exp.length -2; j > -1; j--) {
+      if (exp[j + 1] != '*') {
+        dp[i][j] = (str[i] === exp[j] || exp[j] === '.') && dp[i + 1][j + 1];
+      } else {
+        let si = i;
+        while(si != str.length && (exp[j] === str[si] || exp[j] === '.')) {
+          if (dp[si][j + 2]) {
+            dp[i][j] = true;
+            break
+          }
+          si++
+        }
+        if(!dp[i][j]) {
+          dp[i][j] = dp[si][j+2]
+        }
+      }
+    }
+  }
+  return dp[0][0]
 }
-
-console.log(bstTopoSize(root));
+console.log(isMatchDpWay('abbbf', 'a*f'));

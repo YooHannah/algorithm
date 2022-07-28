@@ -1500,11 +1500,104 @@ const rotate = (arr, left, mid, half) => {
 
 /**
  * 判断一个由[a-z]字符构成的字符串和一个包含'.'和'*'通配符的字符串是否匹配
- * '.'匹配任一单一字符，'*' 匹配0个或者多个字符
+ * '.'匹配任一单一字符，'*' 匹配0个或者多个'*'前面的字符
  * 输入的字符串长度不会超过100，且不为空
  * 
+ * 思路：
+ * 看当前ei下一个是不是*，
+ * 不是*的话，当前匹配的位置si相同往下走，不同则返回true
+ * 是*的话看 ei + 2之后能不能跟si之后匹配，继续判断比较
  */
+// 方法一： 递归实现
+// 检查是否是符合要求的字符串和校验字符串
+const isValid = (str, exp) => {
+  // 不能有匹配符
+  if (str.includes('*') || str.includes('.')) {
+    return false
+  }
+  // 开头不能是*，连续两个不能是*
+  for(let i = 0; i<exp.length; i++) {
+    if (exp[i] === '*' && (!i || exp[i+1] === '*')) {
+      return false
+    }
+  }
+  return true
+}
 
+const process = (str, exp, si, ei) => {
+  // 比较到最后一个字符了看str是否也到了最后
+  if (ei === exp.length) {
+    return si === str.length
+  }
+  // ei 到了最后一个，或者exp下一字符不是*，当前位置相同后，一起往后移动继续比较
+  if (ei + 1 === exp.length || exp[ei+1] != '*') {
+    return si != str.length && (exp[ei] === str[si] || exp[ei] === '.') && process(str, exp, si+1,ei+1)
+  }
+  // exp当前字符下一个是*，依次判断*可以代表多少个字符，只要命中一种情况就匹配，返回true
+  while(si != str.length && (exp[ei] === str[si] || exp[ei] === '.')) {
+    if (process(str, exp, si, ei+2)) {
+      return true
+    }
+    si++
+  }
+  return process(str, exp, si, ei+2);
+}
+
+const isMatch = (str, exp) => {
+  if (!str || !exp) {
+    return false;
+  }
+  return isValid(str, exp) && process(str, exp, 0, 0)
+}
+
+// 方法二： 递归改动态规划
+
+const initDpMap = (s,e) => {
+  const slen = s.length;
+  const elen = e.length;
+  const dp = (new Array(slen + 1).fill(null)).map(e => (new Array(elen + 1).fill(0)));
+  dp[slen][elen] = true;
+  for(let j = elen - 2; j > -1; j= j-2) {
+    if (e[j] != '*' && e[j + 1] == '*') {
+      dp[slen][j] = true
+    } else {
+      break;
+    }
+  }
+  if (slen > 0 && elen > 0) {
+    if (e[elen -1] === '.' || s[slen - 1] === e[elen - 1]) {
+      dp[slen -1][elen -1] = true;
+    }
+  }
+  return dp
+}
+
+const isMatchDpWay = (str, exp) => {
+  if (!str || !exp || !isValid(str, exp)) {
+    return false;
+  }
+  const dp = initDpMap(str,exp);
+  for(let i = str.length -1; i > -1; i--) {
+    for(let j = exp.length -2; j > -1; j--) {
+      if (exp[j + 1] != '*') {
+        dp[i][j] = (str[i] === exp[j] || exp[j] === '.') && dp[i + 1][j + 1];
+      } else {
+        let si = i;
+        while(si != str.length && (exp[j] === str[si] || exp[j] === '.')) {
+          if (dp[si][j + 2]) {
+            dp[i][j] = true;
+            break
+          }
+          si++
+        }
+        if(!dp[i][j]) {
+          dp[i][j] = dp[si][j+2]
+        }
+      }
+    }
+  }
+  return dp[0][0]
+}
 /**
  * 数组异或和的定义： 将数组中所有的数异或起来得到的值
  * 给定一个整型数组arr, 其中可能有正数，负数，0，
