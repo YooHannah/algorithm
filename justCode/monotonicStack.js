@@ -356,3 +356,301 @@ const maxlist2 = arr => {
   }
   return childArr.reverse();
 }
+
+/**
+ * 给定一个N*3的矩阵matrix,
+ * 对于每一个长度为3的小数组arr
+ * 都表示一个大楼的3个数据
+ * [大楼左边界， 大楼右边界，大楼高度（一定都大于0）]
+ * 地基都在X轴上，大楼之间可能会有重叠
+ * 请返回整体轮廓线数组
+ * 例如，matrix = 
+ * [
+ *  [2,5,6],
+ *  [1,7,4],
+ *  [4,6,7],
+ *  [3,6,5],
+ *  [10,13,2],
+ *  [9,11,3],
+ *  [12,14,4],
+ *  [10,12,5]
+ * ]
+ * 
+ * 返回：
+ * [
+ *  [1,2,4],
+ *  [2,4,6],
+ *  [4,6,7],
+ *  [6,7,4],
+ *  [9,10,3],
+ *  [10,12,5],
+ *  [12,14,4]
+ * ]
+ * 
+ * 思路：
+ * 组装成有序表
+ * 将每个子数组拆成两个
+ * 原数组[a,b,c]
+ * 拆成这样的两个
+ * [a,up,c], [b,down,c]，这样数组为描述方便成为边界数组
+ * 所有子数组拆完后
+ * 按边界数组第一项从小到大排序，up在前，down在后
+ * 准备两个有序表，
+ * map1: 存放统计的《高度：频次》，相同高度，每遇到一个down边界减1，
+ * map2: 存放当统计到当前坐标高度后，《当前坐标: 此时map1中的最大高度值》
+ * 统计完后看map2高度变化
+ * 假设map2 = {
+ *  <1: 4>
+ *  <2: 8>
+ *  <4: 8>
+ *  <3: 8>
+ *  <4: 8>
+ *  <6: 5>
+ *  <7: 10>
+ * 
+ * }
+ * 那么最终返回的结果就是
+ * [
+ * [1,2,4],
+ * [2,4,8],
+ * [4,6,5],
+ * [6,7,10],
+ * ]
+ * 
+ * 其实map2存放的是当前坐标所处的最大高度
+ */
+
+const getBuildingLine = matrix => {
+  const list = matrix.map(item => {
+    const [left, right, height] = item;
+    return [
+      [left,'up', height],
+      [right, 'down', height]
+    ]
+  })
+  .reduce((curr,prev) => [...curr, ...prev], [])
+  .sort((a,b) => {
+    const [pos1,flag1,height1] = a;
+    const [pos2,flag2,height2] = b;
+    if (pos1 === pos2) {
+      if (flag2 === 'up') {
+        return -1
+      } else {
+        return 1
+      }
+    } else {
+      return pos1 - pos2
+    }
+  });
+  const map1 = {};
+  const map2 = {};
+  let currMaxHeight = -1;
+  list.forEach(item => {
+    const [pos, flag, height] = item;
+    if (!map1[height]) {
+      map1[height] = 0;
+    }
+    if (flag === 'down') {
+      map1[height]--
+    } else {
+      map1[height]++;
+    }
+    const max = Object.keys(map1).filter(key=>map1[key]).sort((a,b)=> b-a )[0];
+    map2[pos]=max;
+  })
+ const lines = [];
+ const poslist = Object.keys(map2);
+ for(let i = 0; i< poslist.length;i++) {
+  const height = map2[poslist[i]];
+  if (!height ||  map1[height] > i) {
+    continue;
+  }
+  let j = -1;
+  for(j = i+1; j< poslist.length;j++) {
+    if (map2[poslist[j]] != height) {
+      break;
+    }
+  }
+  map1[height] = j;
+  lines.push([poslist[i],poslist[j],height]);
+ }
+ return lines
+}
+
+/**
+ * 平面内有n个矩形，
+ * 第i个矩形的左下角坐标为(x1[i],y1[i])
+ * 右上角坐标为(x2[i],y2[i])
+ * 如果两个或者多个矩形有公共区域则认为他们相互重叠
+ * 不考虑边界和角落
+ * 请计算出平面内重叠矩形数量最多的地方，
+ * 有多少矩形重叠
+ * 
+ * 思路：
+ * 二维空间的问题转换成一维的问题
+ * 将矩形重叠问题转换成线段重叠问题
+ * 先根据底边重叠情况找出高度上重叠最多的矩形
+ * 然后拿到这些矩形的宽度开始结尾位置
+ * 转换成线段重叠问题
+ * 
+ * 线段重叠问题处理思路：
+ * 将线段按开始位置从小到大排列
+ * 新建一个栈，用于存放当前重叠线段结束位置
+ * 如果当前线段开始位置大于栈中结束位置，将这些结束位置从栈中移除
+ * 操作过程中记录栈中数据达到的最大值的时候，就是线段重叠最多的情况
+ * 
+ * 高度重叠最多情况也可以使用相似思路
+ * 
+ */
+
+const maxCoverCount = (x1,y1,x2,y2) => {
+  const bottomLines = y1.slice().map((value, pos)=> ({
+    value,
+    pos 
+  })).sort((a,b) => a.value - b.value);
+  const heightStack = [];
+  let currentMaxHeight = [];
+  for(let i = 0;i< bottomLines.length; i++) {
+    const { value: currentbottomLine, pos } = bottomLines[i];
+    for(let j = 0;j < heightStack.length; j++) {
+      const beforeTopline = y2[heightStack[j]];
+      if(beforeTopline <= currentbottomLine) {
+        heightStack.splice(j,1)
+      }
+    }
+    heightStack.push(pos);
+    if (heightStack.length >= currentMaxHeight.length) {
+      currentMaxHeight = [...heightStack]
+    }
+  }
+  const leftLines = currentMaxHeight.map(pos=> ({
+    value: x1[pos],
+    pos
+  })).sort((a,b) => a.value - b.value);
+  const widthStack = [];
+  let currentMaxWidth = [];
+  for(let k = 0; k<leftLines.length; k++) {
+    const {value: currentLeft, pos} = leftLines[k];
+    for(let l = 0; l < widthStack.length; l++) {
+      const beforeRight = x2[widthStack[l]];
+      if (beforeRight <= currentLeft) {
+        widthStack.splice(l,1);
+      }
+    }
+    widthStack.push(pos)
+    if (widthStack.length >= currentMaxWidth.length) {
+      currentMaxWidth = [...widthStack]
+    }
+  }
+  return currentMaxWidth.length;
+ }
+
+/**
+ * 给定一个均为正数无序的数组arr,求数组中所有子数组中相加和为 K 的最长子数组长度
+ * 要求时间复杂度O(N),时间复杂度O(1)
+ * 
+ * 例arr = [1,2,1,1,1] k = 3 
+ * 返回 3
+ * 
+ * 思路：
+ * 使用窗口移动
+ * 准备box = [], 存放累计和k的子数组长度的各种情况
+ * 开始L = R = i = 0
+ * sum = 1， 数组第一个值
+ * sum < K， R 右移一个, sum+=arr[++i];
+ * 如果sum < k, 继续右移sum+=arr[++i];
+ * 如果sum == K, box.push(R -L +1), R 继续右移
+ * 如果sum > K, L右移一个，sum = sum - arr[L];
+ * 再判断sum与k关系，直到 L= R = arr.length -1;
+ * 
+ * 找出box最大值返回
+ * 
+ * 
+ */
+
+const findMaxPartSumK = (arr, k) => {
+  let L = 0;
+  let R = 0;
+  let sum = arr[0];
+  const box = [];
+  const length = arr.length;
+  while(L < length && R <length) {
+    if (sum < k) {
+     sum +=arr[++R];
+    } else if(sum === k) {
+     box.push(R-L+1);
+     sum +=arr[++R];
+    } else {
+     sum -=arr[L];
+     ++L;
+    }
+  }
+  return box.sort((a,b)=>b-a)[0]
+}
+
+/**
+ * 给定一个正负0都包含的无序数组,
+ * 求数组中所有子数组中相加和小于等于 K 的最长子数组长度
+ * 
+ * 例如arr = [3,-2,-4,0,6],K =2;
+ * 相加小于等于2的最长子数组为[3,-2,-4,0],长度为4故返回4
+ * 
+ * 方法论：可能性舍弃
+ * 
+ * 思路
+ * 先从后往前计算一下累计和，如果之前计算的大于0，不累加
+ * arr2 =  [-3,-6,-4,0,6]
+ * 对应计算的右边界为
+ * arr3 = [2,2,2,3,4]
+ * arr2就代表从当前位置往右累计能达到的最小累计和
+ * 现在对arr2进行处理，从0位置开始累计到其右边界位置的数如果满足条件
+ * 则继续往下扩到下一块的右边界，直到不符合条件，此时满足条件的右边界是k
+ * 此时记录最大长度
+ * 然后依次计算，起始位置i从1，2,3...k开始计算到k是否满足条件，满足往下扩，
+ * 不满足起始位置加1
+ * 这样相当于计算i到k这段是否有满足提交的能够继续往k之后的为扩
+ * 忽略掉i-k之间满足条件的长度，因为已经找到0-k这个大的长度
+ * 
+ */
+const findMaxPartSumk = (arr, k) => {
+  const lastPos = arr.length -1;
+  const tempList = [arr[lastPos]];
+  const tempPosList = [lastPos];
+  for(let i = lastPos -1; i>=0; i--) {
+    const curr = arr[i];
+    const beforeSmall =  tempList[0] < 0;
+    const sum = beforeSmall ? tempList[0] + curr : curr;
+    tempList.unshift(sum)
+    const pos = beforeSmall ? tempPosList[0] : i;
+    tempPosList.unshift(pos)
+  }
+  let sum = 0;
+  let len = 0;
+  let end = 0;
+  // i是窗口最左位置，end是出口最右位置的下一个位置(终止位置)
+  for(let i = 0; i<arr.length; i++){
+    /**
+     * 从i开始往右扩的尝试
+     * 以右边界为跳跃距离，
+     * 这一块满足就尝试到下一块边界
+     */
+    while(end < arr.length && sum + tempList[end] <=k) {
+      sum += tempList[end];
+      end = tempPosList[end]+1
+    }
+     /**
+     * while 循环结束后
+     *  如果以i开头的情况下
+     *  累加和<=k的最长子数组是arr[i...end-1],看这个长度能不能更新len
+     *  如果以i开头情况下
+     *  累加和<=k的最长子数组比arr[i...end-1]短，更新都不会影响len代表的值
+     */
+    len = Math.max(len, end - i);
+    if (end > i) {
+      sum -=arr[i]
+    } else {
+      end = i+1
+    }
+  }
+  return len
+}

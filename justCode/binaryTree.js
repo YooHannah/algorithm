@@ -1357,3 +1357,56 @@ const maxPath2 = head => {
     * 4. cur为当前头结点，从cur出发到叶子结点的路径上，经过的黑点一样多
     * 
     */
+
+  /**
+ * 给定一颗二叉树的头结点head
+ * 已知所有节点都不一样，返回其中最大的且符合搜索二叉树条件的最大拓扑结构大小
+ * 拓扑结构：不是子树，能连起来的结构都算
+ * 
+ * 思路：
+ * 使用拓扑记录
+ * 先求每个子树最大拓扑结构大小，再转换成跟结点最大拓扑大小
+ * 再从所以记录中求最大值
+ * 
+ */
+
+const modifyMap = (n, v, m, s) => {
+  if(!n || !m.has(n)) {
+    return 0
+  }
+  const r = m.get(n);
+  if ((s && n.value > v) || ((!s) && n.value < v)) {
+    m.delete(n);
+    return r.l+r.r + 1;
+  } else {
+    const minus = modifyMap(s ? n.right : n.left, v, m,s);
+    if(s) {
+      r.r = r.r - minus;
+    } else {
+      r.l = r.l - minus;
+    }
+    m.set(n,r);
+    return minus;
+  }
+}
+
+const posOrder = (h, map) => {
+  if(!h) {
+    return 0;
+  }
+  const ls = posOrder(h.left, map);
+  const rs = posOrder(h.right,map);
+  modifyMap(h.left,h.value,map,true);
+  modifyMap(h.right,h.value,map,false);
+  const lr = map.get(h.left);
+  const rr = map.get(h.right);
+  const lbst = lr ?lr.l + lr.r + 1:0;
+  const rbst = rr ? rr.l + rr.r + 1:0;
+  map.set(h, { l: lbst, r: rbst });
+  return Math.max(lbst + rbst + 1, Math.max(ls, rs))
+}
+
+const bstTopoSize = head => {
+  const map = new Map();
+  return posOrder(head,map)
+}

@@ -95,3 +95,63 @@ const radixSort = arr => {
 }
 
 radixSort([15,35,7,6,23,11,34]);
+
+
+/**
+ * 给定一个数组，求排序之后，相邻两数的最大差值，
+ * 要求时间复杂度O(N),且要求不能用基于比较的排序
+ * 
+ * 思路：
+ * 找出最大最小值，涵盖这两值范围，均等10分，形成10个桶
+ * 将所有数字放入10个桶中
+ * 计算每个桶中最大最小值，
+ * 让最大值和下一个桶的最小值求差，
+ * 让最小值和上一个桶的最大值求差
+ * 从里面找最大值即要求的最大差值
+ * 
+ * 原理
+ * 一个桶里面的数字差肯定小于桶的范围大小，直接忽略不计
+ * 从桶之间找最大值
+ */
+
+const findMaxMin = arr => {
+  let max = Number.MIN_SAFE_INTEGER;
+  let min = Number.MAX_VALUE;
+  arr.forEach(e=> {
+    max = Math.max(e, max);
+    min = Math.min(e, min);
+  })
+  return [max, min];
+}
+const findMaxDistance = arr => {
+  const [max, min] = findMaxMin(arr);
+  const length = max - min + 1;
+  const space = Math.floor(length / 10);
+  const bottle = [];
+  for(let i = 1; i < 11; i++) {
+    bottle[i-1] = [];
+  }
+  const firstEnd = min + space - 1;
+  for(let j = 0; j< arr.length; j++) {
+    const curr = arr[j];
+    let bottleMaxValue = firstEnd;
+    let pos = 0;
+    while(bottleMaxValue < curr) {
+      bottleMaxValue += space;
+      pos++;
+    }
+    bottle[pos].push(curr);
+  }
+  const validBottle = bottle.filter(item => item.length);
+  const maxMin = validBottle.map(list => findMaxMin(list))
+  const diffValue = [];
+  for(let m = 0; m < maxMin.length; m++) {
+    const [max, min] = maxMin[m];
+    diffValue.push(max - min);
+    if (m < maxMin.length -1) {
+      const [nextMax, nextMIn] = maxMin[m + 1];
+      diffValue.push(nextMIn - max);
+    }
+  }
+  return findMaxMin(diffValue)[0];
+}

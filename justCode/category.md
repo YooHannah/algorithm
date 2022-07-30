@@ -78,6 +78,10 @@
 [单调栈结构](https://github.com/YooHannah/algorithm/blob/master/justCode/monotonicStack.js)
 [斐波那契数列套路](https://github.com/YooHannah/algorithm/blob/master/justCode/Fibonacci.js)
 [矩阵处理相关题目](https://github.com/YooHannah/algorithm/blob/master/justCode/matrix.js)
+[字符串处理相关题目](https://github.com/YooHannah/algorithm/blob/master/justCode/str.js)
+[异或运算相关题目](https://github.com/YooHannah/algorithm/blob/master/justCode/xor.js)
+[尝试相关题目](https://github.com/YooHannah/algorithm/blob/master/justCode/try.js)
+[中位数相关题目](https://github.com/YooHannah/algorithm/blob/master/justCode/midNum.js)
 [应用思考分析类题目](https://github.com/YooHannah/algorithm/blob/master/justCode/thinking.js)
 
 

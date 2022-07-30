@@ -18,63 +18,40 @@ const generateBinaryTree = (data, i) => { // 生成一颗二叉树
 }
 // const root = generateBinaryTree(list, i);
 // console.log(root)
-const isValid = (str, exp) => {
-  // 不能有匹配符
-  if (str.includes('*') || str.includes('.')) {
-    return false
-  }
-  // 开头不能是*，连续两个不能是*
-  for(let i = 0; i<exp.length; i++) {
-    if (exp[i] === '*' && (!i || exp[i+1] === '*')) {
-      return false
+const getMaxChild = (str1, str2) => {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  let start = 0;
+  let min = 0;
+  let rest = len2;
+  const str2Book = {}
+  str2.split('').forEach(char => {
+    str2Book[char] =  str2Book[char] ? str2Book[char] + 1 : 1
+  })
+ 
+  const keys = Object.keys(str2Book);
+  for(let end = 0; end <len1; end++) {
+    let cur = str1[end];
+    if(keys.includes(cur)) {
+     str2Book[cur]--;
+     rest--
+    }
+    if (!rest) {
+     let currentRest = Object.values(str2Book).reduce((prev, curr)=> prev + curr, 0);
+     while(currentRest<=0) {
+       min = Math.min(min, end - start + 1);
+       const startcurr = str1[start];
+       console.log(startcurr, min)
+       if(keys.includes(startcurr)) {
+        str2Book[startcurr]++;
+        currentRest++;
+       }
+       start++;
+     }
+     rest = currentRest
     }
   }
-  return true
-}
-const initDpMap = (s,e) => {
-  const slen = s.length;
-  const elen = e.length;
-  const dp = (new Array(slen + 1).fill(null)).map(e => (new Array(elen + 1).fill(0)));
-  dp[slen][elen] = true;
-  for(let j = elen - 2; j > -1; j= j-2) {
-    if (e[j] != '*' && e[j + 1] == '*') {
-      dp[slen][j] = true
-    } else {
-      break;
-    }
-  }
-  if (slen > 0 && elen > 0) {
-    if (e[elen -1] === '.' || s[slen - 1] === e[elen - 1]) {
-      dp[slen -1][elen -1] = true;
-    }
-  }
-  return dp
+  return min;
 }
 
-const isMatchDpWay = (str, exp) => {
-  if (!str || !exp || !isValid(str, exp)) {
-    return false;
-  }
-  const dp = initDpMap(str,exp);
-  for(let i = str.length -1; i > -1; i--) {
-    for(let j = exp.length -2; j > -1; j--) {
-      if (exp[j + 1] != '*') {
-        dp[i][j] = (str[i] === exp[j] || exp[j] === '.') && dp[i + 1][j + 1];
-      } else {
-        let si = i;
-        while(si != str.length && (exp[j] === str[si] || exp[j] === '.')) {
-          if (dp[si][j + 2]) {
-            dp[i][j] = true;
-            break
-          }
-          si++
-        }
-        if(!dp[i][j]) {
-          dp[i][j] = dp[si][j+2]
-        }
-      }
-    }
-  }
-  return dp[0][0]
-}
-console.log(isMatchDpWay('abbbf', 'a*f'));
+console.log(getMaxChild('12345', '334'));
