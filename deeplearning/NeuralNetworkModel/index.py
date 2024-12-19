@@ -1,6 +1,11 @@
+# 单层神经网络开发
+
+
 # pip install scikit-learn
 # pip install matplotlib
 # 运行代码时注意 plt.show() 命令，会阻碍后续代码执行，得到图片结果后，关掉图片，可继续运行
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from testCases_v2 import *
