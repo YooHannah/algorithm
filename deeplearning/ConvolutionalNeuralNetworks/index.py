@@ -1,28 +1,12 @@
+# 用TensorFlow 2.x 实现的代码如下
 import tensorflow as tf
 
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import layers, models
 import matplotlib.pyplot as plt
 import numpy as np
 import h5py
 
-def convert_to_one_hot(Y, C):
-    Y = np.eye(C)[Y.reshape(-1)].T
-    return Y
-def load_dataset():
-    train_dataset = h5py.File('datasets/train_signs.h5', "r")
-    train_set_x_orig = np.array(train_dataset["train_set_x"][:]) # your train set features
-    train_set_y_orig = np.array(train_dataset["train_set_y"][:]) # your train set labels
-
-    test_dataset = h5py.File('datasets/test_signs.h5', "r")
-    test_set_x_orig = np.array(test_dataset["test_set_x"][:]) # your test set features
-    test_set_y_orig = np.array(test_dataset["test_set_y"][:]) # your test set labels
-
-    classes = np.array(test_dataset["list_classes"][:]) # the list of classes
-    
-    train_set_y_orig = train_set_y_orig.reshape((1, train_set_y_orig.shape[0]))
-    test_set_y_orig = test_set_y_orig.reshape((1, test_set_y_orig.shape[0]))
-    
-    return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
+from keras_utils import *
 
 X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_dataset()
 
@@ -125,3 +109,10 @@ for i in range(25):
   plt.imshow(X_test_orig[i])
   plt.xlabel(np.argmax(testInmages[i])) # 显示预测的标签
 plt.show()
+
+# tf.keras.utils.plot_model(): plots your graph in a nice layout. You can even save it as ".png" using SVG() if you'd like to share it on social media ;). 
+# It is saved in "File" then "Open..." in the upper bar of the notebook.# It is saved in "File" then "Open..." in the upper bar of the notebook.
+# 绘制模型结构图，并保存为PNG格式，需要额外安装绘图软件
+# brew install graphviz
+# pip install pydot graphviz
+# tf.keras.utils.plot_model(model, to_file='model.png')
