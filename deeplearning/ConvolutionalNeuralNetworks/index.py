@@ -113,3 +113,15 @@ print('image_resized shape: ', image_resized.shape)
 predictions = probability_model.predict(image_resized)
 
 print('predictions', predictions, np.argmax(predictions[0]))
+
+# 绘制前25个测试图像，显示其预测的标签
+testInmages = predictions = probability_model.predict(X_test)
+plt.figure(figsize=(10,10))
+for i in range(25):
+  plt.subplot(5,5,i+1)
+  plt.xticks([])
+  plt.yticks([])
+  plt.grid(False)
+  plt.imshow(X_test_orig[i])
+  plt.xlabel(np.argmax(testInmages[i])) # 显示预测的标签
+plt.show()
