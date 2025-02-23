@@ -1,4 +1,4 @@
-# YOLO 算法
+# YOLO 算法 进行物体识别分类
 import argparse
 import os
 import matplotlib.pyplot as plt
