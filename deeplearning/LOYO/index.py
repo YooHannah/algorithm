@@ -1,4 +1,6 @@
-# YOLO 算法 进行物体识别分类
+# YOLO 算法 进行物体识别分类, 重点理解工作原理
+# 下载YOLO 预训练模型进行测试 之后 基于TensorFlow 和keras 版本问题，已经不能顺利运行，
+# 模型预训练详见  modelTrain.py 
 import argparse
 import os
 import matplotlib.pyplot as plt
@@ -223,8 +225,6 @@ def yolo_eval(yolo_outputs, image_shape = (720., 1280.), max_boxes=10, score_thr
     classes -- tensor of shape (None,), predicted class for each box
     """
     
-    ### START CODE HERE ### 
-    
     # Retrieve outputs of the YOLO model (≈1 line) 
     # 从yolo_outputs 中获取 box_confidence, box_xy, box_wh, box_class_probs
     box_confidence, box_xy, box_wh, box_class_probs = yolo_outputs
@@ -273,7 +273,7 @@ def yolo_eval(yolo_outputs, image_shape = (720., 1280.), max_boxes=10, score_thr
 class_names = read_classes("model_data/coco_classes.txt")
 anchors = read_anchors("model_data/yolo_anchors.txt")
 image_shape = (720., 1280.) 
-yolo_model = load_model("model_data/", compile=False)
+yolo_model = load_model("model_data/yolo.h5", compile=False)
 
 yolo_model.summary()
 
