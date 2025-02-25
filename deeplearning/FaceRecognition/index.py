@@ -18,12 +18,17 @@ import tensorflow as tf
 from fr_utils import *
 from inception_blocks_v2 import *
 
+#****** pip install tensorflow-metal ******
+# 安装tensorflow-metal，用于在Mac上使用GPU， 否则无法使用Conv2D 不支持NCHW 输入数据的格式 
+# 检测是否有GPU可用
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU'))) 
+
 # In this exercise, we will be using a pre-trained model which represents ConvNet activations using a "channels first" convention, 
 # as opposed to the "channels last" convention used in lecture and previous programming assignments.
 # In other words, a batch of images will be of shape  (𝑚,𝑛𝐶,𝑛𝐻,𝑛𝑊)  instead of  (𝑚,𝑛𝐻,𝑛𝑊,𝑛𝐶) .
 # 能够将一张(3, 96, 96)的图片，变成一个128维的编码向量的模型
 FRmodel = faceRecoModel(input_shape=(3, 96, 96))
-
+# FRmodel.summary()
 print("Total Params:", FRmodel.count_params())
 # 三元损失函数
 def triplet_loss(y_true, y_pred, alpha = 0.2):
