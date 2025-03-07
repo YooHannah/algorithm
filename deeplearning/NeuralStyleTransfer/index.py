@@ -36,6 +36,9 @@ pp = pprint.PrettyPrinter(indent=4)
 model = load_vgg_model("pretrained-model/imagenet-vgg-verydeep-19.mat")
 pp.pprint(model)
 
+# 打印模型摘要
+model.summary()
+
 # 计算content cost
 def compute_content_cost(a_C, a_G):
     """

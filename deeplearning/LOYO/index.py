@@ -16,7 +16,6 @@ from keras.models import load_model, Model
 from yolo_utils import read_classes, read_anchors, generate_colors, preprocess_image, draw_boxes, scale_boxes
 from yad2k.models.keras_yolo import yolo_head, yolo_boxes_to_corners, preprocess_true_boxes, yolo_loss, yolo_body
 
-
 # Non-max suppression 处理多个重叠的框
 # box_confidence, boxes, box_class_probs 是19*19*5*85 的张量 切割后形成的3组数据，分别是置信度，框的坐标，分类的概率
 # 置信度是19*19*5*1 的张量，框的坐标是19*19*5*4 的张量，分类的概率是19*19*5*80 的张量
