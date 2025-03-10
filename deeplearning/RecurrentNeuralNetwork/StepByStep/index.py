@@ -1,6 +1,7 @@
 import numpy as np
 from rnn_utils import *
 
+# https://yoohannah.github.io/image/deepLearning/233.png
 def rnn_cell_forward(xt, a_prev, parameters):
     """
     Implements a single forward step of the RNN-cell as described in Figure (2)
@@ -27,12 +28,10 @@ def rnn_cell_forward(xt, a_prev, parameters):
     ba = parameters["ba"]
     by = parameters["by"]
     
-    ### START CODE HERE ### (≈2 lines)
     # compute next activation state using the formula given above
     a_next = np.tanh(Waa @ a_prev + Wax @ xt + ba)
     # compute output of the current cell using the formula given above
     yt_pred = softmax(Wya @ a_next + by)
-    ### END CODE HERE ###
     
     # store values you need for backward propagation in cache
     cache = (a_next, a_prev, xt, parameters)
@@ -40,7 +39,7 @@ def rnn_cell_forward(xt, a_prev, parameters):
     return a_next, yt_pred, cache
 
 
-# GRADED FUNCTION: rnn_forward
+# GRADED FUNCTION: 
 def rnn_forward(x, a0, parameters):
     """
     Implement the forward propagation of the recurrent neural network described in Figure (3).
@@ -68,8 +67,6 @@ def rnn_forward(x, a0, parameters):
     n_x, m, T_x = x.shape
     n_y, n_a = parameters["Wya"].shape
     
-    ### START CODE HERE ###
-    
     # initialize "a" and "y_pred" with zeros (≈2 lines)
     a = np.zeros((n_a, m, T_x))
     y_pred = np.zeros((n_y, m, T_x))
@@ -88,17 +85,35 @@ def rnn_forward(x, a0, parameters):
         y_pred[:,:,t] = yt_pred
         # Append "cache" to "caches" (≈1 line)
         caches.append(cache)
-        
-    ### END CODE HERE ###
+
     
     # store values needed for backward propagation in cache
     caches = (caches, x)
     
     return a, y_pred, caches
 
+### 测试
+print("--------------- rnn_forward test ---------")
+np.random.seed(1)
+x_tmp = np.random.randn(3,10,4)
+a0_tmp = np.random.randn(5,10)
+parameters_tmp = {}
+parameters_tmp['Waa'] = np.random.randn(5,5)
+parameters_tmp['Wax'] = np.random.randn(5,3)
+parameters_tmp['Wya'] = np.random.randn(2,5)
+parameters_tmp['ba'] = np.random.randn(5,1)
+parameters_tmp['by'] = np.random.randn(2,1)
+
+a_tmp, y_pred_tmp, caches_tmp = rnn_forward(x_tmp, a0_tmp, parameters_tmp)
+print("a[4][1] = \n", a_tmp[4][1])
+print("a.shape = \n", a_tmp.shape)
+print("y_pred[1][3] =\n", y_pred_tmp[1][3])
+print("y_pred.shape = \n", y_pred_tmp.shape)
+print("caches[1][1][3] =\n", caches_tmp[1][1][3])
+print("len(caches) = \n", len(caches_tmp))
 
 # GRADED FUNCTION: lstm_cell_forward
-
+# https://yoohannah.github.io/image/deepLearning/LSTM_cell.png
 def lstm_cell_forward(xt, a_prev, c_prev, parameters):
     """
     Implement a single forward step of the LSTM-cell as described in Figure (4)
@@ -236,6 +251,30 @@ def lstm_forward(x, a0, parameters):
 
     return a, y, c, caches
 
+print("---------------- LSTM_forward test ---------")
+np.random.seed(1)
+x_tmp = np.random.randn(3,10,7)
+a0_tmp = np.random.randn(5,10)
+parameters_tmp = {}
+parameters_tmp['Wf'] = np.random.randn(5, 5+3)
+parameters_tmp['bf'] = np.random.randn(5,1)
+parameters_tmp['Wi'] = np.random.randn(5, 5+3)
+parameters_tmp['bi']= np.random.randn(5,1)
+parameters_tmp['Wo'] = np.random.randn(5, 5+3)
+parameters_tmp['bo'] = np.random.randn(5,1)
+parameters_tmp['Wc'] = np.random.randn(5, 5+3)
+parameters_tmp['bc'] = np.random.randn(5,1)
+parameters_tmp['Wy'] = np.random.randn(2,5)
+parameters_tmp['by'] = np.random.randn(2,1)
+
+a_tmp, y_tmp, c_tmp, caches_tmp = lstm_forward(x_tmp, a0_tmp, parameters_tmp)
+print("a[4][3][6] = ", a_tmp[4][3][6])
+print("a.shape = ", a_tmp.shape)
+print("y[1][4][3] =", y_tmp[1][4][3])
+print("y.shape = ", y_tmp.shape)
+print("caches[1][1][1] =\n", caches_tmp[1][1][1])
+print("c[1][2][1]", c_tmp[1][2][1])
+print("len(caches) = ", len(caches_tmp))
 
 def rnn_cell_backward(da_next, cache):
     """
@@ -342,6 +381,7 @@ def rnn_backward(da, caches):
     gradients = {"dx": dx, "da0": da0, "dWax": dWax, "dWaa": dWaa,"dba": dba}
     
     return gradients
+
 
 
 def lstm_cell_backward(da_next, dc_next, cache):

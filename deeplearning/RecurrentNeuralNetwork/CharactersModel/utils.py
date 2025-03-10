@@ -85,18 +85,22 @@ def rnn_forward(X, Y, a0, parameters, vocab_size = 27):
         
         # Set x[t] to be the one-hot vector representation of the t'th character in X.
         # if X[t] == None, we just have x[t]=0. This is used to set the input for the first timestep to the zero vector. 
-        x[t] = np.zeros((vocab_size,1)) 
+        x[t] = np.zeros((vocab_size,1)) # one-hot vector 此时都是0 ，vocab_size 是27， 字母集大小
         if (X[t] != None):
+            # 除了第一个时间步，其他有实际字母值的位置都转one-hot, 在小x中，key是字母在X中的index，值对应one-hot
+            # X[t] 是字母在字母集中的位置，这里将one-hot 中相应位置置1
             x[t][X[t]] = 1
         
         # Run one step forward of the RNN
         a[t], y_hat[t] = rnn_step_forward(parameters, a[t-1], x[t])
         
         # Update the loss by substracting the cross-entropy term of this time-step from it.
+        # y_hat[t][Y[t],0] 取出y_hat[t] 上 第Y[t] 个数组，的第一个值，具体概率值，标量
+        # 单个字母的，损失计算累加
         loss -= np.log(y_hat[t][Y[t],0])
         
     cache = (y_hat, a, x)
-        
+    # 返回单个词语的损失值(一个字母加一个字母的损失)，和 单个词语的预测值，每一个字母的激活值，每一个字母的onehot值
     return loss, cache
 
 def rnn_backward(X, Y, parameters, cache):
@@ -112,13 +116,11 @@ def rnn_backward(X, Y, parameters, cache):
     gradients['db'], gradients['dby'] = np.zeros_like(b), np.zeros_like(by)
     gradients['da_next'] = np.zeros_like(a[0])
     
-    ### START CODE HERE ###
     # Backpropagate through time
     for t in reversed(range(len(X))):
         dy = np.copy(y_hat[t])
         dy[Y[t]] -= 1
         gradients = rnn_step_backward(dy, gradients, parameters, x[t], a[t], a[t-1])
-    ### END CODE HERE ###
     
     return gradients, a
 
