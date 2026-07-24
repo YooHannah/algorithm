@@ -2,3 +2,11 @@
 /html/src
 /html/package-lock.json
 /html/temp.js
+
+node_modules/
+__pycache__/
+*.pyc
+.env
+dev-logs.txt
+.DS_Store
+.ipynb_checkpoints/

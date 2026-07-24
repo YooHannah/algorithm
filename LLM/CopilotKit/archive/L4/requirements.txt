@@ -1,0 +1,23 @@
+# python package requirements file
+
+# Note to our Learners: Our courses are created at a specific point in time. The models and libraries used will naturally change over time.
+# If you download and run the notebooks locally, you should create a Python virtual environment
+# with the Python version matching the one used in the course and use this requirements.txt file to install the required Python packages.
+# Due to the wide diversity of platforms and environments, DeepLearning does not explicitly support running locally. However, if you encounter
+# issues, the course support channel is a good place to ask questions.
+
+
+# Python 3.11+ recommended. Install with: pip install -r requirements.txt
+
+copilotkit==0.1.86
+fastapi
+uvicorn
+langchain-openai
+langgraph>=1.0.8,<1.1.0
+langgraph-prebuilt<1.0.9
+python-dotenv
+ag-ui-adk
+google-adk
+jupyter
+honcho
+
