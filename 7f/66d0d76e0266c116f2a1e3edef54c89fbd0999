@@ -1,0 +1,383 @@
+LLM/CopilotKit/archive/L2/main.py
+  s_d0489004942c3c::t_01fcfcc0648a87 28 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a63436a14dde178c614405a","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Single":28}]}]}
+  h_8bb96b1faeff0a 23,27,29-32,56-58,62,84-85 gitai:{"mixed_line_ranges":[{"Single":23},{"Single":27},{"Range":[29,32]},{"Range":[56,58]},{"Single":62},{"Range":[84,85]}],"operations":[]}
+LLM/CopilotKit/archive/L2/frontend/server.ts
+  h_8bb96b1faeff0a 15 gitai:{"mixed_line_ranges":[{"Single":15}],"operations":[]}
+LLM/CopilotKit/archive/L2/frontend/src/App.tsx
+  s_84917eb5bc4ee8::t_5727c8c6e94595 3
+  s_84917eb5bc4ee8::t_4c19dc3217f083 1-2
+  s_84917eb5bc4ee8::t_f6c7f44ba36889 4-6
+LLM/CopilotKit/archive/L2/index.py
+  h_8bb96b1faeff0a 14,23,65,71,79,82,85-88,90 gitai:{"mixed_line_ranges":[{"Single":14},{"Single":65},{"Single":85},{"Single":90}],"operations":[]}
+  s_41b66a61f1f89f::t_916c769978c382 63
+  s_d0489004942c3c::t_e03ec6089260dd 41,56,66-70,72-78,80-81,83 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a63477514dde178c614408e","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Single":41},{"Single":56},{"Range":[66,70]},{"Range":[72,78]},{"Range":[80,81]},{"Single":83}]}]}
+  s_f3a52a92c70f2d::t_522e6fe200a59a 31
+  s_d0489004942c3c::t_3346b1aad1fda5 42-44,53-55
+LLM/CopilotKit/archive/L2/frontend/src/main.tsx
+  h_8bb96b1faeff0a 3,6-8
+  s_c6a4d7952ccf73::t_870347dbe8e378 10
+  s_c6a4d7952ccf73::t_fad75f1f452b3b 11-13
+.gitignore
+  s_d0489004942c3c::t_326c32e3f947a8 4-12 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a6350fc14dde178c61440d5","tool_type":"agent","tool_id":"Edit","line_ranges":[{"Range":[4,12]}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7f66d0d76e0266c116f2a1e3edef54c89fbd0999",
+  "prompts": {},
+  "humans": {
+    "h_8bb96b1faeff0a": {
+      "author": "YooHannah <1942063705@qq.com>"
+    }
+  },
+  "sessions": {
+    "s_41b66a61f1f89f": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-69a8fb36-8510-4e01-a5f5-f9906019c6b4",
+        "model": "default"
+      },
+      "human_author": "YooHannah <1942063705@qq.com>"
+    },
+    "s_84917eb5bc4ee8": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-adc9268a-8a5b-4bc5-aec7-49c19a566af9",
+        "model": "default"
+      },
+      "human_author": "YooHannah <1942063705@qq.com>"
+    },
+    "s_c6a4d7952ccf73": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-56d08224-0a93-4bf6-be3a-f49f78458c04",
+        "model": "default"
+      },
+      "human_author": "YooHannah <1942063705@qq.com>"
+    },
+    "s_d0489004942c3c": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a62da88cc06f5db5a3e6e2c",
+        "model": "Doubao-Seed-2.1-Turbo__dev"
+      },
+      "human_author": "YooHannah <1942063705@qq.com>"
+    },
+    "s_f3a52a92c70f2d": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-94270039-c5b4-4283-8700-cae2babf6235",
+        "model": "default"
+      },
+      "human_author": "YooHannah <1942063705@qq.com>"
+    }
+  },
+  "attestation_metadata": {
+    ".gitignore": [
+      {
+        "hash": "s_d0489004942c3c::t_326c32e3f947a8",
+        "line_ranges": [
+          {
+            "Range": [
+              4,
+              12
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a6350fc14dde178c61440d5",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Range": [
+                  4,
+                  12
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "LLM/CopilotKit/archive/L2/frontend/server.ts": [
+      {
+        "hash": "h_8bb96b1faeff0a",
+        "line_ranges": [
+          {
+            "Single": 15
+          }
+        ],
+        "mixed_line_ranges": [
+          {
+            "Single": 15
+          }
+        ],
+        "operations": []
+      }
+    ],
+    "LLM/CopilotKit/archive/L2/index.py": [
+      {
+        "hash": "h_8bb96b1faeff0a",
+        "line_ranges": [
+          {
+            "Single": 14
+          },
+          {
+            "Single": 23
+          },
+          {
+            "Single": 65
+          },
+          {
+            "Single": 71
+          },
+          {
+            "Single": 79
+          },
+          {
+            "Single": 82
+          },
+          {
+            "Range": [
+              85,
+              88
+            ]
+          },
+          {
+            "Single": 90
+          }
+        ],
+        "mixed_line_ranges": [
+          {
+            "Single": 14
+          },
+          {
+            "Single": 65
+          },
+          {
+            "Single": 85
+          },
+          {
+            "Single": 90
+          }
+        ],
+        "operations": []
+      },
+      {
+        "hash": "s_d0489004942c3c::t_e03ec6089260dd",
+        "line_ranges": [
+          {
+            "Single": 41
+          },
+          {
+            "Single": 56
+          },
+          {
+            "Range": [
+              66,
+              70
+            ]
+          },
+          {
+            "Range": [
+              72,
+              78
+            ]
+          },
+          {
+            "Range": [
+              80,
+              81
+            ]
+          },
+          {
+            "Single": 83
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a63477514dde178c614408e",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Single": 41
+              },
+              {
+                "Single": 56
+              },
+              {
+                "Range": [
+                  66,
+                  70
+                ]
+              },
+              {
+                "Range": [
+                  72,
+                  78
+                ]
+              },
+              {
+                "Range": [
+                  80,
+                  81
+                ]
+              },
+              {
+                "Single": 83
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "LLM/CopilotKit/archive/L2/main.py": [
+      {
+        "hash": "s_d0489004942c3c::t_01fcfcc0648a87",
+        "line_ranges": [
+          {
+            "Single": 28
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a63436a14dde178c614405a",
+            "tool_type": "agent",
+            "tool_id": "Edit",
+            "line_ranges": [
+              {
+                "Single": 28
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hash": "h_8bb96b1faeff0a",
+        "line_ranges": [
+          {
+            "Single": 23
+          },
+          {
+            "Single": 27
+          },
+          {
+            "Range": [
+              29,
+              32
+            ]
+          },
+          {
+            "Range": [
+              56,
+              58
+            ]
+          },
+          {
+            "Single": 62
+          },
+          {
+            "Range": [
+              84,
+              85
+            ]
+          }
+        ],
+        "mixed_line_ranges": [
+          {
+            "Single": 23
+          },
+          {
+            "Single": 27
+          },
+          {
+            "Range": [
+              29,
+              32
+            ]
+          },
+          {
+            "Range": [
+              56,
+              58
+            ]
+          },
+          {
+            "Single": 62
+          },
+          {
+            "Range": [
+              84,
+              85
+            ]
+          }
+        ],
+        "operations": []
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "s_d0489004942c3c": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_01fcfcc0648a87": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_326c32e3f947a8": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_4e1a2189a916ca": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_6e11a10b81f348": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_700b14c654ea08": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_7deb65cd8564f7": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_d0489004942c3c::t_e03ec6089260dd": {
+      "tool": "trae",
+      "conversation_id": "6a62da88cc06f5db5a3e6e2c",
+      "session_id": "6a62da88cc06f5db5a3e6e2c",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
