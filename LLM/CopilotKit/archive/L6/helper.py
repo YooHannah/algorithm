@@ -29,6 +29,17 @@ def get_gemini_api_key():
     load_env()
     return os.getenv("GOOGLE_API_KEY")
 
+def get_ark_api_key():
+    load_env()
+    return os.getenv("ARK_API_KEY")
+
+def get_ark_api_base():
+    load_env()
+    return os.getenv("ARK_API_BASE")
+
+def get_ark_model_name():
+    load_env()
+    return os.getenv("ARK_MODEL_NAME")
 
 def load_api_keys():
     """Load API keys from .env and set them in os.environ."""

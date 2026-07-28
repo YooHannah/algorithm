@@ -3,10 +3,14 @@
 /html/package-lock.json
 /html/temp.js
 
-node_modules/
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Environment
 .env
-dev-logs.txt
+.env.local
+
+# macOS
 .DS_Store
-.ipynb_checkpoints/

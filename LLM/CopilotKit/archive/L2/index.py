@@ -1,3 +1,12 @@
+# 本脚本主要练习 
+# 1. 声明不同模型agent 
+# 2. 通过copilotKit 在 frontend 中直接进行切换调用不同agent
+
+# 涉及前端文件
+# 1. frontend/server.ts 在前端注册agent
+# 2. frontend/src/main.tsx 在前端调用agent
+# 3. frontend/src/App.tsx 在具体组件中切换指定agent
+
 import warnings
 from fastapi import FastAPI
 
@@ -18,11 +27,14 @@ from google.adk.agents import LlmAgent
 # Simple helper that starts the server and manages port conflicts
 from helper import start_server
 from helper import load_api_keys
-from helper import install_frontend
-from helper import start_frontend
-from helper import display_app
 
+from helper import get_ark_api_key
+from helper import get_ark_api_base
+from helper import get_ark_model_name
 
+ARK_API_KEY = get_ark_api_key()
+ARK_API_BASE = get_ark_api_base()
+ARK_MODEL_NAME = get_ark_model_name()
 
 load_api_keys()
 
@@ -82,15 +94,49 @@ add_adk_fastapi_endpoint(app_adk, adk_agent, path="/")
 
 start_server(app_adk, port=8009)
 
-# # Start the frontend
-# install_frontend()
-# start_frontend(port=3002)
-# display_app(port=3002)
+#* ************************* 建一个火山引擎 ADK agent ***************************
 
-# 执行 start_server 适合在juppyter notebook 中运行
-# python-c "
-# exec(open('index.py').read())
-# import time
-# while True:
-#     time.sleep(60)
-# "
+ark_app_sdk = FastAPI()
+ark_graph = create_agent(
+    model=ChatOpenAI(
+        openai_api_key=ARK_API_KEY,
+        openai_api_base=ARK_API_BASE,
+        model_name=ARK_MODEL_NAME, # 从环境变量读取模型
+    ),
+    tools=[],
+    middleware=[CopilotKitMiddleware()],
+    checkpointer=MemorySaver(),
+    system_prompt=("You are a helpful assistant"),
+)
+ark_agent = LangGraphAGUIAgent(
+    name="ark_agent",
+    description="Ark agent for Lesson 2",
+    graph=ark_graph,
+)
+add_langgraph_fastapi_endpoint(ark_app_sdk, ark_agent, path="/")
+
+# Start the server
+start_server(ark_app_sdk, port=8010)
+
+# start_server 适合在 Jupyter Notebook 中运行（daemon 线程）
+# 在 Notebook 里，Python 进程（Kernel）一直跑着，所以 daemon 线程也会一直活着
+# 线程类型                     主程序退出时          适合场景 
+# 守护线程 ( daemon=True )     ✅ 一起被杀掉         Jupyter Notebook、临时后台任务 
+# 非守护线程 ( daemon=False )  ❌ 主程序会等它跑完     独立服务、常驻进程
+
+# 下面的循环让终端运行时服务保持活跃
+print("\n" + "="*50)
+print("✅ 所有服务已启动，按 Ctrl+C 停止")
+print("   Agent 服务: http://localhost:8002")
+print("   ADK 服务:   http://localhost:8009")
+print("   Ark 服务:   http://localhost:8010")
+print("="*50)
+
+import time
+try:
+    while True:
+        time.sleep(60)
+except KeyboardInterrupt:
+    print("\n\n🛑 服务已停止")
+    import sys
+    sys.exit(0)

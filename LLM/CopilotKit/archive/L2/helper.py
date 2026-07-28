@@ -47,6 +47,39 @@ def load_api_keys():
     else:
         print("ℹ GOOGLE_API_KEY not set (only needed for bonus sections)")
 
+    ark_key = os.getenv("ARK_API_KEY")
+    if ark_key:
+        os.environ["ARK_API_KEY"] = ark_key
+        print("✓ Ark API key loaded")
+    else:
+        print("ℹ ARK_API_KEY not set (only needed for bonus sections)")
+
+    ark_base = os.getenv("ARK_API_BASE")
+    if ark_base:
+        os.environ["ARK_API_BASE"] = ark_base
+        print("✓ Ark API base loaded")
+    else:
+        print("ℹ ARK_API_BASE not set (only needed for bonus sections)")
+        
+    ark_model_name = os.getenv("ARK_MODEL_NAME")
+    if ark_model_name:
+        os.environ["ARK_MODEL_NAME"] = ark_model_name
+        print("✓ Ark model name loaded")
+    else:
+        print("ℹ ARK_MODEL_NAME not set (only needed for bonus sections)")
+
+def get_ark_api_key():
+    load_env()
+    return os.getenv("ARK_API_KEY")
+
+def get_ark_api_base():
+    load_env()
+    return os.getenv("ARK_API_BASE")
+
+def get_ark_model_name():
+    load_env()
+    return os.getenv("ARK_MODEL_NAME")
+
 
 # ── Port scheme ──────────────────────────────────────────────────────
 # Each lesson gets dedicated ports:

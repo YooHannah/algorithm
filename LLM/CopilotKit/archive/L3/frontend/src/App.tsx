@@ -1,12 +1,29 @@
 import { z } from "zod"
-import { CopilotChat } from "@copilotkit/react-core/v2";
-import { useComponent } from "@copilotkit/react-core/v2";
 
 import { FlightCard, FlightCardProps } from "@/components/flight-card";
 import { PieChart, PieChartProps } from "@/components/pie-chart";
-
 import { useExampleSuggestions } from "@/hooks/use-example-suggestions";
+import { CopilotChat } from "@copilotkit/react-core/v2";
+import { useComponent } from "@copilotkit/react-core/v2";
 
+/************ 使用useComponent 注册组件 ************ */
+/*
+ * 将react 组件直接注册为 a generative UI tool ，在响应中直接渲染组件
+ * 注册组件[useComponent](https://docs.copilotkit.ai/generative-ui/your-components/display-only) 
+registers a React component as a tool the agent can call inside `<CopilotChat />`. 
+You define what's available; the agent picks when to use it.
+useComponent({
+  name: "component_name",
+  description: "description for the agent to know about this component",
+  parameters: z.object({ ... }),
+  render: MyComponent,
+});
+
+- `name` (required `string`): tool name exposed to the model.
+- `description` (optional `string`): tells the model when to call this tool.
+- `parameters` (optional Zod schema): structured props passed in as arguments.
+- `render` (required): a React component (rendered as `<Component {...args} />`), or a function receiving `{ args, status }` for custom rendering (loading states, wrappers, conditional display).
+ */
 export default function App() {
 
   // 🪁 Register a component that shows the name of the user

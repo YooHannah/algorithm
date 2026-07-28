@@ -1,9 +1,14 @@
-import { z } from "zod"
-import { CopilotChat, useAgent, useFrontendTool } from "@copilotkit/react-core/v2";
 import { useState } from "react";
+import { z } from "zod"
+
 import { TodoAppLayout } from "@/components/todo-app-layout";
 import { TodoList } from "@/components/todo-list";
+import { CopilotChat, useAgent, useFrontendTool } from "@copilotkit/react-core/v2";
 
+/**
+ * useAgent() gives you a live handle to the agent's shared state: agent.state.todos reflects the current list, and agent.setState({ todos: updated }) pushes changes back.
+ * useFrontendTool registers a tool that runs in the browser — the agent calls it like any backend tool, but the handler executes client-side and can update React state directly.
+ */
 export default function App() {
   const [todosOpen, setTodosOpen] = useState(false);
 
