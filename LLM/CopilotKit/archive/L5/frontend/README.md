@@ -53,3 +53,33 @@ Quality depends on the connected MCP apps and how well the agent selects them.
 质量取决于所连接的 MCP 应用程序，以及代理程序选择这些应用程序的精准程度。
 Requires stronger trust, permissions, and integration guardrails.
 这需要更强的信任机制、权限管理，以及更严格的集成规范。
+
+The MCP Apps Specification
+MCP 应用程序规范¶
+MCP Apps are an extension to the Model Context Protocol that lets MCP servers deliver interactive UI to supported hosts.
+MCP 应用程序是模型上下文协议的扩展，它使得 MCP 服务器能够向支持的设备提供交互式用户界面。
+
+The architecture has three parts:
+这种架构由三部分组成：
+
+Server: exposes tools and UI resources.
+服务器：提供工具和用户界面资源。
+Host: embeds the UI in a sandboxed iframe and proxies communication.
+主持人：将用户界面嵌入到沙盒中的 iframe 中，并负责代理双方的通信过程。
+View: the app running inside the iframe.
+视图：在 iframe 内部运行的应用程序。
+A key design point is progressive enhancement: if the host supports MCP Apps, the tool renders rich UI; if not, it still works as a normal MCP tool with text output.
+一个重要的设计原则是渐进式增强：如果主机支持 MCP 应用程序，那么工具会呈现丰富的用户界面；否则，它仍然可以作为普通的 MCP 工具使用，仅提供文本输出。
+
+CopilotKit handles the hosting — you just point it at an MCP server URL.
+CopilotKit 负责托管工作——你只需要将其指向一个 MCP 服务器的 URL 地址即可。
+
+[ the official repository of MCP App examples.](https://github.com/modelcontextprotocol/ext-apps/tree/main/examples)
+
+注意：开放生成的用户界面是不可预测的
+
+Because the agent generates the UI from scratch on every request, results may not match what you expect on the first try. You may need to iterate on the prompt a few times before the diagram looks the way you want.
+因为代理在每次请求时都会从零开始生成用户界面，所以结果可能不会完全符合你的预期。你可能需要多次调整提示语，直到得到你想要的效果。
+
+This is one of the core trade-offs of fully open Generative UI: you get maximum flexibility, but you sacrifice consistency and predictability. For UIs that need to be reliable every time, controlled or declarative approaches are the better fit.
+这是完全开放式的生成式用户界面所面临的核心权衡之一：虽然可以获得最大的灵活性，但必须牺牲一致性和可预测性。对于那些需要始终保持可靠性的用户界面来说，采用控制性或声明式的方法更为合适。
