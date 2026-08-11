@@ -107,7 +107,7 @@ overrides==7.7.0
 packaging==24.1
 pandas==2.2.2
 pathlib==1.0.1
-pillow==10.3.0
+pillow==12.1.1
 posthog==3.5.0
 protobuf==4.25.3
 prov==2.0.1
