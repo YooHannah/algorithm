@@ -22,9 +22,10 @@ CopilotKit 会自动为代理添加 MCP 应用程序识别功能，从而在运�
  */
 const runtime = new CopilotRuntime({
   agents: { default: appAgent },
+  // Make a card with an animation of raining taco emojis
   openGenerativeUI: true, // 启用开放生成式UI 代理可以生成任意类型的用户界面——包括 HTML、CSS、JavaScript 等代码，并可以直接在聊天界面中展示
   mcpApps: { // 注册 MCP 应用程序
-    servers: [
+    servers: [ // Show me a simple network diagram of three routers, two laptops and a server using excalidraw
       {
         type: "http",
         url: "https://mcp.excalidraw.com", // <- Exalidraw MCP Server

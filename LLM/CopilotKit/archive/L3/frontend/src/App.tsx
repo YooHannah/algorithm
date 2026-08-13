@@ -3,8 +3,8 @@ import { z } from "zod"
 import { FlightCard, FlightCardProps } from "@/components/flight-card";
 import { PieChart, PieChartProps } from "@/components/pie-chart";
 import { useExampleSuggestions } from "@/hooks/use-example-suggestions";
-import { CopilotChat } from "@copilotkit/react-core/v2";
-import { useComponent } from "@copilotkit/react-core/v2";
+import { CopilotChat, useCopilotKit } from "@copilotkit/react-core/v2";
+import { useComponent, useAgent } from "@copilotkit/react-core/v2";
 
 /************ 使用useComponent 注册组件 ************ */
 /*
@@ -25,6 +25,8 @@ useComponent({
 - `render` (required): a React component (rendered as `<Component {...args} />`), or a function receiving `{ args, status }` for custom rendering (loading states, wrappers, conditional display).
  */
 export default function App() {
+  const agent = useAgent();
+  console.log('agent', agent?.agent?.messages);
 
   // 🪁 Register a component that shows the name of the user
   useComponent({
@@ -53,6 +55,8 @@ export default function App() {
   // 🪁 Add suggestions to our CopilotChat, will display through buttons
   useExampleSuggestions();
 
-  return <CopilotChat />;
+  return <>
+  <CopilotChat />
+  </>;
 
 };
