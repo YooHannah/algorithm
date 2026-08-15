@@ -2,6 +2,7 @@
 /html/src
 /html/package-lock.json
 /html/temp.js
+/log
 
 # Python
 __pycache__/
@@ -14,3 +15,5 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+
