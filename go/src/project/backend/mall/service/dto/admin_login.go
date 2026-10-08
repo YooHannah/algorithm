@@ -37,6 +37,16 @@ type CheckCaptchaDtoResp struct {
 	Expire int64  `json:"expire"`
 }
 
+type GetSmsVerifyCodeReq struct {
+	Scene  string `json:"scene" form:"scene"` // 场景，1：登录，2：注册 3.修改密码
+	Phone  string `json:"phone" form:"phone"`
+	Ticket string `json:"ticket" form:"ticket"`
+}
+
+type GetSmsVerifyCodeResp struct {
+	Code string `json:"code"`
+}
+
 type MobilePasswordLoginReq struct {
 	Phone    string `json:"phone"`
 	Password string `json:"password"`
@@ -44,6 +54,28 @@ type MobilePasswordLoginReq struct {
 }
 
 type MobilePasswordLoginDtoResp struct {
+	Token string       `json:"token"`
+	User  UserInfoResp `json:"user"`
+}
+
+type MobilePhoneLoginReq struct {
+	Scene      string `json:"scene"` // 场景，1：登录，2：注册 3.修改密码
+	Phone      string `json:"phone"`
+	VerifyCode string `json:"verify_code"`
+}
+
+type MobilePhoneLoginDtoResp struct {
+	Token string       `json:"token"`
+	User  UserInfoResp `json:"user"`
+}
+
+type LarkQrLoginReq struct {
+	AppCode     int32  `json:"app_code"`
+	Code        string `json:"code"`
+	RedirectUrl string `json:"redirect_url"`
+}
+
+type LarkQrLoginDtoResp struct {
 	Token string       `json:"token"`
 	User  UserInfoResp `json:"user"`
 }

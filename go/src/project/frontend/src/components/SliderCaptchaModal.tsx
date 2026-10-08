@@ -51,7 +51,11 @@ export default function SliderCaptchaModal({ onClose, onVerified }: Props) {
   }, [])
 
   // 弹窗每次挂载都获取新验证码（关闭即卸载，天然防止复用过期码）
+  // StrictMode 开发态会双调用 effect，用 ref 守卫保证只请求一次
+  const didInitCaptcha = useRef(false)
   useEffect(() => {
+    if (didInitCaptcha.current) return
+    didInitCaptcha.current = true
     void loadCaptcha()
   }, [loadCaptcha])
 

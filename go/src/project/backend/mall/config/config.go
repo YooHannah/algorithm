@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/goccy/go-yaml"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/spf13/viper"
@@ -25,9 +26,12 @@ var (
 )
 
 type Config struct {
-	Server Server `yaml:"server"`
-	Mysql  Mysql  `yaml:"mysql"`
-	Redis  Redis  `yaml:"redis"`
+	BizConf BizConf           `yaml:"biz_conf"`
+	Server  Server            `yaml:"server"`
+	Mysql   Mysql             `yaml:"mysql"`
+	Redis   Redis             `yaml:"redis"`
+	AppConf map[int32]AppConf `yaml:"app_conf"`
+	Storage Storage           `yaml:"storage"`
 }
 
 type Server struct {
@@ -63,6 +67,33 @@ type Redis struct {
 	MaxOpen int    `yaml:"max_open"`
 }
 
+// 定义单个 App 的配置
+type AppConf struct {
+	AppType   string `yaml:"app_type"`
+	AppName   string `yaml:"app_name"`
+	AppID     string `yaml:"app_id"`
+	AppSecret string `yaml:"app_secret"`
+}
+
+type BizConf struct {
+	LarkGroupID string `yaml:"lark_group_id"`
+}
+
+type Storage struct {
+	SecretID  string `yaml:"secret_id"`
+	SecretKey string `yaml:"secret_key"`
+	AppID     string `yaml:"app_id"`
+	Bucket    Bucket `yaml:"bucket"`
+}
+
+type Bucket struct {
+	Region     string            `yaml:"region"`
+	BucketName string            `yaml:"bucket_name"`
+	Domain     string            `yaml:"domain"`
+	CdnDomain  string            `yaml:"cdn_domain"`
+	Paths      map[string]string `yaml:"paths"`
+}
+
 func init() {
 	flag.StringVar(&localConfigPath, "c", ServerName+"_local.yml", "default config path")
 	flag.StringVar(&etcdAddr, "r", os.Getenv("ETCD_ADDR"), "default consul address")
@@ -72,20 +103,20 @@ func InitConfig() *Config {
 	var (
 		err      error
 		tempConf = &Config{}
-		vipConf  = viper.New()
+		// vipConf  = viper.New()
 	)
 
 	flag.Parse()
 
 	// etcd地址存在，优先使用etcd的配置
-	if etcdAddr != "" {
-		fmt.Println(">>> etcd address: ", etcdAddr)
-		tempConf, err = getFromRemoteAndWatchUpdate(vipConf)
-		if err != nil {
-			panic(err)
-		}
-		return tempConf
-	}
+	// if etcdAddr != "" {
+	// 	fmt.Println(">>> etcd address: ", etcdAddr)
+	// 	tempConf, err = getFromRemoteAndWatchUpdate(vipConf)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	return tempConf
+	// }
 
 	// 从本地获取配置
 	fmt.Println(">>> local config path: ", localConfigPath)
@@ -106,7 +137,9 @@ func getFromRemoteAndWatchUpdate(v *viper.Viper) (*Config, error) {
 	}
 
 	// 反序列化到结构体
-	if err := v.Unmarshal(&tempConf); err != nil {
+	if err := v.Unmarshal(&tempConf, func(config *mapstructure.DecoderConfig) {
+		config.TagName = "yaml"
+	}); err != nil {
 		return nil, err
 	}
 

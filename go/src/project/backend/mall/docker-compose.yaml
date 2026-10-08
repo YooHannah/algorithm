@@ -1,4 +1,3 @@
-version: '3.8'
 services:
 
   mysql:
@@ -44,6 +43,20 @@ services:
       - ETCD_SERVERS=http://etcd:2379  # 关键修改：使用etcd的服务名进行连接
     depends_on:
       - etcd
+  edu_mall_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edu-mall-backend
+    restart: unless-stopped
+    ports:
+      - "8088:8088"  # 根据你的应用实际端口调整
+    environment:
+      - TZ=Asia/Shanghai
+      - ETCD_ADDR=http://127.0.0.1:2379
+    working_dir: /data/wwwRoot
+    command: ["./edu.mall.backend"]
+    network_mode: "host"  # host模式
 
 volumes:
   etcd_data:

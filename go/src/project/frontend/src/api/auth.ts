@@ -11,9 +11,10 @@ export interface LoginResult {
 }
 
 export interface SendCodeResult {
-  sent: boolean
-  /** 仅 Mock 模式返回，方便联调演示 */
-  debugCode?: string
+  code: number
+  msg: string
+  err_msg: string
+  data: null
 }
 
 /* ------------------------------ 滑块验证码 ------------------------------ */
@@ -50,19 +51,17 @@ export interface CheckCaptchaResult {
   expire: number
 }
 
-export interface QrTicket {
-  ticket: string
-  /** 二维码内容（飞书授权地址） */
-  url: string
-  expiresIn: number
-}
-
-export type QrStatus = 'WAITING' | 'SCANNED' | 'CONFIRMED' | 'EXPIRED'
-
-export interface QrStatusResult {
-  status: QrStatus
-  token?: string
-  userName?: string
+/** 用户信息（GET /v1/user/info 响应，与后端 dto.UserInfoResp 对齐） */
+export interface UserInfo {
+  user_id: number
+  name: string
+  nick_name: string
+  mobile: string
+  sex: number
+  lark_open_id: string
+  status: number
+  create_at: number
+  update_at: number
 }
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
@@ -87,31 +86,59 @@ export async function loginByPassword(
   password: string,
   ticket: string,
 ): Promise<LoginResult> {
-  console.log('loginByPassword', phone, password, ticket, USE_MOCK)
-  // if (USE_MOCK) {
-  //   await delay(500)
-  //   if (password === 'error') {
-  //     throw new Error('账号或密码错误')
-  //   }
-  //   return { token: `mock-token-${Date.now()}`, userName: `用户${phone.slice(-4)}` }
-  // }
-  const res = await request<MobilePasswordLoginResp>(`${API_PREFIX}/verify/mobile/password`, {
+  if (USE_MOCK) {
+    await delay(500)
+    if (password === 'error') {
+      throw new Error('账号或密码错误')
+    }
+    return { token: `mock-token-${Date.now()}`, userName: `用户${phone.slice(-4)}` }
+  }
+  const res = await request<MobilePasswordLoginResp>(`${API_PREFIX}/login/mobile/password`, {
     method: 'POST',
     body: JSON.stringify({ phone, password, ticket }),
   })
   return { token: res.token, userName: res.user.name }
 }
 
+/**
+ * 获取当前登录用户信息
+ * GET /api/mall/admin/v1/user/info
+ * 需先登录并保存 token，请求由 request 层自动在 header 携带 token。
+ */
+export async function getUserInfo(): Promise<UserInfo> {
+  if (USE_MOCK) {
+    await delay(300)
+    const now = Date.now()
+    return {
+      user_id: 57,
+      name: 'admin',
+      nick_name: '管理员',
+      mobile: '11111111111',
+      sex: 1,
+      lark_open_id: '',
+      status: 1,
+      create_at: now,
+      update_at: now,
+    }
+  }
+  return request<UserInfo>(`${API_PREFIX}/info`, { method: 'GET' })
+}
+
 /* ------------------------------- 验证码登录 ------------------------------- */
 
-export async function sendSmsCode(phone: string, ticket?: string): Promise<SendCodeResult> {
+export async function sendSmsCode(phone: string, ticket?: string, scene = 'login'): Promise<SendCodeResult> {
   if (USE_MOCK) {
     await delay(400)
-    return { sent: true, debugCode: '123456' }
+    return { code: 200, msg: 'success', err_msg: '123456', data: null }
   }
-  return request<SendCodeResult>(`${API_PREFIX}/verify/smscode`, {
-    method: 'POST',
-    body: JSON.stringify({ phone, ticket }),
+  // GET 请求参数需拼到 query string（放 body 不会被 BindQuery 读取）。
+  const query = new URLSearchParams({
+    scene,
+    phone,
+    ...(ticket ? { ticket } : {}),
+  }).toString()
+  return request<SendCodeResult>(`${API_PREFIX}/verify/smscode?${query}`, {
+    method: 'GET',
   })
 }
 
@@ -123,52 +150,109 @@ export async function loginByCode(phone: string, code: string): Promise<LoginRes
     }
     return { token: `mock-token-${Date.now()}`, userName: `用户${phone.slice(-4)}` }
   }
-  return request<LoginResult>(`${API_PREFIX}/login/sms`, {
+  return request<LoginResult>(`${API_PREFIX}/login/mobile/phone`, {
     method: 'POST',
-    body: JSON.stringify({ phone, code }),
+    body: JSON.stringify({ phone, verify_code: code, scene: 'login' }),
   })
 }
 
-/* ------------------------------ 飞书扫码登录 ------------------------------ */
+/* --------------------------- 飞书扫码登录换登录态 --------------------------- */
 
-/** Mock：ticket -> 二维码生成时间戳 */
-const qrCreatedAt = new Map<string, number>()
-
-export async function createLoginQr(): Promise<QrTicket> {
-  if (USE_MOCK) {
-    await delay(200)
-    const ticket = `mock_ticket_${Math.random().toString(36).slice(2, 10)}`
-    qrCreatedAt.set(ticket, Date.now())
-    return {
-      ticket,
-      url: `https://accounts.feishu.cn/oauth/scan?ticket=${ticket}`,
-      expiresIn: 120,
-    }
+/** POST /login/Lark/qrcode 响应（结构与 MobilePasswordLoginDtoResp 对齐） */
+interface LarkQrLoginResp {
+  token: string
+  user: {
+    user_id: number
+    name: string
   }
-  return request<QrTicket>(`${API_PREFIX}/login/feishu/qrcode`, { method: 'POST' })
 }
 
-export async function getQrStatus(ticket: string): Promise<QrStatusResult> {
-  if (USE_MOCK) {
-    await delay(150)
-    const createdAt = qrCreatedAt.get(ticket) ?? Date.now()
-    const elapsed = Date.now() - createdAt
-    if (elapsed >= 120_000) {
-      return { status: 'EXPIRED' }
-    }
-    // 演示：约 5s 变为已扫码，约 8s 自动确认登录
-    if (elapsed < 5000) {
-      return { status: 'WAITING' }
-    }
-    if (elapsed < 8000) {
-      return { status: 'SCANNED' }
-    }
-    return { status: 'CONFIRMED', token: `mock-token-${Date.now()}`, userName: '飞书用户' }
-  }
-  return request<QrStatusResult>(
-    `${API_PREFIX}/login/feishu/qrcode?ticket=${encodeURIComponent(ticket)}`,
-    { method: 'GET' },
-  )
+/**
+ * 飞书扫码授权回调后，用 OAuth code 向后端换取本系统登录态。
+ * POST /api/mall/admin/v1/user/login/Lark/qrcode
+ * @param code 飞书 302 回调在 query 中携带的授权码（5 分钟内一次性有效）
+ */
+export async function larkQrLogin(req: {
+  AppCode: number
+  Code: string
+  RedirectUrl: string
+}): Promise<LoginResult> {
+  const res = await request<LarkQrLoginResp>(`${API_PREFIX}/login/Lark/qrcode`, {
+    method: 'POST',
+    body: JSON.stringify({
+      app_code: req.AppCode,
+      code: req.Code,
+      redirect_url: req.RedirectUrl,
+    }),
+  })
+  return { token: res.token, userName: res.user.name }
+}
+
+/* ----------------------------- 飞书账号绑定 ----------------------------- */
+
+/** POST /user/bind/lark 响应 */
+interface BindLarkResp {
+  lark_open_id: string
+}
+
+/**
+ * 已登录用户在个人信息弹窗扫码后，用 OAuth code 将飞书账号绑定到当前管理员。
+ * POST /api/mall/admin/v1/user/bind/lark
+ * @param code 飞书 302 回调在 query 中携带的授权码（一次性有效）
+ */
+export async function bindLark(req: {
+  appCode: number
+  code: string
+  redirectUrl: string
+}): Promise<{ larkOpenId: string }> {
+  const res = await request<BindLarkResp>(`${API_PREFIX}/bind/lark`, {
+    method: 'POST',
+    body: JSON.stringify({
+      app_code: req.appCode,
+      code: req.code,
+      redirect_url: req.redirectUrl,
+    }),
+  })
+  return { larkOpenId: res.lark_open_id }
+}
+
+/**
+ * 已登录用户解除当前账号的飞书绑定。
+ * POST /api/mall/admin/v1/user/bind/unlark
+ */
+export async function unbindLark(): Promise<void> {
+  await request<null>(`${API_PREFIX}/bind/unlark`, { method: 'POST' })
+}
+
+/* ------------------------------- 登出 / 改密 ------------------------------- */
+
+/**
+ * 管理员登出，使当前 token 失效。
+ * POST /api/mall/admin/v1/user/logout
+ */
+export async function logout(): Promise<void> {
+  await request<null>(`${API_PREFIX}/logout`, { method: 'POST' })
+}
+
+/**
+ * 已登录管理员通过短信验证码重置密码。
+ * POST /api/mall/admin/v1/user/password/reset
+ */
+export async function updatePassword(req: {
+  mobile: string
+  code: string
+  newPassword: string
+  confirmPassword: string
+}): Promise<void> {
+  await request<null>(`${API_PREFIX}/password/reset`, {
+    method: 'POST',
+    body: JSON.stringify({
+      mobile: req.mobile,
+      code: req.code,
+      new_password: req.newPassword,
+      confirm_password: req.confirmPassword,
+    }),
+  })
 }
 
 /* --------------------------- 滑块验证码（真实接口） --------------------------- */

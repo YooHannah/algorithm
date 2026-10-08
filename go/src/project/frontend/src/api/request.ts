@@ -19,8 +19,9 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   }
+  // 后端 AdminAuthMiddleware 从名为 token 的请求头读取（consts.AdminTokenKey="token"）
   if (token) {
-    headers.Authorization = `Bearer ${token}`
+    headers.token = token
   }
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers })

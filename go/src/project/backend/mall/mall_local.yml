@@ -23,3 +23,33 @@ redis:
   db_index: 0
   max_idle: 2
   max_open: 10
+
+biz_conf:
+  lark_group_id: 
+
+storage:
+  secret_id: ""
+  secret_key: ""
+  region: "ap-guangzhou"
+  app_id: "1255575167"
+  bucket:
+    region: "ap-guangzhou"
+    bucket_name: "onlyfortest-1255575167"
+    domain: "https://onlyfortest-1255575167.cos.ap-guangzhou.myqcloud.com"
+    cdn_domain: "https://onlyfortest-1255575167.cos.ap-guangzhou.myqcloud.com"
+    paths:
+      course: "/course/dev"
+      lesson: "/lesson/dev"
+      intro: "/intro/dev"
+
+app_conf:
+  1000:
+    app_type: official
+    app_name: 公众号
+    app_id: wxb5c0d7c0c0c0c0c0c
+    app_secret: 
+  2000:
+    app_type: lark
+    app_name: 飞书
+    app_id: cli_a904603e58e29bc0
+    app_secret: 

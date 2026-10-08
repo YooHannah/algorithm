@@ -4,6 +4,13 @@ database:
   db: "mysql"
   tables:
   - admin_user
+  - permission
+  - role
+  - role_permission
+  - admin_user_role
+  - lesson_category
+  - lessons
+  - resource_upload_files
   # 指定生成的查询代码文件的输出目录
   outPath: "./adaptor/repo/query"
   # 指定查询代码的主文件名 gen.go

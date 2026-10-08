@@ -45,11 +45,9 @@ export default function CodeLogin({ onSuccess }: Props) {
     setCaptchaVisible(false)
     setSending(true)
     try {
-      const res = await sendSmsCode(phone, ticket)
+      await sendSmsCode(phone, ticket)
       setCountdown(60)
-      setHint(
-        res.debugCode ? `验证码已发送（演示码：${res.debugCode}）` : '验证码已发送，请注意查收',
-      )
+      setHint('验证码已发送，请注意查收')
     } catch (err) {
       setError(err instanceof Error ? err.message : '验证码发送失败')
     } finally {

@@ -17,15 +17,29 @@ import (
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:        db,
-		AdminUser: newAdminUser(db, opts...),
+		db:                 db,
+		AdminUser:          newAdminUser(db, opts...),
+		AdminUserRole:      newAdminUserRole(db, opts...),
+		Lesson:             newLesson(db, opts...),
+		LessonCategory:     newLessonCategory(db, opts...),
+		Permission:         newPermission(db, opts...),
+		ResourceUploadFile: newResourceUploadFile(db, opts...),
+		Role:               newRole(db, opts...),
+		RolePermission:     newRolePermission(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AdminUser adminUser
+	AdminUser          adminUser
+	AdminUserRole      adminUserRole
+	Lesson             lesson
+	LessonCategory     lessonCategory
+	Permission         permission
+	ResourceUploadFile resourceUploadFile
+	Role               role
+	RolePermission     rolePermission
 }
 
 func (q *Query) Available() bool { return q.db != nil }
@@ -34,8 +48,15 @@ func (q *Query) UnderlyingDB() *gorm.DB { return q.db }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		AdminUser: q.AdminUser.clone(db),
+		db:                 db,
+		AdminUser:          q.AdminUser.clone(db),
+		AdminUserRole:      q.AdminUserRole.clone(db),
+		Lesson:             q.Lesson.clone(db),
+		LessonCategory:     q.LessonCategory.clone(db),
+		Permission:         q.Permission.clone(db),
+		ResourceUploadFile: q.ResourceUploadFile.clone(db),
+		Role:               q.Role.clone(db),
+		RolePermission:     q.RolePermission.clone(db),
 	}
 }
 
@@ -49,18 +70,39 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:        db,
-		AdminUser: q.AdminUser.replaceDB(db),
+		db:                 db,
+		AdminUser:          q.AdminUser.replaceDB(db),
+		AdminUserRole:      q.AdminUserRole.replaceDB(db),
+		Lesson:             q.Lesson.replaceDB(db),
+		LessonCategory:     q.LessonCategory.replaceDB(db),
+		Permission:         q.Permission.replaceDB(db),
+		ResourceUploadFile: q.ResourceUploadFile.replaceDB(db),
+		Role:               q.Role.replaceDB(db),
+		RolePermission:     q.RolePermission.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AdminUser *adminUserDo
+	AdminUser          *adminUserDo
+	AdminUserRole      *adminUserRoleDo
+	Lesson             *lessonDo
+	LessonCategory     *lessonCategoryDo
+	Permission         *permissionDo
+	ResourceUploadFile *resourceUploadFileDo
+	Role               *roleDo
+	RolePermission     *rolePermissionDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AdminUser: q.AdminUser.WithContext(ctx),
+		AdminUser:          q.AdminUser.WithContext(ctx),
+		AdminUserRole:      q.AdminUserRole.WithContext(ctx),
+		Lesson:             q.Lesson.WithContext(ctx),
+		LessonCategory:     q.LessonCategory.WithContext(ctx),
+		Permission:         q.Permission.WithContext(ctx),
+		ResourceUploadFile: q.ResourceUploadFile.WithContext(ctx),
+		Role:               q.Role.WithContext(ctx),
+		RolePermission:     q.RolePermission.WithContext(ctx),
 	}
 }
 

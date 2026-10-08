@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { loginByPassword, type LoginResult } from '../api/auth'
+
 import { IconPhone, IconLock, IconEye, IconEyeOff } from './Icons'
 import SliderCaptchaModal from './SliderCaptchaModal'
+import ResetPasswordModal from './ResetPasswordModal'
+
+import { loginByPassword, type LoginResult } from '../api/auth'
 
 interface Props {
   onSuccess: (data: LoginResult) => void
@@ -16,6 +19,8 @@ export default function PasswordLogin({ onSuccess }: Props) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [captchaVisible, setCaptchaVisible] = useState(false)
+  // 忘记密码弹窗
+  const [resetPwdVisible, setResetPwdVisible] = useState(false)
 
   // 点击登录：先做前端校验，通过后弹出滑块验证码
   const handleSubmit = (e: FormEvent) => {
@@ -40,6 +45,7 @@ export default function PasswordLogin({ onSuccess }: Props) {
     try {
       onSuccess(await loginByPassword(phone, password, ticket))
     } catch (err) {
+      console.error(err)
       setError(err instanceof Error ? err.message : '登录失败，请重试')
     } finally {
       setLoading(false)
@@ -86,6 +92,16 @@ export default function PasswordLogin({ onSuccess }: Props) {
           </button>
         </div>
 
+        <div className="login-form__row">
+          <button
+            type="button"
+            className="login-form__forget"
+            onClick={() => setResetPwdVisible(true)}
+          >
+            忘记密码？
+          </button>
+        </div>
+
         {error && <p className="form-error">{error}</p>}
 
         <button className="submit-btn" type="submit" disabled={loading}>
@@ -97,6 +113,14 @@ export default function PasswordLogin({ onSuccess }: Props) {
         <SliderCaptchaModal
           onClose={() => setCaptchaVisible(false)}
           onVerified={handleCaptchaVerified}
+        />
+      )}
+
+      {resetPwdVisible && (
+        <ResetPasswordModal
+          mobile=""
+          onClose={() => setResetPwdVisible(false)}
+          onSuccess={() => setError('密码已重置，请使用新密码登录')}
         />
       )}
     </>
