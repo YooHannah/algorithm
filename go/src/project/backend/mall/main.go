@@ -1,0 +1,99 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"mall/adaptor"
+	"mall/config"
+	"mall/router"
+	"mall/utils/logger"
+
+	"github.com/go-redis/redis"
+	"github.com/samber/lo"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
+
+func main() {
+	conf := config.InitConfig()
+	fmt.Println(">>> config: ", conf)
+	logger.SetLevel(conf.Server.LogLevel)
+
+	dbClient, err := initMysql(&conf.Mysql)
+	handleErr(err)
+	logger.Debug("mysql connect success")
+	fmt.Println(">>> Mysql start success", dbClient.Statement)
+
+	rdsClient, err := initRedis(&conf.Redis)
+	handleErr(err)
+	logger.Debug("client connect success")
+	fmt.Println(">>> Redis start success", rdsClient.Options())
+
+	startServer(conf, dbClient, rdsClient).Run()
+}
+
+func startServer(conf *config.Config, db *gorm.DB, redis *redis.Client) *router.App {
+	return router.NewApp(conf.Server.HttpPort,
+		router.NewRouter(
+			conf,
+			adaptor.NewAdaptor(conf, db, redis),
+			func() error {
+				err := func() error {
+					pingDb, err := db.DB()
+					handleErr(err)
+					return pingDb.Ping()
+				}()
+				if err != nil {
+					return errors.New("mysql connect failed")
+				}
+				return redis.Ping().Err()
+			},
+		),
+	)
+}
+
+func initRedis(conf *config.Redis) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:         conf.Addr,
+		Password:     conf.PWD,
+		DB:           conf.DBIndex,
+		MinIdleConns: conf.MaxIdle,
+		PoolSize:     conf.MaxOpen,
+	})
+	if r, _ := client.Ping().Result(); r != "PONG" {
+		return nil, errors.New("redis connect failed")
+	}
+	return client, nil
+}
+
+func initMysql(conf *config.Mysql) (*gorm.DB, error) {
+	conf.MaxIdle = lo.Max([]int{conf.MaxIdle + 1, 5})
+	conf.MaxOpen = lo.Max([]int{conf.MaxOpen + 1, 10})
+	dsn := conf.GetDsn()
+	fmt.Println(">>> Mysql dsn: ", dsn)
+
+	db, err := gorm.Open(mysql.Open(dsn))
+	if err != nil {
+		fmt.Println(">>> Mysql connect failed: ", err)
+		return nil, err
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		fmt.Println(">>> Mysql db connect failed: ", err)
+		return nil, err
+	}
+	if err = sqlDB.Ping(); err != nil {
+		fmt.Println(">>> Mysql db ping failed: ", err)
+		return nil, err
+	}
+
+	sqlDB.SetMaxIdleConns(conf.MaxIdle)
+	sqlDB.SetMaxOpenConns(conf.MaxOpen)
+	return db, nil
+}
+
+func handleErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
