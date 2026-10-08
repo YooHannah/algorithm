@@ -1,0 +1,604 @@
+/* ============================ Reset & Base ============================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #262626;
+  background: #f6f6f4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ============================ Page Layout ============================ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  position: relative;
+}
+
+.login-card {
+  width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 44px rgba(31, 35, 41, 0.08);
+  padding: 40px 40px 36px;
+}
+
+/* ============================ Header ============================ */
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-title {
+  margin-top: 14px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2329;
+  letter-spacing: 1px;
+}
+
+.login-subtitle {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #8a8f99;
+}
+
+/* ============================ Tabs ============================ */
+.login-tabs {
+  display: flex;
+  margin: 28px 0 26px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 0 4px 12px;
+  font-size: 14px;
+  color: #6b7280;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.login-tab:hover {
+  color: #f4a261;
+}
+
+.login-tab--active {
+  color: #f4a261;
+  font-weight: 600;
+  border-bottom-color: #f4a261;
+}
+
+/* ============================ Form Fields ============================ */
+.login-form {
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field:focus-within {
+  border-color: #f4a261;
+  box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.14);
+}
+
+.field__icon {
+  display: flex;
+  align-items: center;
+  padding: 0 10px 0 14px;
+  color: #b0b3bb;
+}
+
+.field__input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #262626;
+  min-width: 0;
+}
+
+.field__input::placeholder {
+  color: #b7bcc4;
+}
+
+.field__suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 8px;
+}
+
+.field__btn {
+  border: none;
+  background: none;
+  color: #b0b3bb;
+  cursor: pointer;
+}
+
+.field__btn:hover {
+  color: #8a8f99;
+}
+
+/* 验证码：输入框 + 独立按钮 */
+.field--with-action {
+  border: none;
+  background: transparent;
+  padding: 0;
+  gap: 10px;
+}
+
+.field--with-action:focus-within {
+  box-shadow: none;
+}
+
+.field__main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field__main:focus-within {
+  border-color: #f4a261;
+  box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.14);
+}
+
+.code-btn {
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #fff;
+  color: #5f6368;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.code-btn:hover:not(:disabled) {
+  color: #f4a261;
+  border-color: #f4a261;
+}
+
+.code-btn:disabled {
+  color: #b7bcc4;
+  cursor: not-allowed;
+}
+
+/* ============================ Feedback ============================ */
+.form-error {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  color: #e54848;
+}
+
+.form-hint {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  color: #f4a261;
+}
+
+/* ============================ Submit Button ============================ */
+.submit-btn {
+  width: 100%;
+  height: 46px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f7af75 0%, #f09049 100%);
+  color: #fff;
+  font-size: 15px;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.1s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================ QR Code Login ============================ */
+.qr-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-box {
+  position: relative;
+  width: 204px;
+  height: 204px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ededed;
+  border-radius: 10px;
+}
+
+.qr-loading {
+  color: #b7bcc4;
+  font-size: 13px;
+}
+
+.qr-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #f4a261;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.qr-status {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #5f6368;
+}
+
+.qr-status--scanned {
+  color: #f4a261;
+}
+
+.qr-status--confirmed {
+  color: #1a9c54;
+}
+
+.qr-status--expired {
+  color: #e54848;
+}
+
+.qr-tip {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #9aa0a6;
+}
+
+.qr-feishu-badge {
+  background: #3370ff;
+  color: #fff;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 4px;
+}
+
+/* ============================ Footer ============================ */
+.login-footer {
+  margin-top: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #9aa0a6;
+}
+
+.login-footer a {
+  color: #f4a261;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ============================ Toast ============================ */
+.toast {
+  position: fixed;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  animation: toast-in 0.25s ease;
+}
+
+.toast--success {
+  background: #e8f8ee;
+  color: #1a9c54;
+}
+
+.toast--error {
+  background: #fdecec;
+  color: #e54848;
+}
+
+.toast--info {
+  background: #eef3ff;
+  color: #3370ff;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ======================== Slider Captcha Modal ======================== */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(31, 35, 41, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fade-in 0.2s ease;
+}
+
+.modal {
+  width: 340px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: modal-in 0.22s ease;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 4px;
+}
+
+.modal__title {
+  font-size: 16px;
+  color: #1f2329;
+}
+
+.modal__close {
+  display: flex;
+  padding: 4px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #9aa0a6;
+  cursor: pointer;
+}
+
+.modal__close:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #5f6368;
+}
+
+.modal__close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.modal__body {
+  padding: 12px 18px 18px;
+}
+
+/* 验证码图片区 */
+.captcha-stage {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f2f3f5;
+  user-select: none;
+}
+
+.captcha-bg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.captcha-tile {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+.captcha-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: #8a8f99;
+  font-size: 13px;
+}
+
+.captcha-overlay__msg {
+  padding: 0 16px;
+  text-align: center;
+  color: #e54848;
+}
+
+.captcha-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #f4a261;
+  border-radius: 6px;
+  background: #fff;
+  color: #f4a261;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.captcha-retry:hover {
+  background: #fff7f0;
+}
+
+/* 拖动轨道 */
+.slide-track {
+  position: relative;
+  margin-top: 14px;
+  height: 42px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background: #f2f3f5;
+  overflow: hidden;
+}
+
+.slide-progress {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(244, 162, 97, 0.18);
+}
+
+.slide-tip {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #9aa0a6;
+  pointer-events: none;
+}
+
+.slide-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 42px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #fff;
+  color: #f4a261;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+  cursor: grab;
+  touch-action: none;
+}
+
+.slide-handle:active {
+  cursor: grabbing;
+}
+
+.slide-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  color: #8a8f99;
+}
+
+.captcha-error {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #e54848;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================ Responsive ============================ */
+@media (max-width: 440px) {
+  .login-card {
+    width: 100%;
+    padding: 32px 24px 28px;
+  }
+
+  .login-tab {
+    font-size: 13px;
+  }
+}
